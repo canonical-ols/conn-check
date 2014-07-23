@@ -689,82 +689,9 @@ def make_postgres_check(host, port, username, password, database):
     return sequential_check(subchecks)
 
 
-def make_uri_check(uri):
-    """Make a uri check for accessibility."""
-    uri_components = urlsplit(uri)
-    host = uri_components.hostname
-    use_ssl = (uri_components.scheme == "https")
-    port = uri_components.port or (443 if use_ssl else 80)
-    subchecks = []
-    subchecks.append(make_tcp_check(host, port))
-    if use_ssl:
-        subchecks.append(make_ssl_check(host, port))
-    return subchecks
-
-
-def make_sso_check():
-    """Make a check for sso accessibility."""
-    service_root = get_api_service_root()
-    subchecks = make_uri_check(service_root)
-
-    return add_check_prefix('sso', sequential_check(subchecks))
-
-
-def make_upay_check():
-    """Make a check for upay accessibility."""
-    service_root, username, password = get_upay_config()
-    subchecks = make_uri_check(service_root)
-
-    def check_auth():
-        """Try to connect to UPay and authenticate."""
-        client = UbuntuPayClient(
-            config.upay.consumer_id, username, password, service_root)
-        # check conncheck test user preferences
-        client.account_preferences('conncheck')
-
-    subchecks.append(make_check("auth", check_auth, blocking=True))
-    return add_check_prefix("upay", sequential_check(subchecks))
-
-
-def make_u1db_internal_check():
-    """Check that u1db internal frontend is accessible."""
-    subchecks = make_uri_check(config.u1db.internal_fe_server)
-    return add_check_prefix("u1db.internal", sequential_check(subchecks))
-
-
-def trap_ENOENT(fn, default):
-    """Call a function and return a default if ENOENT."""
-    try:
-        return fn()
-    except IOError, e:
-        if e.errno != errno.ENOENT:
-            raise
-        return default
-
-
-def make_memcached_check(option="memcached.servers", prefix="memcached"):
-    """Make a check for memcached accessibility."""
-    section, option = option.split('.')
-    servers = getattr(getattr(config, section), option).split(';')
-    servers = [(host, int(port)) for host, port in (server.split(':')
-               for server in servers)]
-
-    subchecks = []
-    for (host, port), index in izip(servers, xrange(len(servers))):
-        subcheck = add_check_prefix(str(index),
-                                    make_tcp_check(host, port))
-        subchecks.append(subcheck)
-
-    check = parallel_check(subchecks)
-    return add_check_prefix(prefix, check)
-
-
-def make_redis_check(section="redis", prefix="redis"):
+def make_redis_check(host, port):
     """Make a check for the configured redis server."""
     import redis
-    config_section = getattr(config, section)
-    host = config_section.host
-    port = config_section.port or BOGUS_PORT
     subchecks = []
     subchecks.append(make_tcp_check(host, port))
 
@@ -775,7 +702,7 @@ def make_redis_check(section="redis", prefix="redis"):
             raise RuntimeError("failed to ping redis")
 
     subchecks.append(make_check("auth", do_auth))
-    return add_check_prefix(prefix, sequential_check(subchecks))
+    return add_check_prefix('redis', sequential_check(subchecks))
 
 
 @inlineCallbacks

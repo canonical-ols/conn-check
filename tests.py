@@ -78,3 +78,14 @@ class ConnCheckTest(testtools.TestCase):
         self.assertEqual(len(result.subchecks), 1)
         self.assertThat(result.subchecks[0],
                 FunctionCheckMatcher('auth', 'user foo', blocking=True))
+
+    def test_make_redis_check(self):
+        result = conn_check.make_redis_check('localhost', 8080)
+        self.assertIsInstance(result, conn_check.PrefixCheckWrapper)
+        self.assertEqual(result.prefix, 'redis.')
+        wrapped = result.wrapped
+        self.assertIsInstance(wrapped, conn_check.MultiCheck)
+        self.assertIs(wrapped.strategy, conn_check.sequential_strategy)
+        self.assertEqual(len(wrapped.subchecks), 2)
+        self.assertThat(wrapped.subchecks[0], FunctionCheckMatcher('tcp', 'localhost:8080'))
+        self.assertThat(wrapped.subchecks[1], FunctionCheckMatcher('auth', None))

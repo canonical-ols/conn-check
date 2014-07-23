@@ -1,6 +1,6 @@
 nose
 psycopg2
 pyOpenSSL
-s3lib
+redis
 testtools
 twisted
