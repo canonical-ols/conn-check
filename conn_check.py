@@ -1,9 +1,6 @@
 #!/usr/bin/python -uWignore
 """Check connectivity to various services."""
 
-# We need the relative import here, we need it to fix the path
-import _pythonpath
-
 import os
 import re
 import sys
@@ -13,15 +10,10 @@ import errno
 import urllib
 import traceback
 
-import redis
-import psycopg2
-
 from optparse import OptionParser
 from urlparse import urlsplit
 from itertools import izip
 from threading import Thread
-
-import gdata.contacts.client
 
 from OpenSSL import SSL
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
@@ -44,16 +36,6 @@ from twisted.internet.protocol import (
     ClientCreator)
 from twisted.python.failure import Failure
 from twisted.python.threadpool import ThreadPool
-
-from s3lib import s3lib, swiftlib
-from u1config import config
-from ubuntuone.amqp import AMQPClientService
-from ubuntuone.storage.s3utils import get_s3_config, get_swift_config
-
-from u1backends.account.upayclient import get_config as get_upay_config
-from u1backends.account.upayclient import UbuntuPayClient
-from u1backends.auth.sso import get_api_service_root
-from u1backends.db.config import get_connection_settings
 
 
 CONNECT_TIMEOUT = 10
@@ -194,28 +176,28 @@ class PrefixResultWrapper(ResultTracker):
     def __init__(self, wrapped, prefix):
         """Initialize an instance."""
         super(PrefixResultWrapper, self).__init__()
-        self.__wrapped = wrapped
-        self.__prefix = prefix
+        self.wrapped = wrapped
+        self.prefix = prefix
 
-    def __make_name(self, name):
+    def make_name(self, name):
         """Make a name by prepending the prefix."""
-        return "%s%s" % (self.__prefix, name)
+        return "%s%s" % (self.prefix, name)
 
     def notify_skip(self, name):
         """Register a check being skipped."""
-        self.__wrapped.notify_skip(self.__make_name(name))
+        self.wrapped.notify_skip(self.make_name(name))
 
     def notify_start(self, name, info):
         """Register the start of a check."""
-        self.__wrapped.notify_start(self.__make_name(name), info)
+        self.wrapped.notify_start(self.make_name(name), info)
 
     def notify_success(self, name, duration):
         """Register success."""
-        self.__wrapped.notify_success(self.__make_name(name), duration)
+        self.wrapped.notify_success(self.make_name(name), duration)
 
     def notify_failure(self, name, info, exc_info, duration):
         """Register failure."""
-        self.__wrapped.notify_failure(self.__make_name(name),
+        self.wrapped.notify_failure(self.make_name(name),
                                       info, exc_info, duration)
 
 
@@ -225,30 +207,30 @@ class FailureCountingResultWrapper(ResultTracker):
     def __init__(self, wrapped):
         """Initialize an instance."""
         super(FailureCountingResultWrapper, self).__init__()
-        self.__wrapped = wrapped
-        self.__failure_count = 0
+        self.wrapped = wrapped
+        self.failure_count = 0
 
     def notify_skip(self, name):
         """Register a check being skipped."""
-        self.__wrapped.notify_skip(name)
+        self.wrapped.notify_skip(name)
 
     def notify_start(self, name, info):
         """Register the start of a check."""
-        self.__failure_count += 1
-        self.__wrapped.notify_start(name, info)
+        self.failure_count += 1
+        self.wrapped.notify_start(name, info)
 
     def notify_success(self, name, duration):
         """Register success."""
-        self.__failure_count -= 1
-        self.__wrapped.notify_success(name, duration)
+        self.failure_count -= 1
+        self.wrapped.notify_success(name, duration)
 
     def notify_failure(self, name, info, exc_info, duration):
         """Register failure."""
-        self.__wrapped.notify_failure(name, info, exc_info, duration)
+        self.wrapped.notify_failure(name, info, exc_info, duration)
 
     def any_failed(self):
         """Return True if any checks using this wrapper failed so far."""
-        return self.__failure_count > 0
+        return self.failure_count > 0
 
 
 class FailedPattern(Pattern):
@@ -317,16 +299,16 @@ class SimplePattern(Pattern):
         """Initialize an instance."""
         super(SimplePattern, self).__init__()
         tokens = PATTERN_TOKEN_RE.findall(pattern)
-        self.__partial_re = tokens_to_partial_re(tokens)
-        self.__full_re = tokens_to_re(tokens)
+        self.partial_re = tokens_to_partial_re(tokens)
+        self.full_re = tokens_to_re(tokens)
 
     def prefix_matches(self, partial_name):
         """Return True if the partial name matches."""
-        return self.__partial_re.match(partial_name) is not None
+        return self.partial_re.match(partial_name) is not None
 
     def matches(self, name):
         """Return True if the complete name matches."""
-        return self.__full_re.match(name) is not None
+        return self.full_re.match(name) is not None
 
 
 class PrefixPattern(Pattern):
@@ -335,20 +317,20 @@ class PrefixPattern(Pattern):
     def __init__(self, prefix, pattern):
         """Initialize an instance."""
         super(PrefixPattern, self).__init__()
-        self.__prefix = prefix
-        self.__pattern = pattern
+        self.prefix = prefix
+        self.pattern = pattern
 
     def assume_prefix(self, prefix):
         """Return an equivalent pattern with the given prefix baked in."""
-        return PrefixPattern(self.__prefix + prefix, self.__pattern)
+        return PrefixPattern(self.prefix + prefix, self.pattern)
 
     def prefix_matches(self, partial_name):
         """Return True if the partial name matches."""
-        return self.__pattern.prefix_matches(self.__prefix + partial_name)
+        return self.pattern.prefix_matches(self.prefix + partial_name)
 
     def matches(self, name):
         """Return True if the complete name matches."""
-        return self.__pattern.matches(self.__prefix + name)
+        return self.pattern.matches(self.prefix + name)
 
 
 class SumPattern(Pattern):
@@ -357,18 +339,18 @@ class SumPattern(Pattern):
     def __init__(self, patterns):
         """Initialize an instance."""
         super(SumPattern, self).__init__()
-        self.__patterns = patterns
+        self.patterns = patterns
 
     def prefix_matches(self, partial_name):
         """Return True if the partial name matches."""
-        for pattern in self.__patterns:
+        for pattern in self.patterns:
             if pattern.prefix_matches(partial_name):
                 return True
         return False
 
     def matches(self, name):
         """Return True if the complete name matches."""
-        for pattern in self.__patterns:
+        for pattern in self.patterns:
             if pattern.matches(name):
                 return True
         return False
@@ -380,19 +362,19 @@ class ConditionalCheck(Check):
     def __init__(self, wrapped, predicate):
         """Initialize an instance."""
         super(ConditionalCheck, self).__init__()
-        self.__wrapped = wrapped
-        self.__predicate = predicate
+        self.wrapped = wrapped
+        self.predicate = predicate
 
     def check(self, pattern, result):
         """Skip the check."""
-        if self.__predicate():
-            return self.__wrapped.check(pattern, result)
+        if self.predicate():
+            return self.wrapped.check(pattern, result)
         else:
             self.skip(pattern, result)
 
     def skip(self, pattern, result):
         """Skip the check."""
-        self.__wrapped.skip(pattern, result)
+        self.wrapped.skip(pattern, result)
 
 
 class FunctionCheck(Check):
@@ -401,34 +383,34 @@ class FunctionCheck(Check):
     def __init__(self, name, check, info=None, blocking=False):
         """Initialize an instance."""
         super(FunctionCheck, self).__init__()
-        self.__name = name
-        self.__info = info
-        self.__check = check
-        self.__blocking = blocking
+        self.name = name
+        self.info = info
+        self.check = check
+        self.blocking = blocking
 
     @inlineCallbacks
     def check(self, pattern, results):
         """Call the check function."""
-        if not pattern.matches(self.__name):
+        if not pattern.matches(self.name):
             returnValue(None)
-        results.notify_start(self.__name, self.__info)
+        results.notify_start(self.name, self.info)
         start = time.time()
         try:
-            if self.__blocking:
-                result = yield maybeDeferToThread(self.__check)
+            if self.blocking:
+                result = yield maybeDeferToThread(self.check)
             else:
-                result = yield maybeDeferred(self.__check)
-            results.notify_success(self.__name, time.time() - start)
+                result = yield maybeDeferred(self.check)
+            results.notify_success(self.name, time.time() - start)
             returnValue(result)
         except Exception:
-            results.notify_failure(self.__name, self.__info,
+            results.notify_failure(self.name, self.info,
                                    sys.exc_info(), time.time() - start)
 
     def skip(self, pattern, results):
         """Record the skip."""
-        if not pattern.matches(self.__name):
+        if not pattern.matches(self.name):
             return
-        results.notify_skip(self.__name)
+        results.notify_skip(self.name)
 
 
 class MultiCheck(Check):
@@ -437,16 +419,16 @@ class MultiCheck(Check):
     def __init__(self, subchecks, strategy):
         """Initialize an instance."""
         super(MultiCheck, self).__init__()
-        self.__subchecks = list(subchecks)
-        self.__strategy = strategy
+        self.subchecks = list(subchecks)
+        self.strategy = strategy
 
     def check(self, pattern, results):
         """Run subchecks using the strategy supplied at creation time."""
-        return self.__strategy(self.__subchecks, pattern, results)
+        return self.strategy(self.subchecks, pattern, results)
 
     def skip(self, pattern, results):
         """Skip subchecks."""
-        for subcheck in self.__subchecks:
+        for subcheck in self.subchecks:
             subcheck.skip(pattern, results)
 
 
@@ -460,24 +442,24 @@ class PrefixCheckWrapper(Check):
     def __init__(self, wrapped, prefix):
         """Initialize an instance."""
         super(PrefixCheckWrapper, self).__init__()
-        self.__wrapped = wrapped
-        self.__prefix = prefix
+        self.wrapped = wrapped
+        self.prefix = prefix
 
-    def __do_subcheck(self, subcheck, pattern, results):
+    def do_subcheck(self, subcheck, pattern, results):
         """Do a subcheck if the pattern could still match."""
-        pattern = pattern.assume_prefix(self.__prefix)
+        pattern = pattern.assume_prefix(self.prefix)
         if not pattern.failed():
             results = PrefixResultWrapper(wrapped=results,
-                                          prefix=self.__prefix)
+                                          prefix=self.prefix)
             return subcheck(pattern, results)
 
     def check(self, pattern, results):
         """Run the check, prefixing results."""
-        return self.__do_subcheck(self.__wrapped.check, pattern, results)
+        return self.do_subcheck(self.wrapped.check, pattern, results)
 
     def skip(self, pattern, results):
         """Skip checks, prefixing results."""
-        self.__do_subcheck(self.__wrapped.skip, pattern, results)
+        self.do_subcheck(self.wrapped.skip, pattern, results)
 
 
 @inlineCallbacks
@@ -651,8 +633,8 @@ def do_udp_check(host, port, send, expect):
 
 
 def make_udp_check(host, port, send, expect):
-    """Return a check for TCP connectivity."""
-    return make_check("ping", lambda: do_udp_check(host, port, send, expect),
+    """Return a check for UDP connectivity."""
+    return make_check("udp", lambda: do_udp_check(host, port, send, expect),
                       info="%s:%s" % (host, port))
 
 
@@ -683,6 +665,8 @@ def make_amqp_check(host, port, use_ssl, username, password, vhost="/"):
 
 def make_postgres_check(host, port, username, password, database):
     """Return a check for Postgres connectivity."""
+
+    import psycopg2
     subchecks = []
     connect_kw = {'host': host, 'user': username, 'database': database}
 
@@ -756,6 +740,8 @@ def make_db_check(store_name, settings):
 
 def make_s3_check():
     """Make a check for our configured S3 service."""
+    from s3lib import s3lib, swiftlib
+
     s3_config = get_s3_config()
 
     host = s3_config.host
@@ -868,12 +854,13 @@ def make_facebook_check():
                        lambda: config.contact_sync_engine.facebook_enabled)
 
 
-GOOGLE_CONTACTS_API_HOST = gdata.contacts.client.ContactsClient.server
-GOOGLE_CONTACTS_API_PORT = 443
-
-
 def make_google_check():
     """Make a check for accessibility of Google APIs."""
+    GOOGLE_CONTACTS_API_HOST = gdata.contacts.client.ContactsClient.server
+    GOOGLE_CONTACTS_API_PORT = 443
+
+
+    import gdata.contacts.client
     subchecks = []
 
     subchecks.append(make_tcp_check(GOOGLE_CONTACTS_API_HOST,
@@ -958,6 +945,7 @@ def make_memcached_check(option="memcached.servers", prefix="memcached"):
 
 def make_redis_check(section="redis", prefix="redis"):
     """Make a check for the configured redis server."""
+    import redis
     config_section = getattr(config, section)
     host = config_section.host
     port = config_section.port or BOGUS_PORT
@@ -1023,30 +1011,30 @@ class ConsoleOutput(ResultTracker):
     def __init__(self, output, verbose, show_tracebacks, show_duration):
         """Initialize an instance."""
         super(ConsoleOutput, self).__init__()
-        self.__output = output
-        self.__verbose = verbose
-        self.__show_tracebacks = show_tracebacks
-        self.__show_duration = show_duration
+        self.output = output
+        self.verbose = verbose
+        self.show_tracebacks = show_tracebacks
+        self.show_duration = show_duration
 
     def format_duration(self, duration):
-        if not self.__show_duration:
+        if not self.show_duration:
             return ""
         return " (%.3f ms)" % duration
 
     def notify_start(self, name, info):
         """Register the start of a check."""
-        if self.__verbose:
+        if self.verbose:
             if info:
                 info = " (%s)" % (info,)
-            self.__output.write("Starting %s%s...\n" % (name, info or ''))
+            self.output.write("Starting %s%s...\n" % (name, info or ''))
 
     def notify_skip(self, name):
         """Register a check being skipped."""
-        self.__output.write("SKIPPING %s\n" % (name,))
+        self.output.write("SKIPPING %s\n" % (name,))
 
     def notify_success(self, name, duration):
         """Register a success."""
-        self.__output.write("OK %s%s\n" % (
+        self.output.write("OK %s%s\n" % (
             name, self.format_duration(duration)))
 
     def notify_failure(self, name, info, exc_info, duration):
@@ -1054,9 +1042,9 @@ class ConsoleOutput(ResultTracker):
         message = str(exc_info[1]).split("\n")[0]
         if info:
             message = "(%s): %s" % (info, message)
-        self.__output.write("FAILED %s%s: %s\n" % (
+        self.output.write("FAILED %s%s: %s\n" % (
             name, self.format_duration(duration), message))
-        if self.__show_tracebacks:
+        if self.show_tracebacks:
             formatted = traceback.format_exception(exc_info[0],
                                                    exc_info[1],
                                                    exc_info[2],
@@ -1065,7 +1053,7 @@ class ConsoleOutput(ResultTracker):
             if len(lines) > 0 and len(lines[-1]) == 0:
                 lines.pop()
             indented = "\n".join(["  %s" % (line,) for line in lines])
-            self.__output.write("%s\n" % (indented,))
+            self.output.write("%s\n" % (indented,))
 
 
 def main(*args):
@@ -1124,4 +1112,5 @@ def main(*args):
         return 0
 
 
-exit(main(*sys.argv[1:]))
+if __name__ == '__main__':
+    exit(main(*sys.argv[1:]))
