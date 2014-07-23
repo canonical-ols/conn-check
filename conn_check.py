@@ -9,8 +9,9 @@ import glob
 import errno
 import urllib
 import traceback
+import yaml
 
-from optparse import OptionParser
+from argparse import ArgumentParser
 from urlparse import urlsplit
 from itertools import izip
 from threading import Thread
@@ -385,7 +386,7 @@ class FunctionCheck(Check):
         super(FunctionCheck, self).__init__()
         self.name = name
         self.info = info
-        self.check = check
+        self.check_fn = check
         self.blocking = blocking
 
     @inlineCallbacks
@@ -397,9 +398,9 @@ class FunctionCheck(Check):
         start = time.time()
         try:
             if self.blocking:
-                result = yield maybeDeferToThread(self.check)
+                result = yield maybeDeferToThread(self.check_fn)
             else:
-                result = yield maybeDeferred(self.check)
+                result = yield maybeDeferred(self.check_fn)
             results.notify_success(self.name, time.time() - start)
             returnValue(result)
         except Exception:
@@ -565,13 +566,13 @@ def do_tcp_check(host, port, ssl=False, ssl_verify=True):
             raise ValueError("timed out connecting to %s" % ip)
 
 
-def make_tcp_check(host, port):
+def make_tcp_check(host, port, **kwargs):
     """Return a check for TCP connectivity."""
     return make_check("tcp", lambda: do_tcp_check(host, port),
                       info="%s:%s" % (host, port))
 
 
-def make_ssl_check(host, port, verify=True):
+def make_ssl_check(host, port, verify=True, **kwargs):
     """Return a check for SSL setup."""
     return make_check("ssl",
                       lambda: do_tcp_check(host, port, ssl=True,
@@ -633,10 +634,11 @@ def do_udp_check(host, port, send, expect):
             raise ValueError("timed out waiting for %s" % ip)
 
 
-def make_udp_check(host, port, send, expect):
+def make_udp_check(host, port, send, expect, **kwargs):
     """Return a check for UDP connectivity."""
     return make_check("udp", lambda: do_udp_check(host, port, send, expect),
                       info="%s:%s" % (host, port))
+
 
 
 def make_amqp_check(host, port, use_ssl, username, password, vhost="/"):
@@ -705,35 +707,58 @@ def make_redis_check(host, port):
     return add_check_prefix('redis', sequential_check(subchecks))
 
 
+CHECKS = {
+    'tcp': {
+        'fn': make_tcp_check,
+        'args': ['host', 'port'],
+    },
+    'ssl': {
+        'fn': make_ssl_check,
+        'args': ['host', 'port'],
+    },
+    'udp': {
+        'fn': make_udp_check,
+        'args': ['host', 'port', 'send', 'expect'],
+    },
+    'amqp': {
+        'fn': make_amqp_check,
+        'args': ['host', 'port', 'use_ssl', 'username', 'password'],
+    },
+    'postgres': {
+        'fn': make_postgres_check,
+        'args': ['host', 'port', 'username', 'password', 'database'],
+    },
+    'redis': {
+        'fn': make_redis_check,
+        'args': ['host', 'port'],
+    },
+}
+
+
+def check_from_description(check_description):
+    _type = check_description['type']
+    check = CHECKS.get(_type, None)
+    if check is None:
+        raise AssertionError("Unknown check type: {}, available checks: {}".format(
+            _type, CHECKS.keys()))
+    for arg in check['args']:
+        if arg not in check_description:
+            raise AssertionError('{} missing from check: {}'.format(arg,
+                check_description))
+    res = check['fn'](**check_description)
+    return res
+
+
+def build_checks(check_descriptions):
+    subchecks = map(check_from_description, check_descriptions)
+    return parallel_check(subchecks)
+
+
 @inlineCallbacks
-def run_checks(pattern, results):
+def run_checks(checks, pattern, results):
     """Make and run all the pertinent checks."""
     try:
-        subchecks = []
-
-        subchecks.append(make_rabbitmq_check())
-        subchecks.append(make_rabbitmq_check(section="matvu_music_harvester",
-                                             prefix="matvu.music_harvester"))
-        subchecks.append(make_oops_rabbitmq_check())
-        subchecks.append(make_statsd_check())
-        subchecks.append(make_s3_check())
-        subchecks.append(make_swift_check())
-        subchecks.append(make_sso_check())
-        subchecks.append(make_upay_check())
-        subchecks.append(make_u1db_internal_check())
-
-        subchecks.append(make_memcached_check())
-        subchecks.append(make_redis_check())
-
-        connection_settings = get_connection_settings()
-        for store_name, settings in connection_settings.iteritems():
-            subchecks.append(make_db_check(store_name, settings))
-
-        subchecks.append(make_facebook_check())
-        subchecks.append(make_google_check())
-
-        all_checks = parallel_check(subchecks)
-        yield all_checks.check(pattern, results)
+        yield checks.check(pattern, results)
     finally:
         reactor.stop()
 
@@ -801,29 +826,26 @@ class ConsoleOutput(ResultTracker):
 
 def main(*args):
     """Parse arguments, then build and run checks in a reactor."""
-    usage = "Usage: %prog [-c CONFIG_FILE] [PATTERNS...]"
-    parser = OptionParser(usage=usage)
-    parser.add_option("-v", "--verbose", dest="verbose",
-                      action="store_true", default=False,
-                      help="Show additional status")
-    parser.add_option("-d", "--duration", dest="show_duration",
-                      action="store_true", default=False,
-                      help="Show duration")
-    parser.add_option("-t", "--tracebacks", dest="show_tracebacks",
-                      action="store_true", default=False,
-                      help="Show tracebacks on failure")
+    parser = ArgumentParser()
+    parser.add_argument("config_file",
+                        help="Config file specifying the checks to run.")
+    parser.add_argument("patterns", nargs='*',
+                        help="Patterns to filter the checks.")
+    parser.add_argument("-v", "--verbose", dest="verbose",
+                        action="store_true", default=False,
+                        help="Show additional status")
+    parser.add_argument("-d", "--duration", dest="show_duration",
+                        action="store_true", default=False,
+                        help="Show duration")
+    parser.add_argument("-t", "--tracebacks", dest="show_tracebacks",
+                        action="store_true", default=False,
+                        help="Show tracebacks on failure")
+    options = parser.parse_args(list(args))
 
-    options, args = parser.parse_args(list(args))
-
-    if len(args) > 0:
-        patterns = args
+    if options.patterns:
+        pattern = SumPattern(map(SimplePattern, options.patterns))
     else:
-        patterns = str(config.checks.include).strip()
-        if len(patterns) > 0:
-            patterns = re.split(r'\s*,\s*', patterns)
-        else:
-            patterns = ()
-    pattern = SumPattern(map(SimplePattern, patterns))
+        pattern = SimplePattern("*")
 
     def make_daemon_thread(*args, **kw):
         """Create a daemon thread."""
@@ -845,7 +867,10 @@ def main(*args):
                             show_duration=options.show_duration,
                             verbose=options.verbose)
     results = FailureCountingResultWrapper(results)
-    reactor.callWhenRunning(run_checks, pattern, results)
+    with open(options.config_file) as f:
+        descriptions = yaml.load(f)
+    checks = build_checks(descriptions)
+    reactor.callWhenRunning(run_checks, checks, pattern, results)
 
     reactor.run()
 

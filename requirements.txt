@@ -2,5 +2,7 @@ nose
 psycopg2
 pyOpenSSL
 redis
+service_identity
 testtools
 twisted
+pyyaml

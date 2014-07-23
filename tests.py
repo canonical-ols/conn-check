@@ -15,6 +15,7 @@ class FunctionCheckMatcher(testtools.Matcher):
 
     def match(self, matchee):
         checks = []
+        checks.append(matchers.IsInstance(conn_check.FunctionCheck))
         checks.append(matchers.AfterPreprocessing(operator.attrgetter('name'),
                         matchers.Equals(self.name)))
         checks.append(matchers.AfterPreprocessing(operator.attrgetter('info'),
@@ -28,13 +29,34 @@ class FunctionCheckMatcher(testtools.Matcher):
                 "blocking={}>".format(self.name, self.info, self.blocking))
 
 
+class MultiCheckMatcher(testtools.Matcher):
+
+    def __init__(self, strategy, subchecks):
+        self.strategy = strategy
+        self.subchecks = subchecks
+
+    def match(self, matchee):
+        checks = []
+        checks.append(matchers.IsInstance(conn_check.MultiCheck))
+        checks.append(matchers.AfterPreprocessing(operator.attrgetter('strategy'),
+                        matchers.Is(self.strategy)))
+        checks.append(matchers.AfterPreprocessing(operator.attrgetter('subchecks'),
+                        matchers.MatchesListwise(self.subchecks)))
+        return matchers.MatchesAll(*checks).match(matchee)
+
+    def __str__(self):
+        return ("Is a MultiCheck with <strategy={} subchecks={}>"
+                "".format(self.strategy, self.subchecks))
+
+
 class ConnCheckTest(testtools.TestCase):
+
     def test_make_tcp_check(self):
         result = conn_check.make_tcp_check('localhost', 8080)
         self.assertThat(result, FunctionCheckMatcher('tcp', 'localhost:8080'))
 
     def test_make_ssl_check(self):
-        result = conn_check.make_ssl_check('localhost', 8080, True)
+        result = conn_check.make_ssl_check('localhost', 8080, verify=True)
         self.assertThat(result, FunctionCheckMatcher('ssl', 'localhost:8080'))
 
     def test_make_udp_check(self):
@@ -89,3 +111,32 @@ class ConnCheckTest(testtools.TestCase):
         self.assertEqual(len(wrapped.subchecks), 2)
         self.assertThat(wrapped.subchecks[0], FunctionCheckMatcher('tcp', 'localhost:8080'))
         self.assertThat(wrapped.subchecks[1], FunctionCheckMatcher('auth', None))
+
+
+    def test_check_from_description_unknown_type(self):
+        e = self.assertRaises(AssertionError,
+                conn_check.check_from_description, {'type': 'foo'})
+        self.assertEqual(
+            str(e),
+            "Unknown check type: foo, available checks: {}".format(conn_check.CHECKS.keys()))
+
+    def test_check_from_description_missing_arg(self):
+        description = {'type': 'tcp'}
+        e = self.assertRaises(AssertionError,
+                conn_check.check_from_description, description)
+        self.assertEqual(
+            str(e),
+            "host missing from check: {}".format(description))
+
+    def test_check_from_description_makes_check(self):
+        description = {'type': 'tcp', 'host': 'localhost', 'port': '8080'}
+        result = conn_check.check_from_description(description)
+        self.assertThat(result,
+                    FunctionCheckMatcher('tcp', 'localhost:8080'))
+
+    def test_build_checks(self):
+        description = [{'type': 'tcp', 'host': 'localhost', 'port': '8080'}]
+        result = conn_check.build_checks(description)
+        self.assertThat(result,
+                MultiCheckMatcher(strategy=conn_check.parallel_strategy,
+                subchecks=[FunctionCheckMatcher('tcp', 'localhost:8080')]))
