@@ -16,12 +16,18 @@ class FunctionCheckMatcher(testtools.Matcher):
     def match(self, matchee):
         checks = []
         checks.append(matchers.IsInstance(conn_check.FunctionCheck))
-        checks.append(matchers.AfterPreprocessing(operator.attrgetter('name'),
-                        matchers.Equals(self.name)))
-        checks.append(matchers.AfterPreprocessing(operator.attrgetter('info'),
-                        matchers.Equals(self.info)))
-        checks.append(matchers.AfterPreprocessing(operator.attrgetter('blocking'),
-                        matchers.Equals(self.blocking)))
+        checks.append(matchers.Annotate(
+            "name doesn't match",
+            matchers.AfterPreprocessing(operator.attrgetter('name'),
+                matchers.Equals(self.name))))
+        checks.append(matchers.Annotate(
+            "info doesn't match",
+            matchers.AfterPreprocessing(operator.attrgetter('info'),
+                matchers.Equals(self.info))))
+        checks.append(matchers.Annotate(
+            "blocking doesn't match",
+            matchers.AfterPreprocessing(operator.attrgetter('blocking'),
+                matchers.Equals(self.blocking))))
         return matchers.MatchesAll(*checks).match(matchee)
 
     def __str__(self):
@@ -53,15 +59,15 @@ class ConnCheckTest(testtools.TestCase):
 
     def test_make_tcp_check(self):
         result = conn_check.make_tcp_check('localhost', 8080)
-        self.assertThat(result, FunctionCheckMatcher('tcp', 'localhost:8080'))
+        self.assertThat(result, FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
 
     def test_make_ssl_check(self):
         result = conn_check.make_ssl_check('localhost', 8080, verify=True)
-        self.assertThat(result, FunctionCheckMatcher('ssl', 'localhost:8080'))
+        self.assertThat(result, FunctionCheckMatcher('ssl.localhost:8080', 'localhost:8080'))
 
     def test_make_udp_check(self):
         result = conn_check.make_udp_check('localhost', 8080, 'foo', 'bar')
-        self.assertThat(result, FunctionCheckMatcher('udp', 'localhost:8080'))
+        self.assertThat(result, FunctionCheckMatcher('udp.localhost:8080', 'localhost:8080'))
 
     def test_make_amqp_check(self):
         result = conn_check.make_amqp_check('localhost', 8080, True, 'foo',
@@ -69,8 +75,10 @@ class ConnCheckTest(testtools.TestCase):
         self.assertIsInstance(result, conn_check.MultiCheck)
         self.assertIs(result.strategy, conn_check.sequential_strategy)
         self.assertEqual(len(result.subchecks), 3)
-        self.assertThat(result.subchecks[0], FunctionCheckMatcher('tcp', 'localhost:8080'))
-        self.assertThat(result.subchecks[1], FunctionCheckMatcher('ssl', 'localhost:8080'))
+        self.assertThat(result.subchecks[0],
+                FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
+        self.assertThat(result.subchecks[1],
+                FunctionCheckMatcher('ssl.localhost:8080', 'localhost:8080'))
         self.assertThat(result.subchecks[2], FunctionCheckMatcher('auth', 'user foo'))
 
     def test_make_amqp_check_no_ssl(self):
@@ -79,7 +87,8 @@ class ConnCheckTest(testtools.TestCase):
         self.assertIsInstance(result, conn_check.MultiCheck)
         self.assertIs(result.strategy, conn_check.sequential_strategy)
         self.assertEqual(len(result.subchecks), 2)
-        self.assertThat(result.subchecks[0], FunctionCheckMatcher('tcp', 'localhost:8080'))
+        self.assertThat(result.subchecks[0],
+                FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
         self.assertThat(result.subchecks[1], FunctionCheckMatcher('auth', 'user foo'))
 
     def test_make_postgres_check(self):
@@ -88,7 +97,8 @@ class ConnCheckTest(testtools.TestCase):
         self.assertIsInstance(result, conn_check.MultiCheck)
         self.assertIs(result.strategy, conn_check.sequential_strategy)
         self.assertEqual(len(result.subchecks), 2)
-        self.assertThat(result.subchecks[0], FunctionCheckMatcher('tcp', 'localhost:8080'))
+        self.assertThat(result.subchecks[0],
+                FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
         self.assertThat(result.subchecks[1],
                 FunctionCheckMatcher('auth', 'user foo', blocking=True))
 
@@ -109,7 +119,8 @@ class ConnCheckTest(testtools.TestCase):
         self.assertIsInstance(wrapped, conn_check.MultiCheck)
         self.assertIs(wrapped.strategy, conn_check.sequential_strategy)
         self.assertEqual(len(wrapped.subchecks), 2)
-        self.assertThat(wrapped.subchecks[0], FunctionCheckMatcher('tcp', 'localhost:8080'))
+        self.assertThat(wrapped.subchecks[0],
+                FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
         self.assertThat(wrapped.subchecks[1], FunctionCheckMatcher('auth', None))
 
 
@@ -132,11 +143,11 @@ class ConnCheckTest(testtools.TestCase):
         description = {'type': 'tcp', 'host': 'localhost', 'port': '8080'}
         result = conn_check.check_from_description(description)
         self.assertThat(result,
-                    FunctionCheckMatcher('tcp', 'localhost:8080'))
+                FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
 
     def test_build_checks(self):
         description = [{'type': 'tcp', 'host': 'localhost', 'port': '8080'}]
         result = conn_check.build_checks(description)
         self.assertThat(result,
                 MultiCheckMatcher(strategy=conn_check.parallel_strategy,
-                subchecks=[FunctionCheckMatcher('tcp', 'localhost:8080')]))
+                    subchecks=[FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080')]))

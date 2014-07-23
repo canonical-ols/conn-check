@@ -568,13 +568,13 @@ def do_tcp_check(host, port, ssl=False, ssl_verify=True):
 
 def make_tcp_check(host, port, **kwargs):
     """Return a check for TCP connectivity."""
-    return make_check("tcp", lambda: do_tcp_check(host, port),
+    return make_check("tcp.{}:{}".format(host, port), lambda: do_tcp_check(host, port),
                       info="%s:%s" % (host, port))
 
 
 def make_ssl_check(host, port, verify=True, **kwargs):
     """Return a check for SSL setup."""
-    return make_check("ssl",
+    return make_check("ssl.{}:{}".format(host, port),
                       lambda: do_tcp_check(host, port, ssl=True,
                           ssl_verify=verify),
                       info="%s:%s" % (host, port))
@@ -636,7 +636,8 @@ def do_udp_check(host, port, send, expect):
 
 def make_udp_check(host, port, send, expect, **kwargs):
     """Return a check for UDP connectivity."""
-    return make_check("udp", lambda: do_udp_check(host, port, send, expect),
+    return make_check("udp.{}:{}".format(host, port),
+            lambda: do_udp_check(host, port, send, expect),
                       info="%s:%s" % (host, port))
 
 
