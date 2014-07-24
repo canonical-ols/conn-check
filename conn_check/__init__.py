@@ -713,7 +713,8 @@ def make_redis_check(host, port, password=None, **kwargs):
         """Connect and authenticate.
         """
         client_creator = ClientCreator(reactor, txredis.client.RedisClient)
-        client = yield client_creator.connectTCP(host=host, port=port)
+        client = yield client_creator.connectTCP(host=host, port=port,
+                                                 timeout=CONNECT_TIMEOUT)
 
         if password is None:
             ping = yield client.ping()
