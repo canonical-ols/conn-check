@@ -5,6 +5,7 @@ $(ENV):
 
 build: $(ENV)
 	$(ENV)/bin/pip install -r requirements.txt
+	$(ENV)/bin/python setup.py develop
 
 test:
 	$(ENV)/bin/nosetests

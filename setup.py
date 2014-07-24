@@ -15,7 +15,6 @@ except ImportError:
 
 setup(
     name='conn-check',
-    packages=['conn_check'],
     description='Utility/library for checking connectivity between services',
     long_description=open('README.rst').read(),
     version=__version__,
@@ -24,8 +23,13 @@ setup(
     url='https://launchpad.net/conn-check',
     packages=find_packages(exclude=['ez_setup']),
     install_requires=open('requirements.txt').readlines(),
-    package_data={'conn_check': ['version.txt']},
+    package_data={'conn_check': ['version.txt', 'amqp0-8.xml']},
     include_package_data=True,
+    entry_points={
+        'console_scripts': [
+            'conn-check = conn_check:run',
+        ],
+    },
     license='GPL3',
     classifiers=[
         "Topic :: System :: Networking"
