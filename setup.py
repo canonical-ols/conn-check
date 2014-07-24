@@ -27,7 +27,7 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'conn-check = conn_check:run',
+            'conn-check = conn_check.main:run',
         ],
     },
     license='GPL3',
