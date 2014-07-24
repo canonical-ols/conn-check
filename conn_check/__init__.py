@@ -666,7 +666,7 @@ def extract_host_port(url):
     return host, port, scheme
 
 
-def make_url_check(url, method='GET', expected_code=200, **kwargs):
+def make_http_check(url, method='GET', expected_code=200, **kwargs):
     subchecks = []
     host, port, scheme = extract_host_port(url)
     subchecks.append(make_tcp_check(host, port))
@@ -779,8 +779,8 @@ CHECKS = {
         'fn': make_udp_check,
         'args': ['host', 'port', 'send', 'expect'],
     },
-    'url': {
-        'fn': make_url_check,
+    'http': {
+        'fn': make_http_check,
         'args': ['url'],
     },
     'amqp': {

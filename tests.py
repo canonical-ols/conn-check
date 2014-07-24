@@ -88,8 +88,8 @@ class ConnCheckTest(testtools.TestCase):
         result = conn_check.make_udp_check('localhost', 8080, 'foo', 'bar')
         self.assertThat(result, FunctionCheckMatcher('udp.localhost:8080', 'localhost:8080'))
 
-    def test_make_url_check(self):
-        result = conn_check.make_url_check('http://localhost/')
+    def test_make_http_check(self):
+        result = conn_check.make_http_check('http://localhost/')
         self.assertThat(result,
             MultiCheckMatcher(strategy=conn_check.sequential_strategy,
                 subchecks=[
@@ -98,8 +98,8 @@ class ConnCheckTest(testtools.TestCase):
                 ]
             ))
 
-    def test_make_url_check_https(self):
-        result = conn_check.make_url_check('https://localhost/')
+    def test_make_http_check_https(self):
+        result = conn_check.make_http_check('https://localhost/')
         self.assertThat(result,
             MultiCheckMatcher(strategy=conn_check.sequential_strategy,
                 subchecks=[
