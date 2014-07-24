@@ -11,7 +11,7 @@ test:
 	$(ENV)/bin/nosetests
 
 clean:
-	rm -r $(ENV)
+	-rm -r $(ENV)
 	find . -name "*.pyc" -delete
 
 install-debs:
