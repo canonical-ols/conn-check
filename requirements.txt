@@ -4,5 +4,4 @@ txredis
 service_identity
 twisted
 txamqp
-txyam
 pyyaml
