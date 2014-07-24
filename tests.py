@@ -55,6 +55,25 @@ class MultiCheckMatcher(testtools.Matcher):
                 "".format(self.strategy, self.subchecks))
 
 
+class ExtractHostPortTests(testtools.TestCase):
+
+    def test_basic(self):
+        self.assertEqual(conn_check.extract_host_port('http://localhost:80/'),
+            ('localhost', 80, 'http'))
+
+    def test_no_scheme(self):
+        self.assertEqual(conn_check.extract_host_port('//localhost/'),
+            ('localhost', 80, 'http'))
+
+    def test_no_port_http(self):
+        self.assertEqual(conn_check.extract_host_port('http://localhost/'),
+            ('localhost', 80, 'http'))
+
+    def test_no_port_https(self):
+        self.assertEqual(conn_check.extract_host_port('https://localhost/'),
+            ('localhost', 443, 'https'))
+
+
 class ConnCheckTest(testtools.TestCase):
 
     def test_make_tcp_check(self):
@@ -68,6 +87,27 @@ class ConnCheckTest(testtools.TestCase):
     def test_make_udp_check(self):
         result = conn_check.make_udp_check('localhost', 8080, 'foo', 'bar')
         self.assertThat(result, FunctionCheckMatcher('udp.localhost:8080', 'localhost:8080'))
+
+    def test_make_http_check(self):
+        result = conn_check.make_http_check('http://localhost/')
+        self.assertThat(result,
+            MultiCheckMatcher(strategy=conn_check.sequential_strategy,
+                subchecks=[
+                    FunctionCheckMatcher('tcp.localhost:80', 'localhost:80'),
+                    FunctionCheckMatcher('GET.http://localhost/', 'GET http://localhost/')
+                ]
+            ))
+
+    def test_make_http_check_https(self):
+        result = conn_check.make_http_check('https://localhost/')
+        self.assertThat(result,
+            MultiCheckMatcher(strategy=conn_check.sequential_strategy,
+                subchecks=[
+                    FunctionCheckMatcher('tcp.localhost:443', 'localhost:443'),
+                    FunctionCheckMatcher('ssl.localhost:443', 'localhost:443'),
+                    FunctionCheckMatcher('GET.https://localhost/', 'GET https://localhost/')
+                ]
+            ))
 
     def test_make_amqp_check(self):
         result = conn_check.make_amqp_check('localhost', 8080, 'foo',
