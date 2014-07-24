@@ -1,6 +1,6 @@
 psycopg2
 pyOpenSSL
-redis
+txredis
 service_identity
 twisted
 txamqp

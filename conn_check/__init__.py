@@ -1,5 +1,6 @@
 #!/usr/bin/python -uWignore
-"""Check connectivity to various services."""
+"""Check connectivity to various services.
+"""
 
 import os
 import re
@@ -701,19 +702,31 @@ def make_postgres_check(host, port, username, password, database, **kwargs):
     return sequential_check(subchecks)
 
 
-def make_redis_check(host, port, **kwargs):
+def make_redis_check(host, port, password=None, **kwargs):
     """Make a check for the configured redis server."""
-    import redis
+    import txredis
     subchecks = []
     subchecks.append(make_tcp_check(host, port))
 
-    def do_auth():
-        """Connect and authenticate."""
-        client = redis.client.Redis(host=host, port=port)
-        if not client.ping():
-            raise RuntimeError("failed to ping redis")
+    @inlineCallbacks
+    def do_connect():
+        """Connect and authenticate.
+        """
+        client_creator = ClientCreator(reactor, txredis.client.RedisClient)
+        client = yield client_creator.connectTCP(host=host, port=port,
+                                                 timeout=CONNECT_TIMEOUT)
 
-    subchecks.append(make_check("auth", do_auth))
+        if password is None:
+            ping = yield client.ping()
+            if not ping:
+                raise RuntimeError("failed to ping redis")
+        else:
+            resp = yield client.auth(password)
+            if resp != 'OK':
+                raise RuntimeError("failed to auth to redis")
+
+    connect_info = "connect with auth" if password is not None else "connect"
+    subchecks.append(make_check(connect_info, do_connect))
     return add_check_prefix('redis', sequential_check(subchecks))
 
 
