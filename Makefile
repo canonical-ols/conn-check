@@ -18,7 +18,7 @@ install-debs:
 	sudo xargs --arg-file deb-requirements.txt apt-get install -y
 
 cmd:
-	@echo $(ENV)/bin/python conn_check/__init__.py
+	@echo $(ENV)/bin/conn-check
 
 
 .PHONY: test build
