@@ -10,3 +10,7 @@
   host: login.ubuntu.com
   port: 443
   verify: true
+- type: redis
+  host: 127.0.0.1
+  port: 6379
+  password: foobared

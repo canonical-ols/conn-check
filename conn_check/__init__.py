@@ -713,17 +713,18 @@ def make_redis_check(host, port, password=None, **kwargs):
         """Connect and authenticate.
         """
         client_creator = ClientCreator(reactor, txredis.client.RedisClient)
-        client = yield clientCreator.connectTCP(host=host, port=port)
-        ping = yield client.ping()
-        if not ping:
-            raise RuntimeError("failed to ping redis")
+        client = yield client_creator.connectTCP(host=host, port=port)
 
-        if password is not None:
+        if password is None:
+            ping = yield client.ping()
+            if not ping:
+                raise RuntimeError("failed to ping redis")
+        else:
             resp = yield client.auth(password)
             if resp != 'OK':
                 raise RuntimeError("failed to auth to redis")
 
-    connect_info = "connect and auth" if password is not None else "connect"
+    connect_info = "connect with auth" if password is not None else "connect"
     subchecks.append(make_check(connect_info, do_connect))
     return add_check_prefix('redis', sequential_check(subchecks))
 
@@ -751,7 +752,7 @@ CHECKS = {
     },
     'redis': {
         'fn': make_redis_check,
-        'args': ['host', 'port', 'password'],
+        'args': ['host', 'port'],
     },
 }
 

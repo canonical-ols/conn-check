@@ -134,7 +134,7 @@ class ConnCheckTest(testtools.TestCase):
         self.assertThat(wrapped.subchecks[0],
                 FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
         self.assertThat(wrapped.subchecks[1],
-                        FunctionCheckMatcher('connect and auth', None))
+                        FunctionCheckMatcher('connect with auth', None))
 
     def test_check_from_description_unknown_type(self):
         e = self.assertRaises(AssertionError,
