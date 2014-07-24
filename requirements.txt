@@ -3,4 +3,5 @@ pyOpenSSL
 redis
 service_identity
 twisted
+txamqp
 pyyaml

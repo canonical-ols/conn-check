@@ -6,14 +6,11 @@ import re
 import sys
 import time
 import glob
-import errno
-import urllib
+from pkg_resources import resource_stream
 import traceback
 import yaml
 
 from argparse import ArgumentParser
-from urlparse import urlsplit
-from itertools import izip
 from threading import Thread
 
 from OpenSSL import SSL
@@ -39,8 +36,18 @@ from twisted.python.failure import Failure
 from twisted.python.threadpool import ThreadPool
 
 
+def get_version_string():
+    return open(os.path.join(os.path.dirname(__file__),
+                'version.txt'), 'r').read().strip()
+
+
+def get_version():
+    return get_version_string().split('.')
+
+__version__ = get_version_string()
+
+
 CONNECT_TIMEOUT = 10
-BOGUS_PORT = -1
 CA_CERTS = []
 
 for certFileName in glob.glob("/etc/ssl/certs/*.pem"):
@@ -642,8 +649,12 @@ def make_udp_check(host, port, send, expect, **kwargs):
 
 
 
-def make_amqp_check(host, port, use_ssl, username, password, vhost="/"):
+def make_amqp_check(host, port, username, password, use_ssl=True, vhost="/", **kwargs):
     """Return a check for AMQP connectivity."""
+    from txamqp.protocol import AMQClient
+    from txamqp.client import TwistedDelegate
+    from txamqp.spec import load as load_spec
+
     subchecks = []
     subchecks.append(make_tcp_check(host, port))
 
@@ -653,21 +664,19 @@ def make_amqp_check(host, port, use_ssl, username, password, vhost="/"):
     @inlineCallbacks
     def do_auth():
         """Connect and authenticate."""
-        credentials = {'LOGIN': username, 'PASSWORD': password}
-        service = AMQPClientService(host=host, port=port, use_ssl=use_ssl,
-                                    credentials=credentials, vhost=vhost)
-        yield service.startService()
-        try:
-            yield service.await_connection(timeout=CONNECT_TIMEOUT)
-        finally:
-            yield service.stopService()
+        delegate = TwistedDelegate()
+        spec = load_spec(resource_stream('conn_check', 'amqp0-8.xml'))
+        creator = ClientCreator(reactor, AMQClient,
+                                delegate, vhost, spec)
+        client = yield creator.connectTCP(host, port, timeout=CONNECT_TIMEOUT)
+        yield client.authenticate(username, password)
 
     subchecks.append(make_check("auth", do_auth,
                                 info="user %s" % (username,),))
     return sequential_check(subchecks)
 
 
-def make_postgres_check(host, port, username, password, database):
+def make_postgres_check(host, port, username, password, database, **kwargs):
     """Return a check for Postgres connectivity."""
 
     import psycopg2
@@ -692,7 +701,7 @@ def make_postgres_check(host, port, username, password, database):
     return sequential_check(subchecks)
 
 
-def make_redis_check(host, port):
+def make_redis_check(host, port, **kwargs):
     """Make a check for the configured redis server."""
     import redis
     subchecks = []
@@ -723,7 +732,7 @@ CHECKS = {
     },
     'amqp': {
         'fn': make_amqp_check,
-        'args': ['host', 'port', 'use_ssl', 'username', 'password'],
+        'args': ['host', 'port', 'username', 'password'],
     },
     'postgres': {
         'fn': make_postgres_check,
@@ -885,5 +894,9 @@ def main(*args):
             return 0
 
 
-if __name__ == '__main__':
+def run():
     exit(main(*sys.argv[1:]))
+
+
+if __name__ == '__main__':
+    run()

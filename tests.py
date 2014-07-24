@@ -70,8 +70,8 @@ class ConnCheckTest(testtools.TestCase):
         self.assertThat(result, FunctionCheckMatcher('udp.localhost:8080', 'localhost:8080'))
 
     def test_make_amqp_check(self):
-        result = conn_check.make_amqp_check('localhost', 8080, True, 'foo',
-                                            'bar', '/')
+        result = conn_check.make_amqp_check('localhost', 8080, 'foo',
+                                            'bar', use_ssl=True, vhost='/')
         self.assertIsInstance(result, conn_check.MultiCheck)
         self.assertIs(result.strategy, conn_check.sequential_strategy)
         self.assertEqual(len(result.subchecks), 3)
@@ -82,8 +82,8 @@ class ConnCheckTest(testtools.TestCase):
         self.assertThat(result.subchecks[2], FunctionCheckMatcher('auth', 'user foo'))
 
     def test_make_amqp_check_no_ssl(self):
-        result = conn_check.make_amqp_check('localhost', 8080, False, 'foo',
-                                            'bar', '/')
+        result = conn_check.make_amqp_check('localhost', 8080, 'foo',
+                                            'bar', use_ssl=False, vhost='/')
         self.assertIsInstance(result, conn_check.MultiCheck)
         self.assertIs(result.strategy, conn_check.sequential_strategy)
         self.assertEqual(len(result.subchecks), 2)
