@@ -1,9 +1,7 @@
-nose
 psycopg2
 pyOpenSSL
-redis
+txredis
 service_identity
-testtools
 twisted
 txamqp
 pyyaml
