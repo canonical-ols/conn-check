@@ -34,6 +34,7 @@ from twisted.internet.protocol import (
     DatagramProtocol,
     Protocol,
     ClientCreator)
+from twisted.protocols.memcache import MemCacheProtocol
 from twisted.python.failure import Failure
 from twisted.python.threadpool import ThreadPool
 from twisted.web.client import Agent
@@ -740,7 +741,6 @@ def make_postgres_check(host, port, username, password, database, **kwargs):
 
 def make_redis_check(host, port, password=None, **kwargs):
     """Make a check for the configured redis server."""
-    import txredis
     subchecks = []
     subchecks.append(make_tcp_check(host, port))
 
@@ -764,6 +764,25 @@ def make_redis_check(host, port, password=None, **kwargs):
     connect_info = "connect with auth" if password is not None else "connect"
     subchecks.append(make_check(connect_info, do_connect))
     return add_check_prefix('redis', sequential_check(subchecks))
+
+
+def make_memcache_check(host, port, password=None, **kwargs):
+    """Make a check for the configured redis server."""
+    subchecks = []
+    subchecks.append(make_tcp_check(host, port))
+
+    @inlineCallbacks
+    def do_connect():
+        """Connect and authenticate.
+        """
+        client_creator = ClientCreator(reactor, MemCacheProtocol)
+        client = yield client_creator.connectTCP(host=host, port=port,
+                                                 timeout=CONNECT_TIMEOUT)
+
+        version = yield client.version()
+
+    subchecks.append(make_check('connect', do_connect))
+    return add_check_prefix('memcache', sequential_check(subchecks))
 
 
 CHECKS = {
@@ -793,6 +812,14 @@ CHECKS = {
     },
     'redis': {
         'fn': make_redis_check,
+        'args': ['host', 'port'],
+    },
+    'memcache': {
+        'fn': make_memcache_check,
+        'args': ['host', 'port'],
+    },
+    'memcached': {
+        'fn': make_memcache_check,
         'args': ['host', 'port'],
     },
 }

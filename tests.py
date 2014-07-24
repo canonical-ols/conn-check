@@ -176,6 +176,18 @@ class ConnCheckTest(testtools.TestCase):
         self.assertThat(wrapped.subchecks[1],
                         FunctionCheckMatcher('connect with auth', None))
 
+    def test_make_memcache_check(self):
+        result = conn_check.make_memcache_check('localhost', 8080)
+        self.assertIsInstance(result, conn_check.PrefixCheckWrapper)
+        self.assertEqual(result.prefix, 'memcache.')
+        wrapped = result.wrapped
+        self.assertIsInstance(wrapped, conn_check.MultiCheck)
+        self.assertIs(wrapped.strategy, conn_check.sequential_strategy)
+        self.assertEqual(len(wrapped.subchecks), 2)
+        self.assertThat(wrapped.subchecks[0],
+                FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
+        self.assertThat(wrapped.subchecks[1], FunctionCheckMatcher('connect', None))
+
     def test_check_from_description_unknown_type(self):
         e = self.assertRaises(AssertionError,
                 conn_check.check_from_description, {'type': 'foo'})
