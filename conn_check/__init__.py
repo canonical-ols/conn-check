@@ -8,6 +8,7 @@ import time
 import glob
 from pkg_resources import resource_stream
 import traceback
+import urlparse
 import yaml
 
 from argparse import ArgumentParser
@@ -34,6 +35,7 @@ from twisted.internet.protocol import (
     ClientCreator)
 from twisted.python.failure import Failure
 from twisted.python.threadpool import ThreadPool
+from twisted.web.client import Agent
 
 
 def get_version_string():
@@ -648,6 +650,40 @@ def make_udp_check(host, port, send, expect, **kwargs):
                       info="%s:%s" % (host, port))
 
 
+def extract_host_port(url):
+    parsed = urlparse.urlparse(url)
+    host = parsed.hostname
+    port = parsed.port
+    scheme = parsed.scheme
+    if not scheme:
+        scheme = 'http'
+    if port is None:
+        if scheme == 'https':
+            port = 443
+        else:
+            port = 80
+    return host, port, scheme
+
+
+def make_url_check(url, method='GET', expected_code=200, **kwargs):
+    subchecks = []
+    host, port, scheme = extract_host_port(url)
+    subchecks.append(make_tcp_check(host, port))
+    if scheme == 'https':
+        subchecks.append(make_ssl_check(host, port))
+
+    @inlineCallbacks
+    def do_request():
+        agent = Agent(reactor)
+        response = yield agent.request(method, url)
+        if response.code != expected_code:
+            raise RuntimeError(
+                "Unexpected response code: {}".format(response.code))
+
+    subchecks.append(make_check('{}.{}'.format(method, url), do_request,
+                     info='{} {}'.format(method, url)))
+    return sequential_check(subchecks)
+
 
 def make_amqp_check(host, port, username, password, use_ssl=True, vhost="/", **kwargs):
     """Return a check for AMQP connectivity."""
@@ -729,6 +765,10 @@ CHECKS = {
     'udp': {
         'fn': make_udp_check,
         'args': ['host', 'port', 'send', 'expect'],
+    },
+    'url': {
+        'fn': make_url_check,
+        'args': ['url'],
     },
     'amqp': {
         'fn': make_amqp_check,

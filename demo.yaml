@@ -1,12 +1,2 @@
-- type: tcp
-  host: login.ubuntu.com
-  port: 80
-- type: udp
-  host: localhost
-  port: 8080
-  send: aaaa
-  expect: bbbb
-- type: ssl
-  host: login.ubuntu.com
-  port: 443
-  verify: true
+- type: url
+  url: https://login.ubuntu.com/
