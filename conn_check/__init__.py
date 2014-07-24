@@ -39,6 +39,17 @@ from twisted.python.failure import Failure
 from twisted.python.threadpool import ThreadPool
 
 
+def get_version_string():
+    return open(os.path.join(os.path.dirname(__file__),
+                'version.txt'), 'r').read().strip()
+
+
+def get_version():
+    return get_version_string().split('.')
+
+__version__ = get_version_string()
+
+
 CONNECT_TIMEOUT = 10
 BOGUS_PORT = -1
 CA_CERTS = []
