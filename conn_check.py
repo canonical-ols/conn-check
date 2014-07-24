@@ -841,6 +841,9 @@ def main(*args):
     parser.add_argument("-t", "--tracebacks", dest="show_tracebacks",
                         action="store_true", default=False,
                         help="Show tracebacks on failure")
+    parser.add_argument("--validate", dest="validate",
+                        action="store_true", default=False,
+                        help="Only validate the config file, don't run checks.")
     options = parser.parse_args(list(args))
 
     if options.patterns:
@@ -871,14 +874,15 @@ def main(*args):
     with open(options.config_file) as f:
         descriptions = yaml.load(f)
     checks = build_checks(descriptions)
-    reactor.callWhenRunning(run_checks, checks, pattern, results)
+    if not options.validate:
+        reactor.callWhenRunning(run_checks, checks, pattern, results)
 
-    reactor.run()
+        reactor.run()
 
-    if results.any_failed():
-        return 1
-    else:
-        return 0
+        if results.any_failed():
+            return 1
+        else:
+            return 0
 
 
 if __name__ == '__main__':
