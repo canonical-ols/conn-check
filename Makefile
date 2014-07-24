@@ -4,10 +4,17 @@ $(ENV):
 	virtualenv $(ENV)
 
 build: $(ENV)
-	$(ENV)/bin/pip install -r requirements.txt
+	$(ENV)/bin/pip install -r requirements.txt -r devel-requirements.txt
 
 test:
 	$(ENV)/bin/nosetests
+
+clean:
+	rm -rf $(ENV)
+	find . -name "*.pyc" -delete
+
+install-debs:
+	sudo xargs --arg-file deb-requirements.txt apt-get install -y
 
 
 .PHONY: test build
