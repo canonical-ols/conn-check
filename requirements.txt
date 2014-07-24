@@ -5,4 +5,5 @@ redis
 service_identity
 testtools
 twisted
+txamqp
 pyyaml
