@@ -17,6 +17,9 @@ clean:
 install-debs:
 	sudo xargs --arg-file deb-requirements.txt apt-get install -y
 
+cmd:
+	@echo $(ENV)/bin/python conn_check/__init__.py
+
 
 .PHONY: test build
 .DEFAULT_GOAL := test
