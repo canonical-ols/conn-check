@@ -17,6 +17,9 @@ clean:
 install-debs:
 	sudo xargs --arg-file deb-requirements.txt apt-get install -y
 
+cmd:
+	@echo $(ENV)/bin/conn-check
+
 
 .PHONY: test build
 .DEFAULT_GOAL := test
