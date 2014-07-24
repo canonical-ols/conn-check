@@ -16,3 +16,6 @@
   password: foobared
 - type: http
   url: https://login.ubuntu.com/
+- type: memcache
+  host: 127.0.0.1
+  port: 11211
