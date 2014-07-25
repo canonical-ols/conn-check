@@ -152,7 +152,7 @@ password
 memcached
 `````````
 
-Check that a memcached server is present (`memcached` also works).
+Check that a memcached server is present (`memcache` also works).
 
 host
     The host.
