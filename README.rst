@@ -147,3 +147,15 @@ port
 
 password
     The password to authenticatie with. Optional.
+
+
+memcached
+`````````
+
+Check that a memcached server is present (`memcache` also works).
+
+host
+    The host.
+
+port
+    The port.
