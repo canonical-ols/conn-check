@@ -1,3 +1,4 @@
 LICENSE
 **/*.rst
 **/*.txt
+**/*.xml
