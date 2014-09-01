@@ -4,7 +4,7 @@ $(ENV):
 	virtualenv $(ENV)
 
 build: $(ENV)
-	$(ENV)/bin/pip install -r requirements.txt -r devel-requirements.txt
+	$(ENV)/bin/pip install -r devel-requirements.txt
 	$(ENV)/bin/python setup.py develop
 
 test:

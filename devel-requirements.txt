@@ -1,2 +1,7 @@
 nose
 testtools
+
+-r amqp-requirements.txt
+-r postgres-requirements.txt
+-r redis-requirements.txt
+-r requirements.txt
