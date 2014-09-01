@@ -1,7 +1,4 @@
-psycopg2
 pyOpenSSL
-txredis
 service_identity
 twisted
-txamqp
 pyyaml
