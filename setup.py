@@ -25,7 +25,7 @@ setup(
     url='https://launchpad.net/conn-check',
     packages=find_packages(exclude=['ez_setup']),
     install_requires=get_requirements(),
-    extras_requires={
+    extras_require={
         'amqp': get_requirements('amqp'),
         'postgres': get_requirements('postgres'),
         'redis': get_requirements('redis'),
