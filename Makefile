@@ -11,9 +11,11 @@ build: $(ENV)
 test: $(ENV)
 	$(ENV)/bin/nosetests
 
-clean:
-	-rm -r $(ENV)
+clean-wheels:
 	-rm -r $(WHEELSDIR)
+
+clean: clean-wheels
+	-rm -r $(ENV)
 	find . -name "*.pyc" -delete
 
 install-debs:
