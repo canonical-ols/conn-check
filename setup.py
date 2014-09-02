@@ -11,9 +11,14 @@ from setuptools import setup, find_packages
 
 def get_requirements(*pre):
     extras = []
+
+    # Base requirements
+    if not pre:
+        pre = ('',)
+
     for p in pre:
-        p = '{}-'.format(p)
-        extras.extend(open('{}requirements.txt'.format(p)).readlines())
+        sep = '-' if p else ''
+        extras.extend(open('{}{}requirements.txt'.format(p, sep)).readlines())
     return extras
 
 
