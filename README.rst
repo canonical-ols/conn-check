@@ -159,3 +159,22 @@ host
 
 port
     The port.
+
+
+Building wheels
+---------------
+
+To allow for easier/more portable distribution of this tool you can build
+conn-check and all it's dependencies as `Python wheels <http://legacy.python.org/dev/peps/pep-0427/>`_::
+
+    make clean-wheels
+    make build-wheels
+    EXTRA=amqp make build-wheels-extra
+    EXTRA=redis make build-wheels-extra
+
+The `build-wheels` make target will build conn-check and it's base
+dependencies, but to include the optional extra dependencies for other
+checks such as amqp, redis or postgres you need to use the
+`build-wheels-extra` target with the `EXTRA` env value.
+
+By default all the wheels will be placed in `./wheels`.
