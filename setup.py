@@ -9,10 +9,12 @@ __version__ = open(os.path.join(cwd, 'conn_check/version.txt'),
 from setuptools import setup, find_packages
 
 
-def get_requirements(pre=''):
-    if pre:
-        pre = '{}-'.format(pre)
-    return open('{}requirements.txt'.format(pre)).readlines()
+def get_requirements(*pre):
+    extras = []
+    for p in pre:
+        p = '{}-'.format(p)
+        extras.extend(open('{}requirements.txt'.format(p)).readlines())
+    return extras
 
 
 setup(
@@ -26,6 +28,7 @@ setup(
     packages=find_packages(exclude=['ez_setup']),
     install_requires=get_requirements(),
     extras_require={
+        'all': get_requirements('amqp', 'postgres', 'redis'),
         'amqp': get_requirements('amqp'),
         'postgres': get_requirements('postgres'),
         'redis': get_requirements('redis'),
