@@ -1,4 +1,5 @@
 ENV=virtualenv
+WHEELSDIR=./wheels
 
 $(ENV):
 	virtualenv $(ENV)
@@ -7,10 +8,13 @@ build: $(ENV)
 	$(ENV)/bin/pip install -r devel-requirements.txt
 	$(ENV)/bin/python setup.py develop
 
-test:
+test: $(ENV)
 	$(ENV)/bin/nosetests
 
-clean:
+clean-wheels:
+	-rm -r $(WHEELSDIR)
+
+clean: clean-wheels
 	-rm -r $(ENV)
 	find . -name "*.pyc" -delete
 
@@ -20,6 +24,18 @@ install-debs:
 cmd:
 	@echo $(ENV)/bin/conn-check
 
+pip-wheel: $(ENV)
+	@$(ENV)/bin/pip install wheel
 
-.PHONY: test build
+$(WHEELSDIR):
+	mkdir $(WHEELSDIR)
+
+build-wheels: pip-wheel $(WHEELSDIR) $(ENV)
+	$(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) .
+
+build-wheels-extra: pip-wheel $(WHEELSDIR) $(ENV)
+	$(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) -r ${EXTRA}-requirements.txt
+
+
+.PHONY: test build pip-wheel build-wheels build-wheels-extra install-debs clean cmd
 .DEFAULT_GOAL := test
