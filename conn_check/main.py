@@ -51,6 +51,18 @@ def run_checks(checks, pattern, results):
         reactor.stop()
 
 
+class NagiosCompatibleArgsParser(ArgumentParser):
+
+    def error(self, message):
+        """A patched version of ArgumentParser.error which does the same
+        thing, e.g. prints an error message and exits, but does so with
+        an exit code of 3 rather than 2, to maintain compatibility with
+        Nagios checks.
+        """
+        self.print_usage(sys.stderr)
+        self.exit(3, '%s: error: %s\n' % (self.prog, message))
+
+
 class TimestampOutput(object):
 
     def __init__(self, output):
@@ -123,7 +135,7 @@ class ConsoleOutput(ResultTracker):
 
 def main(*args):
     """Parse arguments, then build and run checks in a reactor."""
-    parser = ArgumentParser()
+    parser = NagiosCompatibleArgsParser()
     parser.add_argument("config_file",
                         help="Config file specifying the checks to run.")
     parser.add_argument("patterns", nargs='*',
@@ -162,11 +174,11 @@ def main(*args):
     reactor.callWhenRunning(threadpool.start)
 
     output = sys.stdout
-    if options.show_duration:
-        output = TimestampOutput(output)
 
     if options.nagios:
         output = NagiosOutput(output)
+    elif options.show_duration:
+        output = TimestampOutput(output)
 
     results = ConsoleOutput(output=output,
                             show_tracebacks=options.show_tracebacks,
@@ -175,6 +187,7 @@ def main(*args):
     results = FailureCountingResultWrapper(results)
     with open(options.config_file) as f:
         descriptions = yaml.load(f)
+
     checks = build_checks(descriptions)
     if not options.validate:
         reactor.callWhenRunning(run_checks, checks, pattern, results)
