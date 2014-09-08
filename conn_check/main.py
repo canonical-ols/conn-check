@@ -195,7 +195,7 @@ def main(*args):
         reactor.run()
 
         if results.any_failed():
-            return 1
+            return 2
         else:
             return 0
 
