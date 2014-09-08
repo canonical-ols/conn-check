@@ -131,6 +131,9 @@ def main(*args):
     parser.add_argument("--validate", dest="validate",
                         action="store_true", default=False,
                         help="Only validate the config file, don't run checks.")
+    parser.add_argument("--nagios", dest="nagios",
+                        action="store_true", default=False,
+                        help="Use Nagios style output for check results.")
     options = parser.parse_args(list(args))
 
     if options.patterns:
