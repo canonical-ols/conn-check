@@ -61,6 +61,15 @@ class TimestampOutput(object):
         self.output.write("%.3f: %s" % (time.time() - self.start, data))
 
 
+class NagiosOutput(object):
+
+    def __init__(self, output):
+        self.output = output
+
+    def write(self, data):
+        self.output.write(data)
+
+
 class ConsoleOutput(ResultTracker):
     """Displays check results."""
 
@@ -155,6 +164,9 @@ def main(*args):
     output = sys.stdout
     if options.show_duration:
         output = TimestampOutput(output)
+
+    if options.nagios:
+        output = NagiosOutput(output)
 
     results = ConsoleOutput(output=output,
                             show_tracebacks=options.show_tracebacks,
