@@ -51,6 +51,17 @@ def run_checks(checks, pattern, results):
         reactor.stop()
 
 
+class NagiosCompatibleArgsParser(ArgumentParser):
+
+    def error(self, message):
+        """A patched version of ArgumentParser.error which does the same
+        thing, e.g. prints an error message and exits, but does so with
+        an exit code of 3 rather than 2, to maintain compatibility with
+        Nagios checks."""
+        self.print_usage(sys.stderr)
+        self.exit(3, '%s: error: %s\n' % (self.prog, message))
+
+
 class TimestampOutput(object):
 
     def __init__(self, output):
@@ -75,31 +86,34 @@ class ConsoleOutput(ResultTracker):
     def format_duration(self, duration):
         if not self.show_duration:
             return ""
-        return " (%.3f ms)" % duration
+        return ": (%.3f ms)" % duration
 
     def notify_start(self, name, info):
         """Register the start of a check."""
         if self.verbose:
             if info:
                 info = " (%s)" % (info,)
-            self.output.write("Starting %s%s...\n" % (name, info or ''))
+            else:
+                info = ''
+            self.output.write("Starting %s%s...\n" % (name, info))
 
     def notify_skip(self, name):
         """Register a check being skipped."""
-        self.output.write("SKIPPING %s\n" % (name,))
+        self.output.write("SKIPPING: %s\n" % (name,))
 
     def notify_success(self, name, duration):
         """Register a success."""
-        self.output.write("OK %s%s\n" % (
+        self.output.write("%s OK%s\n" % (
             name, self.format_duration(duration)))
 
     def notify_failure(self, name, info, exc_info, duration):
         """Register a failure."""
         message = str(exc_info[1]).split("\n")[0]
         if info:
-            message = "(%s): %s" % (info, message)
-        self.output.write("FAILED %s%s: %s\n" % (
+            message = "(%s) %s" % (info, message)
+        self.output.write("%s FAILED%s - %s\n" % (
             name, self.format_duration(duration), message))
+
         if self.show_tracebacks:
             formatted = traceback.format_exception(exc_info[0],
                                                    exc_info[1],
@@ -114,7 +128,7 @@ class ConsoleOutput(ResultTracker):
 
 def main(*args):
     """Parse arguments, then build and run checks in a reactor."""
-    parser = ArgumentParser()
+    parser = NagiosCompatibleArgsParser()
     parser.add_argument("config_file",
                         help="Config file specifying the checks to run.")
     parser.add_argument("patterns", nargs='*',
@@ -150,6 +164,7 @@ def main(*args):
     reactor.callWhenRunning(threadpool.start)
 
     output = sys.stdout
+
     if options.show_duration:
         output = TimestampOutput(output)
 
@@ -160,6 +175,7 @@ def main(*args):
     results = FailureCountingResultWrapper(results)
     with open(options.config_file) as f:
         descriptions = yaml.load(f)
+
     checks = build_checks(descriptions)
     if not options.validate:
         reactor.callWhenRunning(run_checks, checks, pattern, results)
@@ -167,7 +183,7 @@ def main(*args):
         reactor.run()
 
         if results.any_failed():
-            return 1
+            return 2
         else:
             return 0
 

@@ -100,23 +100,23 @@ class ConnCheckTest(testtools.TestCase):
 
     def test_make_tcp_check(self):
         result = make_tcp_check('localhost', 8080)
-        self.assertThat(result, FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
+        self.assertThat(result, FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
 
     def test_make_ssl_check(self):
         result = make_ssl_check('localhost', 8080, verify=True)
-        self.assertThat(result, FunctionCheckMatcher('ssl.localhost:8080', 'localhost:8080'))
+        self.assertThat(result, FunctionCheckMatcher('ssl:localhost:8080', 'localhost:8080'))
 
     def test_make_udp_check(self):
         result = make_udp_check('localhost', 8080, 'foo', 'bar')
-        self.assertThat(result, FunctionCheckMatcher('udp.localhost:8080', 'localhost:8080'))
+        self.assertThat(result, FunctionCheckMatcher('udp:localhost:8080', 'localhost:8080'))
 
     def test_make_http_check(self):
         result = make_http_check('http://localhost/')
         self.assertThat(result,
             MultiCheckMatcher(strategy=sequential_strategy,
                 subchecks=[
-                    FunctionCheckMatcher('tcp.localhost:80', 'localhost:80'),
-                    FunctionCheckMatcher('GET.http://localhost/', 'GET http://localhost/')
+                    FunctionCheckMatcher('tcp:localhost:80', 'localhost:80'),
+                    FunctionCheckMatcher('http:http://localhost/', 'GET http://localhost/')
                 ]
             ))
 
@@ -125,9 +125,9 @@ class ConnCheckTest(testtools.TestCase):
         self.assertThat(result,
             MultiCheckMatcher(strategy=sequential_strategy,
                 subchecks=[
-                    FunctionCheckMatcher('tcp.localhost:443', 'localhost:443'),
-                    FunctionCheckMatcher('ssl.localhost:443', 'localhost:443'),
-                    FunctionCheckMatcher('GET.https://localhost/', 'GET https://localhost/')
+                    FunctionCheckMatcher('tcp:localhost:443', 'localhost:443'),
+                    FunctionCheckMatcher('ssl:localhost:443', 'localhost:443'),
+                    FunctionCheckMatcher('http:https://localhost/', 'GET https://localhost/')
                 ]
             ))
 
@@ -138,9 +138,9 @@ class ConnCheckTest(testtools.TestCase):
         self.assertIs(result.strategy, sequential_strategy)
         self.assertEqual(len(result.subchecks), 3)
         self.assertThat(result.subchecks[0],
-                FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
+                FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
         self.assertThat(result.subchecks[1],
-                FunctionCheckMatcher('ssl.localhost:8080', 'localhost:8080'))
+                FunctionCheckMatcher('ssl:localhost:8080', 'localhost:8080'))
         self.assertThat(result.subchecks[2], FunctionCheckMatcher('auth', 'user foo'))
 
     def test_make_amqp_check_no_ssl(self):
@@ -150,7 +150,7 @@ class ConnCheckTest(testtools.TestCase):
         self.assertIs(result.strategy, sequential_strategy)
         self.assertEqual(len(result.subchecks), 2)
         self.assertThat(result.subchecks[0],
-                FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
+                FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
         self.assertThat(result.subchecks[1], FunctionCheckMatcher('auth', 'user foo'))
 
     def test_make_postgres_check(self):
@@ -160,7 +160,7 @@ class ConnCheckTest(testtools.TestCase):
         self.assertIs(result.strategy, sequential_strategy)
         self.assertEqual(len(result.subchecks), 2)
         self.assertThat(result.subchecks[0],
-                FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
+                FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
         self.assertThat(result.subchecks[1],
                 FunctionCheckMatcher('auth', 'user foo', blocking=True))
 
@@ -176,38 +176,38 @@ class ConnCheckTest(testtools.TestCase):
     def test_make_redis_check(self):
         result = make_redis_check('localhost', 8080)
         self.assertIsInstance(result, PrefixCheckWrapper)
-        self.assertEqual(result.prefix, 'redis.')
+        self.assertEqual(result.prefix, 'redis:')
         wrapped = result.wrapped
         self.assertIsInstance(wrapped, MultiCheck)
         self.assertIs(wrapped.strategy, sequential_strategy)
         self.assertEqual(len(wrapped.subchecks), 2)
         self.assertThat(wrapped.subchecks[0],
-                FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
+                FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
         self.assertThat(wrapped.subchecks[1], FunctionCheckMatcher('connect', None))
 
     def test_make_redis_check_with_password(self):
         result = make_redis_check('localhost', 8080, 'foobar')
         self.assertIsInstance(result, PrefixCheckWrapper)
-        self.assertEqual(result.prefix, 'redis.')
+        self.assertEqual(result.prefix, 'redis:')
         wrapped = result.wrapped
         self.assertIsInstance(wrapped, MultiCheck)
         self.assertIs(wrapped.strategy, sequential_strategy)
         self.assertEqual(len(wrapped.subchecks), 2)
         self.assertThat(wrapped.subchecks[0],
-                FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
+                FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
         self.assertThat(wrapped.subchecks[1],
                         FunctionCheckMatcher('connect with auth', None))
 
     def test_make_memcache_check(self):
         result = make_memcache_check('localhost', 8080)
         self.assertIsInstance(result, PrefixCheckWrapper)
-        self.assertEqual(result.prefix, 'memcache.')
+        self.assertEqual(result.prefix, 'memcache:')
         wrapped = result.wrapped
         self.assertIsInstance(wrapped, MultiCheck)
         self.assertIs(wrapped.strategy, sequential_strategy)
         self.assertEqual(len(wrapped.subchecks), 2)
         self.assertThat(wrapped.subchecks[0],
-                FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
+                FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
         self.assertThat(wrapped.subchecks[1], FunctionCheckMatcher('connect', None))
 
     def test_check_from_description_unknown_type(self):
@@ -229,11 +229,11 @@ class ConnCheckTest(testtools.TestCase):
         description = {'type': 'tcp', 'host': 'localhost', 'port': '8080'}
         result = check_from_description(description)
         self.assertThat(result,
-                FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080'))
+                FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
 
     def test_build_checks(self):
         description = [{'type': 'tcp', 'host': 'localhost', 'port': '8080'}]
         result = build_checks(description)
         self.assertThat(result,
                 MultiCheckMatcher(strategy=parallel_strategy,
-                    subchecks=[FunctionCheckMatcher('tcp.localhost:8080', 'localhost:8080')]))
+                    subchecks=[FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080')]))
