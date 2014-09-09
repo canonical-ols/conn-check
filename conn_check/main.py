@@ -57,8 +57,7 @@ class NagiosCompatibleArgsParser(ArgumentParser):
         """A patched version of ArgumentParser.error which does the same
         thing, e.g. prints an error message and exits, but does so with
         an exit code of 3 rather than 2, to maintain compatibility with
-        Nagios checks.
-        """
+        Nagios checks."""
         self.print_usage(sys.stderr)
         self.exit(3, '%s: error: %s\n' % (self.prog, message))
 
