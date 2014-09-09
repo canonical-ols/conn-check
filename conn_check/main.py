@@ -73,15 +73,6 @@ class TimestampOutput(object):
         self.output.write("%.3f: %s" % (time.time() - self.start, data))
 
 
-class NagiosOutput(object):
-
-    def __init__(self, output):
-        self.output = output
-
-    def write(self, data):
-        self.output.write(data)
-
-
 class ConsoleOutput(ResultTracker):
     """Displays check results."""
 
@@ -107,11 +98,11 @@ class ConsoleOutput(ResultTracker):
 
     def notify_skip(self, name):
         """Register a check being skipped."""
-        self.output.write("SKIPPING %s\n" % (name,))
+        self.output.write("SKIPPING: %s\n" % (name,))
 
     def notify_success(self, name, duration):
         """Register a success."""
-        self.output.write("OK %s%s\n" % (
+        self.output.write("OK: %s%s\n" % (
             name, self.format_duration(duration)))
 
     def notify_failure(self, name, info, exc_info, duration):
@@ -119,7 +110,7 @@ class ConsoleOutput(ResultTracker):
         message = str(exc_info[1]).split("\n")[0]
         if info:
             message = "(%s): %s" % (info, message)
-        self.output.write("FAILED %s%s: %s\n" % (
+        self.output.write("FAILED: %s%s - %s\n" % (
             name, self.format_duration(duration), message))
         if self.show_tracebacks:
             formatted = traceback.format_exception(exc_info[0],
@@ -136,9 +127,9 @@ class ConsoleOutput(ResultTracker):
 def main(*args):
     """Parse arguments, then build and run checks in a reactor."""
     parser = NagiosCompatibleArgsParser()
-    parser.add_argument("config_file",
+    parser.add_argument("-c", "config_file",
                         help="Config file specifying the checks to run.")
-    parser.add_argument("patterns", nargs='*',
+    parser.add_argument("-p", "patterns", nargs='*',
                         help="Patterns to filter the checks.")
     parser.add_argument("-v", "--verbose", dest="verbose",
                         action="store_true", default=False,
@@ -152,9 +143,6 @@ def main(*args):
     parser.add_argument("--validate", dest="validate",
                         action="store_true", default=False,
                         help="Only validate the config file, don't run checks.")
-    parser.add_argument("--nagios", dest="nagios",
-                        action="store_true", default=False,
-                        help="Use Nagios style output for check results.")
     options = parser.parse_args(list(args))
 
     if options.patterns:
@@ -175,9 +163,7 @@ def main(*args):
 
     output = sys.stdout
 
-    if options.nagios:
-        output = NagiosOutput(output)
-    elif options.show_duration:
+    if options.show_duration:
         output = TimestampOutput(output)
 
     results = ConsoleOutput(output=output,
