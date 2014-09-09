@@ -311,7 +311,7 @@ def add_check_prefix(*args):
     args = list(args)
     check = args.pop(-1)
     path = ".".join(args)
-    return PrefixCheckWrapper(wrapped=check, prefix="%s." % (path,))
+    return PrefixCheckWrapper(wrapped=check, prefix="%s:" % (path,))
 
 
 def make_check(name, check, info=None, blocking=False):

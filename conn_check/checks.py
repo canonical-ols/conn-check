@@ -91,13 +91,13 @@ def do_tcp_check(host, port, ssl=False, ssl_verify=True):
 
 def make_tcp_check(host, port, **kwargs):
     """Return a check for TCP connectivity."""
-    return make_check("tcp.{}:{}".format(host, port), lambda: do_tcp_check(host, port),
+    return make_check("tcp:{}:{}".format(host, port), lambda: do_tcp_check(host, port),
                       info="%s:%s" % (host, port))
 
 
 def make_ssl_check(host, port, verify=True, **kwargs):
     """Return a check for SSL setup."""
-    return make_check("ssl.{}:{}".format(host, port),
+    return make_check("ssl:{}:{}".format(host, port),
                       lambda: do_tcp_check(host, port, ssl=True,
                           ssl_verify=verify),
                       info="%s:%s" % (host, port))
@@ -159,7 +159,7 @@ def do_udp_check(host, port, send, expect):
 
 def make_udp_check(host, port, send, expect, **kwargs):
     """Return a check for UDP connectivity."""
-    return make_check("udp.{}:{}".format(host, port),
+    return make_check("udp:{}:{}".format(host, port),
             lambda: do_udp_check(host, port, send, expect),
                       info="%s:%s" % (host, port))
 
@@ -194,7 +194,7 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
             raise RuntimeError(
                 "Unexpected response code: {}".format(response.code))
 
-    subchecks.append(make_check('{}.{}'.format(method, url), do_request,
+    subchecks.append(make_check('http:{}'.format(url), do_request,
                      info='{} {}'.format(method, url)))
     return sequential_check(subchecks)
 
