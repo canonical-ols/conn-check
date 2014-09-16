@@ -221,8 +221,8 @@ def make_amqp_check(host, port, username, password, use_ssl=True, vhost="/", **k
         client = yield creator.connectTCP(host, port, timeout=CONNECT_TIMEOUT)
         yield client.authenticate(username, password)
 
-    subchecks.append(make_check("auth", do_auth,
-                                info="user %s" % (username,),))
+    subchecks.append(make_check("amqp:{}:{}".format(host, port),
+                                do_auth, info="user %s" % (username,),))
     return sequential_check(subchecks)
 
 
@@ -245,8 +245,8 @@ def make_postgres_check(host, port, username, password, database, **kwargs):
         conn = psycopg2.connect(**connect_kw)
         conn.close()
 
-    subchecks.append(make_check("auth", check_auth,
-                                info="user %s" % (username,),
+    subchecks.append(make_check("postgres:{}:{}".format(host, port),
+                                check_auth, info="user %s" % (username,),
                                 blocking=True))
     return sequential_check(subchecks)
 
@@ -276,7 +276,8 @@ def make_redis_check(host, port, password=None, **kwargs):
 
     connect_info = "connect with auth" if password is not None else "connect"
     subchecks.append(make_check(connect_info, do_connect))
-    return add_check_prefix('redis', sequential_check(subchecks))
+    return add_check_prefix('redis:{}:{}'.format(host, port),
+                            sequential_check(subchecks))
 
 
 def make_memcache_check(host, port, password=None, **kwargs):
@@ -295,7 +296,8 @@ def make_memcache_check(host, port, password=None, **kwargs):
         version = yield client.version()
 
     subchecks.append(make_check('connect', do_connect))
-    return add_check_prefix('memcache', sequential_check(subchecks))
+    return add_check_prefix('memcache:{}:{}'.format(host, port),
+                            sequential_check(subchecks))
 
 
 CHECKS = {

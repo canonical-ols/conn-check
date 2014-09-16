@@ -141,7 +141,8 @@ class ConnCheckTest(testtools.TestCase):
                 FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
         self.assertThat(result.subchecks[1],
                 FunctionCheckMatcher('ssl:localhost:8080', 'localhost:8080'))
-        self.assertThat(result.subchecks[2], FunctionCheckMatcher('auth', 'user foo'))
+        self.assertThat(result.subchecks[2],
+                FunctionCheckMatcher('amqp:localhost:8080', 'user foo'))
 
     def test_make_amqp_check_no_ssl(self):
         result = make_amqp_check('localhost', 8080, 'foo',
@@ -151,7 +152,8 @@ class ConnCheckTest(testtools.TestCase):
         self.assertEqual(len(result.subchecks), 2)
         self.assertThat(result.subchecks[0],
                 FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
-        self.assertThat(result.subchecks[1], FunctionCheckMatcher('auth', 'user foo'))
+        self.assertThat(result.subchecks[1],
+                FunctionCheckMatcher('amqp:localhost:8080', 'user foo'))
 
     def test_make_postgres_check(self):
         result = make_postgres_check('localhost', 8080,'foo',
@@ -162,7 +164,7 @@ class ConnCheckTest(testtools.TestCase):
         self.assertThat(result.subchecks[0],
                 FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
         self.assertThat(result.subchecks[1],
-                FunctionCheckMatcher('auth', 'user foo', blocking=True))
+                FunctionCheckMatcher('postgres:localhost:8080', 'user foo', blocking=True))
 
     def test_make_postgres_check_local_socket(self):
         result = make_postgres_check('/local.sock', 8080,'foo',
@@ -171,12 +173,12 @@ class ConnCheckTest(testtools.TestCase):
         self.assertIs(result.strategy, sequential_strategy)
         self.assertEqual(len(result.subchecks), 1)
         self.assertThat(result.subchecks[0],
-                FunctionCheckMatcher('auth', 'user foo', blocking=True))
+                FunctionCheckMatcher('postgres:/local.sock:8080', 'user foo', blocking=True))
 
     def test_make_redis_check(self):
         result = make_redis_check('localhost', 8080)
         self.assertIsInstance(result, PrefixCheckWrapper)
-        self.assertEqual(result.prefix, 'redis:')
+        self.assertEqual(result.prefix, 'redis:localhost:8080:')
         wrapped = result.wrapped
         self.assertIsInstance(wrapped, MultiCheck)
         self.assertIs(wrapped.strategy, sequential_strategy)
@@ -188,7 +190,7 @@ class ConnCheckTest(testtools.TestCase):
     def test_make_redis_check_with_password(self):
         result = make_redis_check('localhost', 8080, 'foobar')
         self.assertIsInstance(result, PrefixCheckWrapper)
-        self.assertEqual(result.prefix, 'redis:')
+        self.assertEqual(result.prefix, 'redis:localhost:8080:')
         wrapped = result.wrapped
         self.assertIsInstance(wrapped, MultiCheck)
         self.assertIs(wrapped.strategy, sequential_strategy)
@@ -201,7 +203,7 @@ class ConnCheckTest(testtools.TestCase):
     def test_make_memcache_check(self):
         result = make_memcache_check('localhost', 8080)
         self.assertIsInstance(result, PrefixCheckWrapper)
-        self.assertEqual(result.prefix, 'memcache:')
+        self.assertEqual(result.prefix, 'memcache:localhost:8080:')
         wrapped = result.wrapped
         self.assertIsInstance(wrapped, MultiCheck)
         self.assertIs(wrapped.strategy, sequential_strategy)
