@@ -11,6 +11,7 @@ from twisted.internet.defer import (
     )
 from twisted.python.threadpool import ThreadPool
 
+from . import get_version_string
 from .check_impl import (
     FailureCountingResultWrapper,
     parallel_check,
@@ -128,6 +129,13 @@ class ConsoleOutput(ResultTracker):
 
 def main(*args):
     """Parse arguments, then build and run checks in a reactor."""
+
+    # We do this first because ArgumentParser won't let us mix and match
+    # non-default positional argument with a flag argument
+    if '--version' in sys.argv:
+        sys.stdout.write('conn-check {}\n'.format(get_version_string()))
+        return 0
+
     parser = NagiosCompatibleArgsParser()
     parser.add_argument("config_file",
                         help="Config file specifying the checks to run.")
@@ -145,6 +153,9 @@ def main(*args):
     parser.add_argument("--validate", dest="validate",
                         action="store_true", default=False,
                         help="Only validate the config file, don't run checks.")
+    parser.add_argument("--version", dest="print_version",
+                        action="store_true", default=False,
+                        help="Print the currently installed version.")
     options = parser.parse_args(list(args))
 
     if options.patterns:
