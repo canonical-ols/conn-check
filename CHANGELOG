@@ -1,7 +1,10 @@
 ChangeLog for conn-check
 ========================
 
-1.0.0 (unreleased)
+1.0.0 (18-09-2014)
 ------------------
 
  - Initial release
+ - Broken free of UbuntuOne
+ - Nagios compatible output
+ - YAML configuration
