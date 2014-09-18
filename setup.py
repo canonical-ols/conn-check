@@ -47,12 +47,12 @@ setup(
     },
     license='GPL3',
     classifiers=[
-        "Topic :: System :: Networking"
-        "Development Status :: 4 - Beta"
+        "Topic :: System :: Networking",
+        "Development Status :: 4 - Beta",
         "Programming Language :: Python",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
         "Intended Audience :: System Administrators",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     ]
 )
