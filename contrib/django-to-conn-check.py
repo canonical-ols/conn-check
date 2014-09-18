@@ -47,10 +47,8 @@ def make_postgres_checks(settings, options):
 
 
 def make_oops_checks(settings, options):
-    # Skipped for now as we don't have oops in our testing env
-    # Needs to create an amqp check for any amqp publisher
-    # in settings.OOPSES
-
+    # XXX: skipped, on account of OOPS settings being untested, but should just
+    # be AMQP checks
     return []
 
 
@@ -58,38 +56,17 @@ def make_celery_checks(settings, options):
     checks = []
     host = settings['BROKER_HOST']
     backend = settings['BROKER_BACKEND']
-    if ((not backend and host) or backend == 'amqp'):
-        checks.append({
-            'type': 'amqp',
+    if ((not backend and host) or backend in ('amqp', 'redis')):
+        check = {
+            'type': backend,
             'host': host,
             'port': int(settings['BROKER_PORT']),
             'username': settings['BROKER_USER'],
             'password': settings['BROKER_PASSWORD'],
-            'vhost': settings['BROKER_VHOST'],
-        })
-    return checks
-
-
-def make_myapps_checks(settings, options):
-    checks = []
-    url = settings['myapps_base_url']
-    if url:
-        checks.append({
-            'type': 'http',
-            'url': url,
-            'expected_code': 302,
-        })
-    return checks
-
-
-def make_click_updown_checks(settings, options):
-    checks = []
-    if options.click_updown_url:
-        checks.append({
-            'type': 'http',
-            'url': options.click_updown_url,
-            'expected_code': 302,
-        })
+        }
+        if settings['BROKER_VHOST']:
+            check['vhost'] = settings['BROKER_VHOST']
+        checks.append(check)
     return checks
 
 
