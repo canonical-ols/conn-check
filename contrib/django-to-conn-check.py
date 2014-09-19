@@ -21,12 +21,11 @@ class SettingsDict(dict):
         return getattr(self.settings, name, default)
 
 
-def get_settings():
-    if 'DJANGO_SETTINGS_MODULE' not in os.environ:
-        os.environ['DJANGO_SETTINGS_MODULE'] = 'django_project.settings'
-        # Make sure we can import django_project even if this script is called
-        # directly
-        sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+def get_settings(settings_module, settings_module_path):
+    if settings_module:
+        os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
+    if settings_module_path:
+        sys.path.insert(0, os.path.abspath(settings_module_path))
 
     return SettingsDict(django_settings)
 
@@ -71,7 +70,8 @@ def make_celery_checks(settings, options):
 
 
 def gather_checks(options):
-    settings = get_settings()
+    settings = get_settings(options.settings_module,
+                            options.settings_module_path)
     checks = []
     checks.extend(make_postgres_checks(settings, options))
     checks.extend(make_oops_checks(settings, options))
@@ -100,9 +100,5 @@ def main(args):
     return 0
 
 
-def run():
-    sys.exit(main(sys.argv[1:]))
-
-
 if __name__ == '__main__':
-    run()
+    sys.exit(main(sys.argv[1:]))
