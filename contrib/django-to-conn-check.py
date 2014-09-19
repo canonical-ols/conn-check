@@ -84,13 +84,20 @@ def gather_checks(options):
 def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('output_file')
-    parser.add_argument('--click-updown-url',
-                        dest="click_updown_url",
+    parser.add_argument('-m', '--settings-module',
+                        dest="settings_module",
+                        action="store")
+    parser.add_argument('-p', '--module-path',
+                        dest="settings_module_path",
                         action="store")
     opts = parser.parse_args(args)
+
     checks = gather_checks(opts)
+
     with open(opts.output_file, 'w') as f:
         yaml.dump(checks, f, default_flow_style=False)
+
+    return 0
 
 
 def run():
