@@ -5,8 +5,6 @@ import os
 import sys
 import yaml
 
-from django.conf import settings as django_settings
-
 
 class SettingsDict(dict):
     """Wrapper for Django settings object that allows access as a dict"""
@@ -27,6 +25,7 @@ def get_settings(settings_module, settings_module_path):
     if settings_module_path:
         sys.path.insert(0, os.path.abspath(settings_module_path))
 
+    from django.conf import settings as django_settings
     return SettingsDict(django_settings)
 
 
