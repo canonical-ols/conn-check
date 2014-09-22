@@ -80,7 +80,7 @@ def gather_checks(options):
     return checks
 
 
-def main(args):
+def main(*args):
     parser = argparse.ArgumentParser()
     parser.add_argument('output_file')
     parser.add_argument('-m', '--settings-module',
@@ -99,5 +99,9 @@ def main(args):
     return 0
 
 
+def run():
+    exit(main(*sys.argv[1:]))
+
+
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+    run()
