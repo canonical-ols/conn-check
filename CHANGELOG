@@ -1,10 +1,11 @@
 ChangeLog for conn-check
 ========================
 
-1.0.2 (unreleased)
+1.0.2 (22-09-2014)
 ------------------
 
  - Added a script to auto-generate conn-check config YAML from a Django settings module
+
 
 1.0.1 (18-09-2014)
 ------------------
