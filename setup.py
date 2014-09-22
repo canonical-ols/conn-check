@@ -43,6 +43,7 @@ setup(
     entry_points={
         'console_scripts': [
             'conn-check = conn_check.main:run',
+            'conn-check-django = conn_check.config_generators.django:run',
         ],
     },
     license='GPL3',
