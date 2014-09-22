@@ -75,8 +75,6 @@ def gather_checks(options):
     checks.extend(make_postgres_checks(settings, options))
     checks.extend(make_oops_checks(settings, options))
     checks.extend(make_celery_checks(settings, options))
-    checks.extend(make_click_updown_checks(settings, options))
-    checks.extend(make_myapps_checks(settings, options))
     return checks
 
 
