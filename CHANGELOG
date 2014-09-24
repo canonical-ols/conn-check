@@ -1,6 +1,12 @@
 ChangeLog for conn-check
 ========================
 
+1.0.3 (24-09-2014)
+------------------
+
+ - Removed config_generators module to it's own package: conn-check-configs
+
+
 1.0.2 (22-09-2014)
 ------------------
 
