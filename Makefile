@@ -19,7 +19,7 @@ clean: clean-wheels
 	find . -name "*.pyc" -delete
 
 install-debs:
-	sudo xargs --arg-file deb-requirements.txt apt-get install -y
+	sudo xargs --arg-file deb-dependencies.txt apt-get install -y
 
 cmd:
 	@echo $(ENV)/bin/conn-check
@@ -35,6 +35,9 @@ build-wheels: pip-wheel $(WHEELSDIR) $(ENV)
 
 build-wheels-extra: pip-wheel $(WHEELSDIR) $(ENV)
 	$(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) -r ${EXTRA}-requirements.txt
+
+build-wheels-all: build-wheels
+	ls *-requirements.txt | grep -Fv 'devel' | xargs -L 1 $(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) -r
 
 
 .PHONY: test build pip-wheel build-wheels build-wheels-extra install-debs clean cmd
