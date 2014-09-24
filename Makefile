@@ -48,5 +48,9 @@ test-wheels: build-wheels-all
 	$(MAKE) test
 
 
-.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd
+upload: test
+	$(ENV)/bin/pip sdist bdist_wheel upload
+
+
+.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload
 .DEFAULT_GOAL := test
