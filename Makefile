@@ -48,7 +48,7 @@ test-wheels: build-wheels-all
 	$(MAKE) test
 
 
-upload: test
+upload: test pip-wheel
 	$(ENV)/bin/python setup.py sdist bdist_wheel upload
 	@echo
 	@echo "Don't forget: bzr tag" `cat conn_check/version.txt` '&& bzr push'
