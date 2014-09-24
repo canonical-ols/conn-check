@@ -51,7 +51,7 @@ test-wheels: build-wheels-all
 upload: test
 	$(ENV)/bin/python setup.py sdist bdist_wheel upload
 	@echo
-	@echo "Don't forget: bzr tag " `cat conn_check/version.txt` ' && bzr push'
+	@echo "Don't forget: bzr tag" `cat conn_check/version.txt` '&& bzr push'
 
 
 .PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload
