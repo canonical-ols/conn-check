@@ -37,8 +37,15 @@ build-wheels-extra: pip-wheel $(WHEELSDIR) $(ENV)
 	$(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) -r ${EXTRA}-requirements.txt
 
 build-wheels-all: build-wheels
-	ls *-requirements.txt | grep -Fv 'devel' | xargs -L 1 $(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) -r
+	ls *-requirements.txt | grep -vw 'devel\|test' | xargs -L 1 \
+		$(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) -r
+
+test-wheels: build-wheels-all
+	$(ENV)/bin/pip install -r test-requirements.txt
+	ls *-requirements.txt | grep -vw 'devel\|test' | xargs -L 1 \
+		$(ENV)/bin/pip install --ignore-installed --no-index --find-links $(WHEELSDIR) -r
+	$(MAKE) test
 
 
-.PHONY: test build pip-wheel build-wheels build-wheels-extra install-debs clean cmd
+.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd
 .DEFAULT_GOAL := test
