@@ -42,6 +42,7 @@ build-wheels-all: build-wheels
 
 test-wheels: build-wheels-all
 	$(ENV)/bin/pip install -r test-requirements.txt
+	$(ENV)/bin/pip install --ignore-installed --no-index --find-links $(WHEELSDIR) -r requirements.txt
 	ls *-requirements.txt | grep -vw 'devel\|test' | xargs -L 1 \
 		$(ENV)/bin/pip install --ignore-installed --no-index --find-links $(WHEELSDIR) -r
 	$(MAKE) test
