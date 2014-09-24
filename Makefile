@@ -49,7 +49,7 @@ test-wheels: build-wheels-all
 
 
 upload: test
-	$(ENV)/bin/pip sdist bdist_wheel upload
+	$(ENV)/bin/python setup.py sdist bdist_wheel upload
 	@echo
 	@echo "Don't forget: bzr tag " `cat conn_check/version.txt` ' && bzr push'
 
