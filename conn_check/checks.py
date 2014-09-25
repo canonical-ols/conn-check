@@ -13,13 +13,14 @@ from twisted.internet.defer import (
     Deferred,
     inlineCallbacks,
     )
+from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet.protocol import (
     ClientCreator,
     DatagramProtocol,
     Protocol,
     )
 from twisted.protocols.memcache import MemCacheProtocol
-from twisted.web.client import Agent
+from twisted.web.client import Agent, ProxyAgent
 
 from .check_impl import (
     add_check_prefix,
@@ -188,7 +189,13 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
 
     @inlineCallbacks
     def do_request():
-        agent = Agent(reactor)
+        proxy = kwargs.get('proxy_host')
+        if proxy_host:
+            proxy_port = kwargs.get('proxy_port', 8000)
+            endpoint = TCP4ClientEndpoint(reactor, proxy_host, proxy_port)
+            agent = ProxyAgent(endpoint)
+        else:
+            agent = Agent(reactor)
         response = yield agent.request(method, url)
         if response.code != expected_code:
             raise RuntimeError(
@@ -199,7 +206,8 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
     return sequential_check(subchecks)
 
 
-def make_amqp_check(host, port, username, password, use_ssl=True, vhost="/", **kwargs):
+def make_amqp_check(host, port, username, password, use_ssl=True, vhost="/",
+                    **kwargs):
     """Return a check for AMQP connectivity."""
     from txamqp.protocol import AMQClient
     from txamqp.client import TwistedDelegate

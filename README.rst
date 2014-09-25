@@ -88,6 +88,12 @@ method
 expected_code
     The status code that defines success. Optional. Default: 200.
 
+proxy_host
+    Optional HTTP proxy to connect via.
+
+proxy_port
+    Port to use with ``proxy_host``. Default: 8000.
+
 
 amqp
 ````
