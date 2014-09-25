@@ -39,11 +39,11 @@ build-wheels: pip-wheel $(WHEELSDIR) $(ENV)
 build-wheels-extra: pip-wheel $(WHEELSDIR) $(ENV)
 	$(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) -r ${EXTRA}-requirements.txt
 
-build-wheels-all: build-wheels
-	ls *-requirements.txt | grep -vw 'devel\|test' | xargs -L 1 \
+build-wheels-deps:
+	ls *requirements.txt | grep -vw 'devel\|test' | xargs -L 1 \
 		$(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) -r
 
-test-wheels: build-wheels-all
+test-wheels: build-wheels-deps
 	$(ENV)/bin/pip install -r test-requirements.txt
 	$(ENV)/bin/pip install --ignore-installed --no-index --find-links $(WHEELSDIR) -r requirements.txt
 	ls *-requirements.txt | grep -vw 'devel\|test' | xargs -L 1 \
