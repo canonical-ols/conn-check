@@ -56,7 +56,7 @@ $(WHEELS_BRANCH_DIR):
 update-wheel-branch: $(WHEELS_BRANCH_DIR)
 	bzr pull -d $(WHEELS_BRANCH_DIR)
 	$(MAKE) test-wheels WHEELSDIR=$(WHEELS_BRANCH_DIR)
-	(cd $(WHEELS_BRANCH_DIR) && bzr add . && bzr commit -m "Updating wheels from $(CONN_CHECK_REVNO)")
+	(cd $(WHEELS_BRANCH_DIR) && bzr add *.whl && bzr commit -m "Updating wheels from $(CONN_CHECK_REVNO)")
 	bzr push -d $(WHEELS_BRANCH_DIR) $(WHEELS_BRANCH)
 
 upload: test pip-wheel
