@@ -1,6 +1,14 @@
 ChangeLog for conn-check
 ========================
 
+
+1.0.4 (unreleased)
+------------------
+
+ - Added HTTP proxy support to http checks
+ - Fixed issue with loading duplicate SSL CA certificates, and added flag to load from a custom dir
+
+
 1.0.3 (24-09-2014)
 ------------------
 
