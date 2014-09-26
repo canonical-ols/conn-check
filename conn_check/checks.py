@@ -42,7 +42,7 @@ def load_ssl_certs(path):
             # Now, de-duplicate in case the same cert has multiple names.
             cert_map[x509.digest('sha1')] = x509
 
-    CA_CERTS.extend(cert_map.items())
+    CA_CERTS.extend(cert_map.values())
 
 
 class TCPCheckProtocol(Protocol):
