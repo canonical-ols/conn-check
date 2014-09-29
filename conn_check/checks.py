@@ -33,13 +33,17 @@ CONNECT_TIMEOUT = 10
 CA_CERTS = []
 
 
-for certFileName in glob.glob("/etc/ssl/certs/*.pem"):
-    # There might be some dead symlinks in there, so let's make sure it's real.
-    if os.path.exists(certFileName):
-        data = open(certFileName).read()
-        x509 = load_certificate(FILETYPE_PEM, data)
-        # Now, de-duplicate in case the same cert has multiple names.
-        CA_CERTS.append(x509)
+def load_ssl_certs(path):
+    cert_map = {}
+    for filepath in glob.glob("{}/*.pem".format(os.path.abspath(path))):
+        # There might be some dead symlinks in there, so let's make sure it's real.
+        if os.path.exists(filepath):
+            data = open(filepath).read()
+            x509 = load_certificate(FILETYPE_PEM, data)
+            # Now, de-duplicate in case the same cert has multiple names.
+            cert_map[x509.digest('sha1')] = x509
+
+    CA_CERTS.extend(cert_map.values())
 
 
 class TCPCheckProtocol(Protocol):

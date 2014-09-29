@@ -17,7 +17,7 @@ from .check_impl import (
     parallel_check,
     ResultTracker,
     )
-from .checks import CHECKS
+from .checks import CHECKS, load_ssl_certs
 from .patterns import (
     SimplePattern,
     SumPattern,
@@ -156,7 +156,12 @@ def main(*args):
     parser.add_argument("--version", dest="print_version",
                         action="store_true", default=False,
                         help="Print the currently installed version.")
+    parser.add_argument("--ssl-certs-path", dest="cacerts_path",
+                        action="store", default="/etc/ssl/certs/",
+                        help="Path to SSL CA certificates.")
     options = parser.parse_args(list(args))
+
+    load_ssl_certs(options.cacerts_path)
 
     if options.patterns:
         pattern = SumPattern(map(SimplePattern, options.patterns))
