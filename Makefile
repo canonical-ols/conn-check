@@ -59,7 +59,7 @@ update-wheel-branch: $(WHEELS_BRANCH_DIR)
 	(cd $(WHEELS_BRANCH_DIR) && bzr add *.whl && bzr commit -m "Updating wheels from $(CONN_CHECK_REVNO)")
 	bzr push -d $(WHEELS_BRANCH_DIR) $(WHEELS_BRANCH)
 
-upload: test pip-wheel
+upload: build test pip-wheel
 	$(ENV)/bin/python setup.py sdist bdist_wheel upload
 	@echo
 	@echo "Don't forget: bzr tag" `cat conn_check/version.txt` '&& bzr push'
