@@ -2,7 +2,7 @@ ChangeLog for conn-check
 ========================
 
 
-1.0.4 (unreleased)
+1.0.4 (29-09-2014)
 ------------------
 
  - Added HTTP proxy support to http checks
