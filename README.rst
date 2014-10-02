@@ -77,7 +77,7 @@ expect
 http
 ````
 
-Check that a HTTP request succeeds.
+Check that a HTTP/HTTPS request succeeds.
 
 url
     The URL to fetch.
@@ -93,6 +93,13 @@ proxy_host
 
 proxy_port
     Port to use with ``proxy_host``. Default: 8000.
+
+headers:
+    Optional headers to send, as a dict of key-values. Multiple values can be
+    given as a list under the same key.
+
+body:
+    Optional raw request body string to send.
 
 
 amqp

@@ -2,6 +2,12 @@ ChangeLog for conn-check
 ========================
 
 
+1.0.5 (unreleased)
+------------------
+
+ - Added optional headers and body arguments to HTTP checks.
+
+
 1.0.4 (29-09-2014)
 ------------------
 
