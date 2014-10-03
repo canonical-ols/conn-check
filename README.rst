@@ -53,7 +53,7 @@ port
     The port.
 
 verify
-    Whether to also verify the SSL certificate. Optional. Default: true.
+    Optional flag whether to also verify the SSL certificate. Default: true.
 
 
 udp
@@ -83,16 +83,16 @@ url
     The URL to fetch.
 
 method
-    The method to use. Optional. Default: "GET".
+    Optional HTTP method to use. Default: "GET".
 
 expected_code
-    The status code that defines success. Optional. Default: 200.
+    Optional status code that defines success. Default: 200.
 
 proxy_host
     Optional HTTP proxy to connect via.
 
 proxy_port
-    Port to use with ``proxy_host``. Default: 8000.
+    Optional port to use with ``proxy_host``. Default: 8000.
 
 headers:
     Optional headers to send, as a dict of key-values. Multiple values can be
@@ -120,10 +120,10 @@ password
     The password to authenticate with.
 
 use_ssl
-    Whether to connect with ssl. Optional. Default: true.
+    Optional flag whether to connect with ssl. Default: true.
 
 vhost
-    The vhost to connect to. Optional. Default '/'.
+    Optional vhost name to connect to. Default '/'.
 
 
 postgres
@@ -159,7 +159,7 @@ port
     The port.
 
 password
-    The password to authenticatie with. Optional.
+    Optional password to authenticatie with.
 
 
 memcached
@@ -182,8 +182,8 @@ conn-check and all it's dependencies as `Python wheels <http://legacy.python.org
 
     make clean-wheels
     make build-wheels
-    EXTRA=amqp make build-wheels-extra
-    EXTRA=redis make build-wheels-extra
+    make build-wheels-extra EXTRA=amqp
+    make build-wheels-extra EXTRA=redis
 
 The `build-wheels` make target will build conn-check and it's base
 dependencies, but to include the optional extra dependencies for other
@@ -191,3 +191,11 @@ checks such as amqp, redis or postgres you need to use the
 `build-wheels-extra` target with the `EXTRA` env value.
 
 By default all the wheels will be placed in `./wheels`.
+
+
+Automatically generating conn-check YAML configurations
+-------------------------------------------------------
+
+The `conn-check-configs <https://pypi.python.org/pypi/conn-check-configs>`_ package contains utilities/libraries
+for generating checks from existing application configurations and environments, e.g. from Django settings modules
+and Juju environments.
