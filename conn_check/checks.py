@@ -6,6 +6,8 @@ import urlparse
 from OpenSSL import SSL
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
+from StringIO import StringIO
+
 from twisted.internet import reactor, ssl
 from twisted.internet.error import DNSLookupError, TimeoutError
 from twisted.internet.abstract import isIPAddress
@@ -20,7 +22,8 @@ from twisted.internet.protocol import (
     Protocol,
     )
 from twisted.protocols.memcache import MemCacheProtocol
-from twisted.web.client import Agent, ProxyAgent
+from twisted.web.client import Agent, FileBodyProducer, ProxyAgent
+from twisted.web.http_headers import Headers
 
 from .check_impl import (
     add_check_prefix,
@@ -200,7 +203,15 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
             agent = ProxyAgent(endpoint)
         else:
             agent = Agent(reactor)
-        response = yield agent.request(method, url)
+
+        headers = kwargs.get('headers')
+        if headers:
+            headers = Headers(headers)
+        body = kwargs.get('body')
+        if body:
+            body = FileBodyProducer(StringIO(body))
+
+        response = yield agent.request(method, url, headers, body)
         if response.code != expected_code:
             raise RuntimeError(
                 "Unexpected response code: {}".format(response.code))
