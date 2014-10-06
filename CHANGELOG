@@ -1,6 +1,11 @@
 ChangeLog for conn-check
 ========================
 
+1.0.6 (06-10-2014)
+
+ - Fixed dependencies when installing from local dir.
+ - Made improvements to readme.
+
 
 1.0.5 (03-10-2014)
 ------------------
