@@ -196,7 +196,7 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
 
     @inlineCallbacks
     def do_request():
-        proxy = kwargs.get('proxy_host')
+        proxy_host = kwargs.get('proxy_host')
         if proxy_host:
             proxy_port = kwargs.get('proxy_port', 8000)
             endpoint = TCP4ClientEndpoint(reactor, proxy_host, proxy_port)
