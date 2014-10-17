@@ -190,15 +190,18 @@ def extract_host_port(url):
 def make_http_check(url, method='GET', expected_code=200, **kwargs):
     subchecks = []
     host, port, scheme = extract_host_port(url)
-    subchecks.append(make_tcp_check(host, port))
-    if scheme == 'https':
-        subchecks.append(make_ssl_check(host, port))
+    proxy_host = kwargs.get('proxy_host')
+    proxy_port = kwargs.get('proxy_port', 8000)
+    if proxy_host:
+        subchecks.append(make_tcp_check(proxy_host, proxy_port))
+    else:
+        subchecks.append(make_tcp_check(host, port))
+        if scheme == 'https':
+            subchecks.append(make_ssl_check(host, port))
 
     @inlineCallbacks
     def do_request():
-        proxy_host = kwargs.get('proxy_host')
         if proxy_host:
-            proxy_port = kwargs.get('proxy_port', 8000)
             endpoint = TCP4ClientEndpoint(reactor, proxy_host, proxy_port)
             agent = ProxyAgent(endpoint)
         else:
