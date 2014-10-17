@@ -154,7 +154,7 @@ def do_udp_check(host, port, send, expect):
     else:
         ip = host
     deferred = Deferred()
-    protocol = UDPCheckProtocol(host, port, send, expect, deferred)
+    protocol = UDPCheckProtocol(ip, port, send, expect, deferred)
     reactor.listenUDP(0, protocol)
     try:
         yield deferred
