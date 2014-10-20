@@ -15,14 +15,13 @@ from twisted.internet.defer import (
     Deferred,
     inlineCallbacks,
     )
-from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet.protocol import (
     ClientCreator,
     DatagramProtocol,
     Protocol,
     )
 from twisted.protocols.memcache import MemCacheProtocol
-from twisted.web.client import Agent, FileBodyProducer, ProxyAgent
+from twisted.web.client import Agent, FileBodyProducer, BrowserLikePolicyForHTTPS
 from twisted.web.http_headers import Headers
 
 from .check_impl import (
@@ -31,6 +30,7 @@ from .check_impl import (
     sequential_check,
     )
 
+from .client import HTTPProxyConnector
 
 CONNECT_TIMEOUT = 10
 CA_CERTS = []
@@ -190,17 +190,24 @@ def extract_host_port(url):
 def make_http_check(url, method='GET', expected_code=200, **kwargs):
     subchecks = []
     host, port, scheme = extract_host_port(url)
-    subchecks.append(make_tcp_check(host, port))
-    if scheme == 'https':
-        subchecks.append(make_ssl_check(host, port))
+    proxy_host = kwargs.get('proxy_host')
+    proxy_port = kwargs.get('proxy_port', 8000)
+    if proxy_host:
+        subchecks.append(make_tcp_check(proxy_host, proxy_port))
+    else:
+        subchecks.append(make_tcp_check(host, port))
+        if scheme == 'https':
+            subchecks.append(make_ssl_check(host, port))
 
     @inlineCallbacks
     def do_request():
-        proxy_host = kwargs.get('proxy_host')
         if proxy_host:
-            proxy_port = kwargs.get('proxy_port', 8000)
-            endpoint = TCP4ClientEndpoint(reactor, proxy_host, proxy_port)
-            agent = ProxyAgent(endpoint)
+            proxy = HTTPProxyConnector(proxy_host, proxy_port)
+            if scheme == 'https':
+                context = BrowserLikePolicyForHTTPS()
+                agent = Agent(reactor=proxy, contextFactory=context)
+            else:
+                agent = Agent(reactor=proxy)
         else:
             agent = Agent(reactor)
 
