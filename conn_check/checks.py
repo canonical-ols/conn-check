@@ -203,8 +203,11 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
     def do_request():
         if proxy_host:
             proxy = HTTPProxyConnector(proxy_host, proxy_port)
-            context = BrowserLikePolicyForHTTPS()
-            agent = Agent(reactor=proxy, contextFactory=context)
+            if scheme == 'https':
+                context = BrowserLikePolicyForHTTPS()
+                agent = Agent(reactor=proxy, contextFactory=context)
+            else:
+                agent = Agent(reactor=proxy)
         else:
             agent = Agent(reactor)
 
