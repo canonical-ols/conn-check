@@ -6,8 +6,6 @@ import urlparse
 from OpenSSL import SSL
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
-from StringIO import StringIO
-
 from twisted.internet import reactor, ssl
 from twisted.internet.error import DNSLookupError, TimeoutError
 from twisted.internet.abstract import isIPAddress
@@ -21,8 +19,8 @@ from twisted.internet.protocol import (
     Protocol,
     )
 from twisted.protocols.memcache import MemCacheProtocol
-from twisted.web.client import Agent, FileBodyProducer, BrowserLikePolicyForHTTPS
-from twisted.web.http_headers import Headers
+
+from txrequests import Session
 
 from .check_impl import (
     add_check_prefix,
@@ -30,7 +28,6 @@ from .check_impl import (
     sequential_check,
     )
 
-from .client import HTTPProxyConnector
 
 CONNECT_TIMEOUT = 10
 CA_CERTS = []
@@ -192,36 +189,49 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
     host, port, scheme = extract_host_port(url)
     proxy_host = kwargs.get('proxy_host')
     proxy_port = kwargs.get('proxy_port', 8000)
+
+    https_proxy_host = kwargs.get('https_proxy_host', proxy_host)
+    https_proxy_port = kwargs.get('https_proxy_port', proxy_port)
+
     if proxy_host:
         subchecks.append(make_tcp_check(proxy_host, proxy_port))
     else:
         subchecks.append(make_tcp_check(host, port))
-        if scheme == 'https':
-            subchecks.append(make_ssl_check(host, port))
+
+    if https_proxy_host and https_proxy_host != proxy_host:
+        subchecks.append(make_tcp_check(https_proxy_host, https_proxy_port))
 
     @inlineCallbacks
     def do_request():
+        proxies = {}
+
         if proxy_host:
-            proxy = HTTPProxyConnector(proxy_host, proxy_port)
-            if scheme == 'https':
-                context = BrowserLikePolicyForHTTPS()
-                agent = Agent(reactor=proxy, contextFactory=context)
-            else:
-                agent = Agent(reactor=proxy)
-        else:
-            agent = Agent(reactor)
+            proxies['http'] = '{}:{}'.format(proxy_host, proxy_port)
+        if https_proxy_host:
+            proxies['https'] = '{}:{}'.format(https_proxy_host,
+                                              https_proxy_port)
 
         headers = kwargs.get('headers')
-        if headers:
-            headers = Headers(headers)
         body = kwargs.get('body')
-        if body:
-            body = FileBodyProducer(StringIO(body))
 
-        response = yield agent.request(method, url, headers, body)
-        if response.code != expected_code:
-            raise RuntimeError(
-                "Unexpected response code: {}".format(response.code))
+        args = {
+            'method': method,
+            'url': url,
+        }
+        if headers:
+            args['headers'] = headers
+        if body:
+            args['data'] = body
+        if proxies:
+            args['proxies'] = proxies
+
+        with Session() as session:
+            request = session.request(**args)
+
+            response = yield request
+            if response.status_code != expected_code:
+                raise RuntimeError(
+                    "Unexpected response code: {}".format(response.status_code))
 
     subchecks.append(make_check('http:{}'.format(url), do_request,
                      info='{} {}'.format(method, url)))
