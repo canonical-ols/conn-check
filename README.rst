@@ -94,6 +94,12 @@ proxy_host
 proxy_port
     Optional port to use with ``proxy_host``. Default: 8000.
 
+https_proxy_host
+    Optional HTTPS proxy to connect via, if not set uses ``proxy_host``.
+
+https_proxy_port
+    Optional port to use with ``https_proxy_host``. Default: 8000.
+
 headers:
     Optional headers to send, as a dict of key-values. Multiple values can be
     given as a list under the same key.
