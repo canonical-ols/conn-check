@@ -159,6 +159,8 @@ def main(*args):
     parser.add_argument("--ssl-certs-path", dest="cacerts_path",
                         action="store", default="/etc/ssl/certs/",
                         help="Path to SSL CA certificates.")
+    parser.add_argument("--max-timeout", dest="max_timeout",
+                        action="store", help="Maximum execution time.")
     options = parser.parse_args(list(args))
 
     load_ssl_certs(options.cacerts_path)
@@ -193,6 +195,15 @@ def main(*args):
         descriptions = yaml.load(f)
 
     checks = build_checks(descriptions)
+
+    if options.max_timeout is not None:
+        def terminator():
+            # Hasta la vista, twisted
+            reactor.stop()
+            print('Maximum timeout reached: {}s'.format(options.max_timeout))
+
+        reactor.callLater(int(options.max_timeout), terminator)
+
     if not options.validate:
         reactor.callWhenRunning(run_checks, checks, pattern, results)
 
