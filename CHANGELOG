@@ -1,6 +1,13 @@
 ChangeLog for conn-check
 ========================
 
+1.0.8 (22-10-2014)
+------------------
+
+ - Switched to using txrequests for HTTP requests with better proxy support.
+ - Fixed UDP checks targetting host rather than IP if available.
+ - Fixed initial TCP check for HTTP checks targetting upstream instead of proxy.
+
 1.0.7 (09-10-2014)
 ------------------
 
