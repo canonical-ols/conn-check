@@ -89,16 +89,10 @@ expected_code
     Optional status code that defines success. Default: 200.
 
 proxy_host
-    Optional HTTP proxy to connect via.
+    Optional HTTP/HTTPS proxy to connect via.
 
 proxy_port
     Optional port to use with ``proxy_host``. Default: 8000.
-
-https_proxy_host
-    Optional HTTPS proxy to connect via, if not set uses ``proxy_host``.
-
-https_proxy_port
-    Optional port to use with ``https_proxy_host``. Default: 8000.
 
 headers:
     Optional headers to send, as a dict of key-values. Multiple values can be
@@ -107,8 +101,8 @@ headers:
 body:
     Optional raw request body string to send.
 
-disable_ssl_verification:
-    Optional flag to disable verification of SSL certs and handshake. Default:
+disable_tls_verification:
+    Optional flag to disable verification of TLS certs and handshake. Default:
     false.
 
 

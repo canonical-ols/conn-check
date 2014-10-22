@@ -191,39 +191,30 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
     proxy_host = kwargs.get('proxy_host')
     proxy_port = kwargs.get('proxy_port', 8000)
 
-    https_proxy_host = kwargs.get('https_proxy_host', proxy_host)
-    https_proxy_port = kwargs.get('https_proxy_port', proxy_port)
-
     if proxy_host:
         subchecks.append(make_tcp_check(proxy_host, proxy_port))
     else:
         subchecks.append(make_tcp_check(host, port))
 
-    if https_proxy_host and https_proxy_host != proxy_host:
-        subchecks.append(make_tcp_check(https_proxy_host, https_proxy_port))
-
     @inlineCallbacks
     def do_request():
         proxies = {}
-
         if proxy_host:
-            proxies['http'] = '{}:{}'.format(proxy_host, proxy_port)
-        if https_proxy_host:
-            proxies['https'] = '{}:{}'.format(https_proxy_host,
-                                              https_proxy_port)
+            proxies['http'] = proxies['https']= '{}:{}'.format(
+                                                 proxy_host, proxy_port)
 
         headers = kwargs.get('headers')
         body = kwargs.get('body')
-        disable_ssl_verification = kwargs.get('disable_ssl_verification',
+        disable_tls_verification = kwargs.get('disable_tls_verification',
                                               False)
 
-        if disable_ssl_verification:
+        if disable_tls_verification:
             urllib3.disable_warnings()
 
         args = {
             'method': method,
             'url': url,
-            'verify': not disable_ssl_verification,
+            'verify': not disable_tls_verification,
         }
         if headers:
             args['headers'] = headers
