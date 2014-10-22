@@ -89,7 +89,7 @@ expected_code
     Optional status code that defines success. Default: 200.
 
 proxy_host
-    Optional HTTP proxy to connect via.
+    Optional HTTP/HTTPS proxy to connect via.
 
 proxy_port
     Optional port to use with ``proxy_host``. Default: 8000.
@@ -100,6 +100,10 @@ headers:
 
 body:
     Optional raw request body string to send.
+
+disable_tls_verification:
+    Optional flag to disable verification of TLS certs and handshake. Default:
+    false.
 
 
 amqp
