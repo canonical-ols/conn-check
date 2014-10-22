@@ -126,7 +126,6 @@ class ConnCheckTest(testtools.TestCase):
             MultiCheckMatcher(strategy=sequential_strategy,
                 subchecks=[
                     FunctionCheckMatcher('tcp:localhost:443', 'localhost:443'),
-                    FunctionCheckMatcher('ssl:localhost:443', 'localhost:443'),
                     FunctionCheckMatcher('http:https://localhost/', 'GET https://localhost/')
                 ]
             ))
