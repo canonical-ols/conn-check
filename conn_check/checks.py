@@ -21,6 +21,7 @@ from twisted.internet.protocol import (
 from twisted.protocols.memcache import MemCacheProtocol
 
 from txrequests import Session
+from requests.packages import urllib3
 
 from .check_impl import (
     add_check_prefix,
@@ -213,10 +214,16 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
 
         headers = kwargs.get('headers')
         body = kwargs.get('body')
+        disable_ssl_verification = kwargs.get('disable_ssl_verification',
+                                              False)
+
+        if disable_ssl_verification:
+            urllib3.disable_warnings()
 
         args = {
             'method': method,
             'url': url,
+            'verify': not disable_ssl_verification,
         }
         if headers:
             args['headers'] = headers
@@ -231,7 +238,8 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
             response = yield request
             if response.status_code != expected_code:
                 raise RuntimeError(
-                    "Unexpected response code: {}".format(response.status_code))
+                    "Unexpected response code: {}".format(
+                                               response.status_code))
 
     subchecks.append(make_check('http:{}'.format(url), do_request,
                      info='{} {}'.format(method, url)))

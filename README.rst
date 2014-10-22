@@ -107,6 +107,10 @@ headers:
 body:
     Optional raw request body string to send.
 
+disable_ssl_verification:
+    Optional flag to disable verification of SSL certs and handshake. Default:
+    false.
+
 
 amqp
 ````
