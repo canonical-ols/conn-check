@@ -47,6 +47,11 @@ def load_ssl_certs(path):
     CA_CERTS.extend(cert_map.values())
 
 
+def set_connect_timeout(timeout):
+    global CONNECT_TIMEOUT
+    CONNECT_TIMEOUT = float(timeout)
+
+
 class TCPCheckProtocol(Protocol):
 
     def connectionMade(self):

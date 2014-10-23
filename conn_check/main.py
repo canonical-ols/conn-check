@@ -17,7 +17,7 @@ from .check_impl import (
     parallel_check,
     ResultTracker,
     )
-from .checks import CHECKS, load_ssl_certs
+from .checks import CHECKS, load_ssl_certs, set_connect_timeout
 from .patterns import (
     SimplePattern,
     SumPattern,
@@ -161,6 +161,9 @@ def main(*args):
                         help="Path to SSL CA certificates.")
     parser.add_argument("--max-timeout", dest="max_timeout",
                         action="store", help="Maximum execution time.")
+    parser.add_argument("--connect-timeout", dest="connect_timeout",
+                        action="store", default=10,
+                        help="Network connection timeout.")
     options = parser.parse_args(list(args))
 
     load_ssl_certs(options.cacerts_path)
@@ -169,6 +172,8 @@ def main(*args):
         pattern = SumPattern(map(SimplePattern, options.patterns))
     else:
         pattern = SimplePattern("*")
+
+    set_connect_timeout(options.connect_timeout)
 
     def make_daemon_thread(*args, **kw):
         """Create a daemon thread."""
