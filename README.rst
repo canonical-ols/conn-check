@@ -47,7 +47,7 @@ timeout
 tls
 ```
 
-A check that uses TLS (`ssl` also works).
+A check that uses TLS (`ssl` is a deprecated alias for this type).
 
 host
     The host.
