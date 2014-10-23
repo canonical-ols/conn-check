@@ -39,6 +39,7 @@ else
 	bzr add *.whl
 	bzr commit -m "Updating wheels from ${CONN_CHECK_REVNO}"
 	bzr tag -d $WHEELS_BRANCH_DIR --force conn-check-r$CONN_CHECK_REVNO
+	bzr tag -d $WHEELS_BRANCH_DIR --force $CONN_CHECK_REVNO
 	bzr push -d $WHEELS_BRANCH_DIR $WHEELS_BRANCH
 fi
 
