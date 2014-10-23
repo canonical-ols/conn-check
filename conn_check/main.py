@@ -164,10 +164,10 @@ def main(*args):
     parser.add_argument("--ssl-certs-path", dest="cacerts_path",
                         action="store", default="/etc/ssl/certs/",
                         help="Path to SSL CA certificates.")
-    parser.add_argument("--max-timeout", dest="max_timeout", type=float
+    parser.add_argument("--max-timeout", dest="max_timeout", type=float,
                         action="store", help="Maximum execution time.")
     parser.add_argument("--connect-timeout", dest="connect_timeout",
-                        action="store", default=10, type=float
+                        action="store", default=10, type=float,
                         help="Network connection timeout.")
     options = parser.parse_args(list(args))
 
