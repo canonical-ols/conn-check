@@ -55,11 +55,10 @@ $(WHEELS_BRANCH_DIR):
 
 update-wheel-branch: $(WHEELS_BRANCH_DIR)
 	bzr pull -d $(WHEELS_BRANCH_DIR)
-	WHEELS_BRANCH_DIR=$(WHEELS_BRANCH_DIR) ./test_revno.sh || exit 0 \
+	WHEELS_BRANCH_DIR=$(WHEELS_BRANCH_DIR) ./build_scripts/test_revno.sh || exit 0 \
 	$(MAKE) test-wheels WHEELSDIR=$(WHEELS_BRANCH_DIR) \
-	cd $(WHEELS_BRANCH_DIR) && bzr add *.whl && bzr commit -m "Updating wheels from $(CONN_CHECK_REVNO)" \
-	bzr tag -d $(WHEELS_BRANCH_DIR) --force conn-check-r$(CONN_CHECK_REVNO) \
-	bzr push -d $(WHEELS_BRANCH_DIR) $(WHEELS_BRANCH) \
+	export WHEELS_BRANCH WHEELS_BRANCH_DIR CONN_CHECK_REVNO \
+	./build_scripts/update_wheels_branch.sh
 
 upload: build test pip-wheel
 	$(ENV)/bin/python setup.py sdist bdist_wheel upload
