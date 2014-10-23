@@ -17,7 +17,7 @@ from .check_impl import (
     parallel_check,
     ResultTracker,
     )
-from .checks import CHECKS, load_ssl_certs, set_connect_timeout
+from .checks import CHECKS, load_ssl_certs
 from .patterns import (
     SimplePattern,
     SumPattern,
@@ -38,8 +38,13 @@ def check_from_description(check_description):
     return res
 
 
-def build_checks(check_descriptions):
-    subchecks = map(check_from_description, check_descriptions)
+def build_checks(check_descriptions, connect_timeout):
+    def set_timeout(desc):
+        new_desc = dict(timeout=connect_timeout)
+        new_desc.update(desc)
+        return new_desc
+    subchecks = map(check_from_description,
+        map(set_timeout, check_descriptions))
     return parallel_check(subchecks)
 
 
@@ -173,8 +178,6 @@ def main(*args):
     else:
         pattern = SimplePattern("*")
 
-    set_connect_timeout(options.connect_timeout)
-
     def make_daemon_thread(*args, **kw):
         """Create a daemon thread."""
         thread = Thread(*args, **kw)
@@ -199,7 +202,7 @@ def main(*args):
     with open(options.config_file) as f:
         descriptions = yaml.load(f)
 
-    checks = build_checks(descriptions)
+    checks = build_checks(descriptions, options.connect_timeout)
 
     if options.max_timeout is not None:
         def terminator():

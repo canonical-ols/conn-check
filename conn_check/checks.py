@@ -30,7 +30,6 @@ from .check_impl import (
     )
 
 
-CONNECT_TIMEOUT = 10
 CA_CERTS = []
 
 
@@ -45,11 +44,6 @@ def load_ssl_certs(path):
             cert_map[x509.digest('sha1')] = x509
 
     CA_CERTS.extend(cert_map.values())
-
-
-def set_connect_timeout(timeout):
-    global CONNECT_TIMEOUT
-    CONNECT_TIMEOUT = float(timeout)
 
 
 class TCPCheckProtocol(Protocol):
@@ -77,7 +71,7 @@ class VerifyingContextFactory(ssl.CertificateOptions):
 
 @inlineCallbacks
 def do_tcp_check(host, port, ssl=False, ssl_verify=True,
-                 timeout=CONNECT_TIMEOUT):
+                 timeout=None):
     """Generic connection check function."""
     if not isIPAddress(host):
         try:
@@ -91,7 +85,7 @@ def do_tcp_check(host, port, ssl=False, ssl_verify=True,
         if ssl:
             context = VerifyingContextFactory(ssl_verify, CA_CERTS)
             yield creator.connectSSL(ip, port, context,
-                                     timeout=CONNECT_TIMEOUT)
+                                     timeout=timeout)
         else:
             yield creator.connectTCP(ip, port, timeout=timeout)
     except TimeoutError:
@@ -101,14 +95,14 @@ def do_tcp_check(host, port, ssl=False, ssl_verify=True,
             raise ValueError("timed out connecting to %s" % ip)
 
 
-def make_tcp_check(host, port, timeout=CONNECT_TIMEOUT, **kwargs):
+def make_tcp_check(host, port, timeout=None, **kwargs):
     """Return a check for TCP connectivity."""
     return make_check("tcp:{}:{}".format(host, port),
                       lambda: do_tcp_check(host, port, timeout=timeout),
                       info="%s:%s" % (host, port))
 
 
-def make_ssl_check(host, port, verify=True, timeout=CONNECT_TIMEOUT, **kwargs):
+def make_ssl_check(host, port, verify=True, timeout=None, **kwargs):
     """Return a check for SSL setup."""
     return make_check("ssl:{}:{}".format(host, port),
                       lambda: do_tcp_check(host, port, ssl=True,
@@ -119,7 +113,7 @@ def make_ssl_check(host, port, verify=True, timeout=CONNECT_TIMEOUT, **kwargs):
 class UDPCheckProtocol(DatagramProtocol):
 
     def __init__(self, host, port, send, expect, deferred=None,
-                 timeout=CONNECT_TIMEOUT):
+                 timeout=None):
         self.host = host
         self.port = port
         self.send = send
@@ -151,7 +145,7 @@ class UDPCheckProtocol(DatagramProtocol):
 
 
 @inlineCallbacks
-def do_udp_check(host, port, send, expect, timeout=CONNECT_TIMEOUT):
+def do_udp_check(host, port, send, expect, timeout=None):
     """Generic connection check function."""
     if not isIPAddress(host):
         try:
@@ -172,7 +166,7 @@ def do_udp_check(host, port, send, expect, timeout=CONNECT_TIMEOUT):
             raise ValueError("timed out waiting for %s" % ip)
 
 
-def make_udp_check(host, port, send, expect, timeout=CONNECT_TIMEOUT,
+def make_udp_check(host, port, send, expect, timeout=None,
                    **kwargs):
     """Return a check for UDP connectivity."""
     return make_check("udp:{}:{}".format(host, port),
@@ -200,7 +194,7 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
     host, port, scheme = extract_host_port(url)
     proxy_host = kwargs.get('proxy_host')
     proxy_port = kwargs.get('proxy_port', 8000)
-    timeout = kwargs.get('timeout', CONNECT_TIMEOUT)
+    timeout = kwargs.get('timeout', None)
 
     if proxy_host:
         subchecks.append(make_tcp_check(proxy_host, proxy_port,
@@ -251,7 +245,7 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
 
 
 def make_amqp_check(host, port, username, password, use_ssl=True, vhost="/",
-                    timeout=CONNECT_TIMEOUT, **kwargs):
+                    timeout=None, **kwargs):
     """Return a check for AMQP connectivity."""
     from txamqp.protocol import AMQClient
     from txamqp.client import TwistedDelegate
@@ -280,7 +274,7 @@ def make_amqp_check(host, port, username, password, use_ssl=True, vhost="/",
 
 
 def make_postgres_check(host, port, username, password, database,
-                        timeout=CONNECT_TIMEOUT, **kwargs):
+                        timeout=None, **kwargs):
     """Return a check for Postgres connectivity."""
 
     import psycopg2
@@ -310,7 +304,7 @@ def make_postgres_check(host, port, username, password, database,
     return sequential_check(subchecks)
 
 
-def make_redis_check(host, port, password=None, timeout=CONNECT_TIMEOUT,
+def make_redis_check(host, port, password=None, timeout=None,
                      **kwargs):
     """Make a check for the configured redis server."""
     import txredis
@@ -340,7 +334,7 @@ def make_redis_check(host, port, password=None, timeout=CONNECT_TIMEOUT,
                             sequential_check(subchecks))
 
 
-def make_memcache_check(host, port, password=None, timeout=CONNECT_TIMEOUT,
+def make_memcache_check(host, port, password=None, timeout=None,
                         **kwargs):
     """Make a check for the configured redis server."""
     subchecks = []
