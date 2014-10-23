@@ -102,11 +102,13 @@ def make_tcp_check(host, port, timeout=None, **kwargs):
                       info="%s:%s" % (host, port))
 
 
-def make_tls_check(host, port, verify=True, timeout=None, **kwargs):
+def make_tls_check(host, port, disable_tls_verification=False, timeout=None,
+                   **kwargs):
     """Return a check for TLS setup."""
     return make_check("tls:{}:{}".format(host, port),
                       lambda: do_tcp_check(host, port, tls=True,
-                          tls_verify=verify, timeout=timeout),
+                          tls_verify=(not disable_tls_verification),
+                          timeout=timeout),
                       info="%s:%s" % (host, port))
 
 

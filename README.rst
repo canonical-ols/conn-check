@@ -22,7 +22,7 @@ of checks to do::
     - type: tls
       host: localhost
       port: 443
-      verify: true
+      disable_tls_verification: false
 
 Each check defines a type, and then options as appropriate for that type.
 
@@ -55,8 +55,9 @@ host
 port
     The port.
 
-verify
-    Optional flag whether to also verify the TLS certificate. Default: true.
+disable_tls_verification
+    Optional flag to disable verification of TLS certs and handshake. Default:
+    false.
 
 timeout
     Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
