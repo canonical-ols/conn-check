@@ -21,7 +21,9 @@ if [[ -z "$WHEELS_BRANCH_DIR" ]]; then
 	exit 2
 fi
 
-cd $(dirname $0)
+DIR=$(dirname $0)
+
+cd $DIR
 REVNO=$(bzr revno)
 
 cd $WHEELS_BRANCH_DIR
@@ -30,7 +32,10 @@ TAGS=$(bzr tags)
 if [[ "$TAGS" == *"conn-check-r$REVNO"* ]]; then
 	>&2 echo "revno already built and tagged, skipping"
 else
+	cd $DIR
 	make test-wheels WHEELSDIR=$WHEELS_BRANCH_DIR
+
+	cd $WHEELS_BRANCH_DIR
 	bzr add *.whl
 	bzr commit -m "Updating wheels from ${CONN_CHECK_REVNO}"
 	bzr tag -d $WHEELS_BRANCH_DIR --force conn-check-r$CONN_CHECK_REVNO
