@@ -28,7 +28,7 @@ cmd:
 	@echo $(ENV)/bin/conn-check
 
 pip-wheel: $(ENV)
-	@$(ENV)/bin/pip install pip>=1.5
+	@$(ENV)/bin/pip install --upgrade pip
 	@$(ENV)/bin/pip install wheel
 
 $(WHEELSDIR):
