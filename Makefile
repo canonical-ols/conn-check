@@ -39,7 +39,7 @@ build-wheels: pip-wheel $(WHEELSDIR) $(ENV)
 build-wheels-extra: pip-wheel $(WHEELSDIR) $(ENV)
 	$(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) -r ${EXTRA}-requirements.txt
 
-build-wheels-all-extras:
+build-wheels-all-extras: pip-wheel $(WHEELSDIR) $(ENV)
 	ls *-requirements.txt | grep -vw 'devel\|test' | xargs -L 1 \
 		$(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) -r
 
