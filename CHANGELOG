@@ -1,6 +1,14 @@
 ChangeLog for conn-check
 ========================
 
+1.0.9 (23-10-2014)
+------------------
+
+ - Added --max-timeout CLI option to restrict maximum execution time.
+ - Added connection timeouts to HTTP and PostgreSQL checks.
+ - Added --connect-timeout CLI option to set global connection timeout.
+ - Added timeout option to each individual check to override global connection timeout.
+
 1.0.8 (22-10-2014)
 ------------------
 
