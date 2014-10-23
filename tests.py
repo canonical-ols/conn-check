@@ -234,7 +234,7 @@ class ConnCheckTest(testtools.TestCase):
 
     def test_build_checks(self):
         description = [{'type': 'tcp', 'host': 'localhost', 'port': '8080'}]
-        result = build_checks(description)
+        result = build_checks(description, 10)
         self.assertThat(result,
                 MultiCheckMatcher(strategy=parallel_strategy,
                     subchecks=[FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080')]))

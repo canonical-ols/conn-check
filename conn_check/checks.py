@@ -30,7 +30,6 @@ from .check_impl import (
     )
 
 
-CONNECT_TIMEOUT = 10
 CA_CERTS = []
 
 
@@ -71,11 +70,12 @@ class VerifyingContextFactory(ssl.CertificateOptions):
 
 
 @inlineCallbacks
-def do_tcp_check(host, port, ssl=False, ssl_verify=True):
+def do_tcp_check(host, port, ssl=False, ssl_verify=True,
+                 timeout=None):
     """Generic connection check function."""
     if not isIPAddress(host):
         try:
-            ip = yield reactor.resolve(host, timeout=(1, CONNECT_TIMEOUT))
+            ip = yield reactor.resolve(host, timeout=(1, timeout))
         except DNSLookupError:
             raise ValueError("dns resolution failed")
     else:
@@ -85,9 +85,9 @@ def do_tcp_check(host, port, ssl=False, ssl_verify=True):
         if ssl:
             context = VerifyingContextFactory(ssl_verify, CA_CERTS)
             yield creator.connectSSL(ip, port, context,
-                                     timeout=CONNECT_TIMEOUT)
+                                     timeout=timeout)
         else:
-            yield creator.connectTCP(ip, port, timeout=CONNECT_TIMEOUT)
+            yield creator.connectTCP(ip, port, timeout=timeout)
     except TimeoutError:
         if ip == host:
             raise ValueError("timed out")
@@ -95,28 +95,31 @@ def do_tcp_check(host, port, ssl=False, ssl_verify=True):
             raise ValueError("timed out connecting to %s" % ip)
 
 
-def make_tcp_check(host, port, **kwargs):
+def make_tcp_check(host, port, timeout=None, **kwargs):
     """Return a check for TCP connectivity."""
-    return make_check("tcp:{}:{}".format(host, port), lambda: do_tcp_check(host, port),
+    return make_check("tcp:{}:{}".format(host, port),
+                      lambda: do_tcp_check(host, port, timeout=timeout),
                       info="%s:%s" % (host, port))
 
 
-def make_ssl_check(host, port, verify=True, **kwargs):
+def make_ssl_check(host, port, verify=True, timeout=None, **kwargs):
     """Return a check for SSL setup."""
     return make_check("ssl:{}:{}".format(host, port),
                       lambda: do_tcp_check(host, port, ssl=True,
-                          ssl_verify=verify),
+                          ssl_verify=verify, timeout=timeout),
                       info="%s:%s" % (host, port))
 
 
 class UDPCheckProtocol(DatagramProtocol):
 
-    def __init__(self, host, port, send, expect, deferred=None):
+    def __init__(self, host, port, send, expect, deferred=None,
+                 timeout=None):
         self.host = host
         self.port = port
         self.send = send
         self.expect = expect
         self.deferred = deferred
+        self.timeout = timeout
 
     def _finish(self, success, result):
         if not (self.delayed.cancelled or self.delayed.called):
@@ -130,7 +133,7 @@ class UDPCheckProtocol(DatagramProtocol):
 
     def startProtocol(self):
         self.transport.write(self.send, (self.host, self.port))
-        self.delayed = reactor.callLater(CONNECT_TIMEOUT,
+        self.delayed = reactor.callLater(self.timeout,
                                          self._finish,
                                          False, TimeoutError())
 
@@ -142,17 +145,17 @@ class UDPCheckProtocol(DatagramProtocol):
 
 
 @inlineCallbacks
-def do_udp_check(host, port, send, expect):
+def do_udp_check(host, port, send, expect, timeout=None):
     """Generic connection check function."""
     if not isIPAddress(host):
         try:
-            ip = yield reactor.resolve(host, timeout=(1, CONNECT_TIMEOUT))
+            ip = yield reactor.resolve(host, timeout=(1, timeout))
         except DNSLookupError:
             raise ValueError("dns resolution failed")
     else:
         ip = host
     deferred = Deferred()
-    protocol = UDPCheckProtocol(ip, port, send, expect, deferred)
+    protocol = UDPCheckProtocol(ip, port, send, expect, deferred, timeout)
     reactor.listenUDP(0, protocol)
     try:
         yield deferred
@@ -163,10 +166,11 @@ def do_udp_check(host, port, send, expect):
             raise ValueError("timed out waiting for %s" % ip)
 
 
-def make_udp_check(host, port, send, expect, **kwargs):
+def make_udp_check(host, port, send, expect, timeout=None,
+                   **kwargs):
     """Return a check for UDP connectivity."""
     return make_check("udp:{}:{}".format(host, port),
-            lambda: do_udp_check(host, port, send, expect),
+            lambda: do_udp_check(host, port, send, expect, timeout),
                       info="%s:%s" % (host, port))
 
 
@@ -190,11 +194,13 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
     host, port, scheme = extract_host_port(url)
     proxy_host = kwargs.get('proxy_host')
     proxy_port = kwargs.get('proxy_port', 8000)
+    timeout = kwargs.get('timeout', None)
 
     if proxy_host:
-        subchecks.append(make_tcp_check(proxy_host, proxy_port))
+        subchecks.append(make_tcp_check(proxy_host, proxy_port,
+                                        timeout=timeout))
     else:
-        subchecks.append(make_tcp_check(host, port))
+        subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
     @inlineCallbacks
     def do_request():
@@ -215,6 +221,7 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
             'method': method,
             'url': url,
             'verify': not disable_tls_verification,
+            'timeout': timeout,
         }
         if headers:
             args['headers'] = headers
@@ -238,17 +245,18 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
 
 
 def make_amqp_check(host, port, username, password, use_ssl=True, vhost="/",
-                    **kwargs):
+                    timeout=None, **kwargs):
     """Return a check for AMQP connectivity."""
     from txamqp.protocol import AMQClient
     from txamqp.client import TwistedDelegate
     from txamqp.spec import load as load_spec
 
     subchecks = []
-    subchecks.append(make_tcp_check(host, port))
+    subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
     if use_ssl:
-        subchecks.append(make_ssl_check(host, port, verify=False))
+        subchecks.append(make_ssl_check(host, port, verify=False,
+                                        timeout=timeout))
 
     @inlineCallbacks
     def do_auth():
@@ -257,7 +265,7 @@ def make_amqp_check(host, port, username, password, use_ssl=True, vhost="/",
         spec = load_spec(resource_stream('conn_check', 'amqp0-8.xml'))
         creator = ClientCreator(reactor, AMQClient,
                                 delegate, vhost, spec)
-        client = yield creator.connectTCP(host, port, timeout=CONNECT_TIMEOUT)
+        client = yield creator.connectTCP(host, port, timeout=timeout)
         yield client.authenticate(username, password)
 
     subchecks.append(make_check("amqp:{}:{}".format(host, port),
@@ -265,16 +273,22 @@ def make_amqp_check(host, port, username, password, use_ssl=True, vhost="/",
     return sequential_check(subchecks)
 
 
-def make_postgres_check(host, port, username, password, database, **kwargs):
+def make_postgres_check(host, port, username, password, database,
+                        timeout=None, **kwargs):
     """Return a check for Postgres connectivity."""
 
     import psycopg2
     subchecks = []
-    connect_kw = {'host': host, 'user': username, 'database': database}
+    connect_kw = {
+        'host': host,
+        'user': username,
+        'database': database,
+        'connect_timeout': timeout,
+    }
 
     if host[0] != '/':
         connect_kw['port'] = port
-        subchecks.append(make_tcp_check(host, port))
+        subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
     if password is not None:
         connect_kw['password'] = password
@@ -290,11 +304,12 @@ def make_postgres_check(host, port, username, password, database, **kwargs):
     return sequential_check(subchecks)
 
 
-def make_redis_check(host, port, password=None, **kwargs):
+def make_redis_check(host, port, password=None, timeout=None,
+                     **kwargs):
     """Make a check for the configured redis server."""
     import txredis
     subchecks = []
-    subchecks.append(make_tcp_check(host, port))
+    subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
     @inlineCallbacks
     def do_connect():
@@ -302,7 +317,7 @@ def make_redis_check(host, port, password=None, **kwargs):
         """
         client_creator = ClientCreator(reactor, txredis.client.RedisClient)
         client = yield client_creator.connectTCP(host=host, port=port,
-                                                 timeout=CONNECT_TIMEOUT)
+                                                 timeout=timeout)
 
         if password is None:
             ping = yield client.ping()
@@ -319,10 +334,11 @@ def make_redis_check(host, port, password=None, **kwargs):
                             sequential_check(subchecks))
 
 
-def make_memcache_check(host, port, password=None, **kwargs):
+def make_memcache_check(host, port, password=None, timeout=None,
+                        **kwargs):
     """Make a check for the configured redis server."""
     subchecks = []
-    subchecks.append(make_tcp_check(host, port))
+    subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
     @inlineCallbacks
     def do_connect():
@@ -330,7 +346,7 @@ def make_memcache_check(host, port, password=None, **kwargs):
         """
         client_creator = ClientCreator(reactor, MemCacheProtocol)
         client = yield client_creator.connectTCP(host=host, port=port,
-                                                 timeout=CONNECT_TIMEOUT)
+                                                 timeout=timeout)
 
         version = yield client.version()
 

@@ -40,6 +40,9 @@ host
 port
     The port.
 
+timeout
+    Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
+
 
 ssl
 ```
@@ -54,6 +57,9 @@ port
 
 verify
     Optional flag whether to also verify the SSL certificate. Default: true.
+
+timeout
+    Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
 
 
 udp
@@ -72,6 +78,9 @@ send
 
 expect
     The string to expect in the response.
+
+timeout
+    Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
 
 
 http
@@ -105,6 +114,9 @@ disable_tls_verification:
     Optional flag to disable verification of TLS certs and handshake. Default:
     false.
 
+timeout
+    Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
+
 
 amqp
 ````
@@ -129,6 +141,9 @@ use_ssl
 vhost
     Optional vhost name to connect to. Default '/'.
 
+timeout
+    Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
+
 
 postgres
 ````````
@@ -150,6 +165,9 @@ password
 database
     The database to connect to.
 
+timeout
+    Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
+
 
 redis
 `````
@@ -165,6 +183,9 @@ port
 password
     Optional password to authenticatie with.
 
+timeout
+    Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
+
 
 memcached
 `````````
@@ -176,6 +197,9 @@ host
 
 port
     The port.
+
+timeout
+    Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
 
 
 Building wheels

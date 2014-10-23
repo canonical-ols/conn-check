@@ -38,8 +38,13 @@ def check_from_description(check_description):
     return res
 
 
-def build_checks(check_descriptions):
-    subchecks = map(check_from_description, check_descriptions)
+def build_checks(check_descriptions, connect_timeout):
+    def set_timeout(desc):
+        new_desc = dict(timeout=connect_timeout)
+        new_desc.update(desc)
+        return new_desc
+    subchecks = map(check_from_description,
+        map(set_timeout, check_descriptions))
     return parallel_check(subchecks)
 
 
@@ -159,6 +164,11 @@ def main(*args):
     parser.add_argument("--ssl-certs-path", dest="cacerts_path",
                         action="store", default="/etc/ssl/certs/",
                         help="Path to SSL CA certificates.")
+    parser.add_argument("--max-timeout", dest="max_timeout",
+                        action="store", help="Maximum execution time.")
+    parser.add_argument("--connect-timeout", dest="connect_timeout",
+                        action="store", default=10,
+                        help="Network connection timeout.")
     options = parser.parse_args(list(args))
 
     load_ssl_certs(options.cacerts_path)
@@ -192,7 +202,16 @@ def main(*args):
     with open(options.config_file) as f:
         descriptions = yaml.load(f)
 
-    checks = build_checks(descriptions)
+    checks = build_checks(descriptions, options.connect_timeout)
+
+    if options.max_timeout is not None:
+        def terminator():
+            # Hasta la vista, twisted
+            reactor.stop()
+            print('Maximum timeout reached: {}s'.format(options.max_timeout))
+
+        reactor.callLater(int(options.max_timeout), terminator)
+
     if not options.validate:
         reactor.callWhenRunning(run_checks, checks, pattern, results)
 
