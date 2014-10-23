@@ -19,7 +19,7 @@ of checks to do::
     - type: tcp
       host: localhost
       port: 80
-    - type: ssl
+    - type: tls
       host: localhost
       port: 443
       verify: true
@@ -44,10 +44,10 @@ timeout
     Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
 
 
-ssl
+tls
 ```
 
-A check that uses SSL.
+A check that uses TLS (`ssl` also works).
 
 host
     The host.
@@ -56,7 +56,7 @@ port
     The port.
 
 verify
-    Optional flag whether to also verify the SSL certificate. Default: true.
+    Optional flag whether to also verify the TLS certificate. Default: true.
 
 timeout
     Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
@@ -135,8 +135,8 @@ username
 password
     The password to authenticate with.
 
-use_ssl
-    Optional flag whether to connect with ssl. Default: true.
+use_tls
+    Optional flag whether to connect with TLS. Default: true.
 
 vhost
     Optional vhost name to connect to. Default '/'.
