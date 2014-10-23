@@ -28,7 +28,6 @@ cmd:
 	@echo $(ENV)/bin/conn-check
 
 pip-wheel: $(ENV)
-	@$(ENV)/bin/pip install --upgrade pip
 	@$(ENV)/bin/pip install wheel
 
 $(WHEELSDIR):
@@ -55,6 +54,8 @@ $(WHEELS_BRANCH_DIR):
 	bzr branch $(WHEELS_BRANCH) $(WHEELS_BRANCH_DIR)
 
 update-wheel-branch: $(WHEELS_BRANCH_DIR)
+	@$(ENV)/bin/pip install --upgrade setuptools
+	@$(ENV)/bin/pip install --upgrade pip
 	bzr pull -d $(WHEELS_BRANCH_DIR)
 	WHEELS_BRANCH=$(WHEELS_BRANCH) \
 	WHEELS_BRANCH_DIR=$(WHEELS_BRANCH_DIR) \
