@@ -33,7 +33,7 @@ from .check_impl import (
 CA_CERTS = []
 
 
-def load_ssl_certs(path):
+def load_tls_certs(path):
     cert_map = {}
     for filepath in glob.glob("{}/*.pem".format(os.path.abspath(path))):
         # There might be some dead symlinks in there, so let's make sure it's real.
@@ -70,7 +70,7 @@ class VerifyingContextFactory(ssl.CertificateOptions):
 
 
 @inlineCallbacks
-def do_tcp_check(host, port, ssl=False, ssl_verify=True,
+def do_tcp_check(host, port, tls=False, tls_verify=True,
                  timeout=None):
     """Generic connection check function."""
     if not isIPAddress(host):
@@ -82,8 +82,8 @@ def do_tcp_check(host, port, ssl=False, ssl_verify=True,
         ip = host
     creator = ClientCreator(reactor, TCPCheckProtocol)
     try:
-        if ssl:
-            context = VerifyingContextFactory(ssl_verify, CA_CERTS)
+        if tls:
+            context = VerifyingContextFactory(tls_verify, CA_CERTS)
             yield creator.connectSSL(ip, port, context,
                                      timeout=timeout)
         else:
@@ -102,11 +102,13 @@ def make_tcp_check(host, port, timeout=None, **kwargs):
                       info="%s:%s" % (host, port))
 
 
-def make_ssl_check(host, port, verify=True, timeout=None, **kwargs):
-    """Return a check for SSL setup."""
-    return make_check("ssl:{}:{}".format(host, port),
-                      lambda: do_tcp_check(host, port, ssl=True,
-                          ssl_verify=verify, timeout=timeout),
+def make_tls_check(host, port, disable_tls_verification=False, timeout=None,
+                   **kwargs):
+    """Return a check for TLS setup."""
+    return make_check("tls:{}:{}".format(host, port),
+                      lambda: do_tcp_check(host, port, tls=True,
+                          tls_verify=(not disable_tls_verification),
+                          timeout=timeout),
                       info="%s:%s" % (host, port))
 
 
@@ -244,7 +246,7 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
     return sequential_check(subchecks)
 
 
-def make_amqp_check(host, port, username, password, use_ssl=True, vhost="/",
+def make_amqp_check(host, port, username, password, use_tls=True, vhost="/",
                     timeout=None, **kwargs):
     """Return a check for AMQP connectivity."""
     from txamqp.protocol import AMQClient
@@ -254,8 +256,8 @@ def make_amqp_check(host, port, username, password, use_ssl=True, vhost="/",
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
-    if use_ssl:
-        subchecks.append(make_ssl_check(host, port, verify=False,
+    if use_tls:
+        subchecks.append(make_tls_check(host, port, verify=False,
                                         timeout=timeout))
 
     @inlineCallbacks
@@ -360,8 +362,12 @@ CHECKS = {
         'fn': make_tcp_check,
         'args': ['host', 'port'],
     },
+    'tls': {
+        'fn': make_tls_check,
+        'args': ['host', 'port'],
+    },
     'ssl': {
-        'fn': make_ssl_check,
+        'fn': make_tls_check,
         'args': ['host', 'port'],
     },
     'udp': {

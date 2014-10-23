@@ -17,7 +17,7 @@ from .check_impl import (
     parallel_check,
     ResultTracker,
     )
-from .checks import CHECKS, load_ssl_certs
+from .checks import CHECKS, load_tls_certs
 from .patterns import (
     SimplePattern,
     SumPattern,
@@ -161,9 +161,9 @@ def main(*args):
     parser.add_argument("--version", dest="print_version",
                         action="store_true", default=False,
                         help="Print the currently installed version.")
-    parser.add_argument("--ssl-certs-path", dest="cacerts_path",
+    parser.add_argument("--tls-certs-path", dest="cacerts_path",
                         action="store", default="/etc/ssl/certs/",
-                        help="Path to SSL CA certificates.")
+                        help="Path to TLS CA certificates.")
     parser.add_argument("--max-timeout", dest="max_timeout", type=float,
                         action="store", help="Maximum execution time.")
     parser.add_argument("--connect-timeout", dest="connect_timeout",
@@ -171,7 +171,7 @@ def main(*args):
                         help="Network connection timeout.")
     options = parser.parse_args(list(args))
 
-    load_ssl_certs(options.cacerts_path)
+    load_tls_certs(options.cacerts_path)
 
     if options.patterns:
         pattern = SumPattern(map(SimplePattern, options.patterns))

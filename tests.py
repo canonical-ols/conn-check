@@ -18,7 +18,7 @@ from conn_check.checks import (
     make_memcache_check,
     make_postgres_check,
     make_redis_check,
-    make_ssl_check,
+    make_tls_check,
     make_tcp_check,
     make_udp_check,
     )
@@ -102,9 +102,9 @@ class ConnCheckTest(testtools.TestCase):
         result = make_tcp_check('localhost', 8080)
         self.assertThat(result, FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
 
-    def test_make_ssl_check(self):
-        result = make_ssl_check('localhost', 8080, verify=True)
-        self.assertThat(result, FunctionCheckMatcher('ssl:localhost:8080', 'localhost:8080'))
+    def test_make_tls_check(self):
+        result = make_tls_check('localhost', 8080, verify=True)
+        self.assertThat(result, FunctionCheckMatcher('tls:localhost:8080', 'localhost:8080'))
 
     def test_make_udp_check(self):
         result = make_udp_check('localhost', 8080, 'foo', 'bar')
@@ -132,20 +132,20 @@ class ConnCheckTest(testtools.TestCase):
 
     def test_make_amqp_check(self):
         result = make_amqp_check('localhost', 8080, 'foo',
-                                 'bar', use_ssl=True, vhost='/')
+                                 'bar', use_tls=True, vhost='/')
         self.assertIsInstance(result, MultiCheck)
         self.assertIs(result.strategy, sequential_strategy)
         self.assertEqual(len(result.subchecks), 3)
         self.assertThat(result.subchecks[0],
                 FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
         self.assertThat(result.subchecks[1],
-                FunctionCheckMatcher('ssl:localhost:8080', 'localhost:8080'))
+                FunctionCheckMatcher('tls:localhost:8080', 'localhost:8080'))
         self.assertThat(result.subchecks[2],
                 FunctionCheckMatcher('amqp:localhost:8080', 'user foo'))
 
-    def test_make_amqp_check_no_ssl(self):
+    def test_make_amqp_check_no_tls(self):
         result = make_amqp_check('localhost', 8080, 'foo',
-                                 'bar', use_ssl=False, vhost='/')
+                                 'bar', use_tls=False, vhost='/')
         self.assertIsInstance(result, MultiCheck)
         self.assertIs(result.strategy, sequential_strategy)
         self.assertEqual(len(result.subchecks), 2)
