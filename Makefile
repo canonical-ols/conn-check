@@ -58,7 +58,7 @@ update-wheel-branch: $(WHEELS_BRANCH_DIR)
 	WHEELS_BRANCH=$(WHEELS_BRANCH) \
 	WHEELS_BRANCH_DIR=$(WHEELS_BRANCH_DIR) \
 	CONN_CHECK_REVNO=$(CONN_CHECK_REVNO) \
-	./build_scripts/update_wheels_branch.sh
+	$(PWD)/build_scripts/update_wheels_branch.sh
 
 upload: build test pip-wheel
 	$(ENV)/bin/python setup.py sdist bdist_wheel upload
