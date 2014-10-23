@@ -21,7 +21,7 @@ if [[ -z "$WHEELS_BRANCH_DIR" ]]; then
 	exit 2
 fi
 
-DIR=$(dirname $0)
+DIR=$(dirname $(dirname $0))
 
 cd $DIR
 REVNO=$(bzr revno)
