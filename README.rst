@@ -203,6 +203,21 @@ timeout
     Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
 
 
+mongodb
+```````
+
+Check that a MongoDB server is present (`mongo` also works).
+
+host
+    The host.
+
+port
+    The port.
+
+timeout
+    Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
+
+
 Building wheels
 ---------------
 
