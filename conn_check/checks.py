@@ -344,8 +344,7 @@ def make_memcache_check(host, port, password=None, timeout=None,
 
     @inlineCallbacks
     def do_connect():
-        """Connect and authenticate.
-        """
+        """Connect and authenticate."""
         client_creator = ClientCreator(reactor, MemCacheProtocol)
         client = yield client_creator.connectTCP(host=host, port=port,
                                                  timeout=timeout)
@@ -354,6 +353,27 @@ def make_memcache_check(host, port, password=None, timeout=None,
 
     subchecks.append(make_check('connect', do_connect))
     return add_check_prefix('memcache:{}:{}'.format(host, port),
+                            sequential_check(subchecks))
+
+
+def make_mongodb_check(host, port=27017, timeout=None, **kwargs):
+    """Return a check for MongoDB connectivity."""
+
+    import txmongo
+    subchecks = []
+    subchecks.append(make_tcp_check(host, port, timeout=timeout))
+
+    timeout = int(timeout*1000)
+
+    @inlineCallbacks
+    def do_connect():
+        """Try to establish a mongodb connection."""
+        conn = txmongo.MongoConnection(host, int(port))
+        conn.uri['options']['connectTimeoutMS'] = timeout
+        mongo = yield conn
+
+    subchecks.append(make_check('connect', do_connect))
+    return add_check_prefix('mongodb:{}:{}'.format(host, port),
                             sequential_check(subchecks))
 
 
@@ -397,5 +417,13 @@ CHECKS = {
     'memcached': {
         'fn': make_memcache_check,
         'args': ['host', 'port'],
+    },
+    'mongodb': {
+        'fn': make_mongodb_check,
+        'args': ['host'],
+    },
+    'mongo': {
+        'fn': make_mongodb_check,
+        'args': ['host'],
     },
 }

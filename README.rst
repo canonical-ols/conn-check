@@ -212,7 +212,7 @@ host
     The host.
 
 port
-    The port.
+    Optional port. Default: 27017.
 
 timeout
     Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
