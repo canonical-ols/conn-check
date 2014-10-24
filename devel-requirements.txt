@@ -1,5 +1,8 @@
 -r test-requirements.txt
+
 -r amqp-requirements.txt
--r postgres-requirements.txt
+-r mongodb-requirements.txt
 -r redis-requirements.txt
+-r postgres-requirements.txt
+
 -r requirements.txt
