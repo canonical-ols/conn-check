@@ -356,20 +356,28 @@ def make_memcache_check(host, port, password=None, timeout=None,
                             sequential_check(subchecks))
 
 
-def make_mongodb_check(host, port=27017, timeout=None, **kwargs):
+def make_mongodb_check(host, username=None, password=None, port=27017,
+                       timeout=None, **kwargs):
     """Return a check for MongoDB connectivity."""
 
     import txmongo
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
+    port = int(port)
     timeout = int(timeout*1000)
 
     @inlineCallbacks
     def do_connect():
         """Try to establish a mongodb connection."""
-        conn = txmongo.MongoConnection(host, int(port))
+        conn = txmongo.MongoConnection(host, port)
+
         conn.uri['options']['connectTimeoutMS'] = timeout
+        if username:
+            conn.uri['username'] = username
+        if password:
+            conn.uri['password'] = password
+
         mongo = yield conn
 
     subchecks.append(make_check('connect', do_connect))
