@@ -357,28 +357,37 @@ def make_memcache_check(host, port, password=None, timeout=None,
 
 
 def make_mongodb_check(host, username=None, password=None, port=27017,
-                       timeout=None, **kwargs):
+                       database='test', timeout=None, **kwargs):
     """Return a check for MongoDB connectivity."""
 
     import txmongo
     subchecks = []
-    subchecks.append(make_tcp_check(host, port, timeout=timeout))
+    #subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
     port = int(port)
-    timeout = int(timeout*1000)
 
     @inlineCallbacks
     def do_connect():
         """Try to establish a mongodb connection."""
         conn = txmongo.MongoConnection(host, port)
 
-        conn.uri['options']['connectTimeoutMS'] = timeout
+        conn.uri['options']['connectTimeoutMS'] = int(timeout*1000)
         if username:
             conn.uri['username'] = username
         if password:
             conn.uri['password'] = password
 
         mongo = yield conn
+        names = yield mongo[database].collection_names()
+
+    def timeout_handler():
+        """Manual timeout handler as txmongo timeout args above don't work in
+        many situations."""
+        if 'deferred' in do_connect.func_dict:
+            err = ValueError("timeout connecting to mongodb")
+            do_connect.func_dict['deferred'].errback(err)
+
+    reactor.callLater(timeout, timeout_handler)
 
     subchecks.append(make_check('connect', do_connect))
     return add_check_prefix('mongodb:{}:{}'.format(host, port),
