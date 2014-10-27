@@ -356,13 +356,13 @@ def make_memcache_check(host, port, password=None, timeout=None,
                             sequential_check(subchecks))
 
 
-def make_mongodb_check(host, username=None, password=None, port=27017,
-                       database='test', timeout=None, **kwargs):
+def make_mongodb_check(host, port=27017, username=None, password=None,
+                       database='test', timeout=10, **kwargs):
     """Return a check for MongoDB connectivity."""
 
     import txmongo
     subchecks = []
-    #subchecks.append(make_tcp_check(host, port, timeout=timeout))
+    subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
     port = int(port)
 
