@@ -224,6 +224,19 @@ class ConnCheckTest(testtools.TestCase):
                 FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
         self.assertThat(wrapped.subchecks[1], FunctionCheckMatcher('connect', None))
 
+    def test_make_mongodb_check_with_username(self):
+        result = make_mongodb_check('localhost', 8080, 'foo')
+        self.assertIsInstance(result, PrefixCheckWrapper)
+        self.assertEqual(result.prefix, 'mongodb:localhost:8080:')
+        wrapped = result.wrapped
+        self.assertIsInstance(wrapped, MultiCheck)
+        self.assertIs(wrapped.strategy, sequential_strategy)
+        self.assertEqual(len(wrapped.subchecks), 2)
+        self.assertThat(wrapped.subchecks[0],
+                FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
+        self.assertThat(wrapped.subchecks[1],
+                FunctionCheckMatcher('connect with auth', None))
+
     def test_check_from_description_unknown_type(self):
         e = self.assertRaises(AssertionError,
                               check_from_description, {'type': 'foo'})

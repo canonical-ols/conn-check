@@ -389,7 +389,8 @@ def make_mongodb_check(host, port=27017, username=None, password=None,
 
     reactor.callLater(timeout, timeout_handler)
 
-    subchecks.append(make_check('connect', do_connect))
+    connect_info = "connect with auth" if any((username, password)) else "connect"
+    subchecks.append(make_check(connect_info, do_connect))
     return add_check_prefix('mongodb:{}:{}'.format(host, port),
                             sequential_check(subchecks))
 
