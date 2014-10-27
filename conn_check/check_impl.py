@@ -12,9 +12,10 @@ from twisted.python.failure import Failure
 
 
 def maybeDeferred(f, *args, **kwargs):
+    """Wrapper to Twisted's maybeDeferred so we can add a reference to the
+    wrapped deferred instance inside the original function dict."""
     deferred = _maybeDeferred(f, *args, **kwargs)
-    if hasattr(f, 'func_dict'):
-        f.func_dict['deferred'] = deferred
+    f.func_dict['deferred'] = deferred
     return deferred
 
 
