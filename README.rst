@@ -214,6 +214,17 @@ host
 port
     Optional port. Default: 27017.
 
+username
+    Optional username to authenticate with.
+
+password
+    Optional password to authenticate with.
+
+database
+    Optional database name to connect to, if not set the ``test`` database will be used,
+    if this database does not exist (or is not available to the user) you will need to
+    provide a database name.
+
 timeout
     Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
 
