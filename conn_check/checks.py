@@ -377,6 +377,10 @@ def make_mongodb_check(host, port=27017, username=None, password=None,
         if password:
             conn.uri['password'] = password
 
+        # We don't start our timeout callback until now, otherwise we might
+        # elapse part of our timeout period during the earlier TCP check
+        reactor.callLater(timeout, timeout_handler)
+
         mongo = yield conn
         names = yield mongo[database].collection_names()
 
@@ -386,8 +390,6 @@ def make_mongodb_check(host, port=27017, username=None, password=None,
         if 'deferred' in do_connect.func_dict:
             err = ValueError("timeout connecting to mongodb")
             do_connect.func_dict['deferred'].errback(err)
-
-    reactor.callLater(timeout, timeout_handler)
 
     connect_info = "connect with auth" if any((username, password)) else "connect"
     subchecks.append(make_check(connect_info, do_connect))
