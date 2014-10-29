@@ -33,10 +33,11 @@ setup(
     packages=find_packages(exclude=['ez_setup']),
     install_requires=get_requirements(),
     extras_require={
-        'all': get_requirements('amqp', 'postgres', 'redis'),
+        'all': get_requirements('amqp', 'postgres', 'redis', 'mongodb'),
         'amqp': get_requirements('amqp'),
         'postgres': get_requirements('postgres'),
         'redis': get_requirements('redis'),
+        'mongodb': get_requirements('mongodb'),
     },
     package_data={'conn_check': ['version.txt', 'amqp0-8.xml']},
     include_package_data=True,

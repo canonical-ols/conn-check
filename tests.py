@@ -16,6 +16,7 @@ from conn_check.checks import (
     make_amqp_check,
     make_http_check,
     make_memcache_check,
+    make_mongodb_check,
     make_postgres_check,
     make_redis_check,
     make_tls_check,
@@ -210,6 +211,31 @@ class ConnCheckTest(testtools.TestCase):
         self.assertThat(wrapped.subchecks[0],
                 FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
         self.assertThat(wrapped.subchecks[1], FunctionCheckMatcher('connect', None))
+
+    def test_make_mongodb_check(self):
+        result = make_mongodb_check('localhost', 8080)
+        self.assertIsInstance(result, PrefixCheckWrapper)
+        self.assertEqual(result.prefix, 'mongodb:localhost:8080:')
+        wrapped = result.wrapped
+        self.assertIsInstance(wrapped, MultiCheck)
+        self.assertIs(wrapped.strategy, sequential_strategy)
+        self.assertEqual(len(wrapped.subchecks), 2)
+        self.assertThat(wrapped.subchecks[0],
+                FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
+        self.assertThat(wrapped.subchecks[1], FunctionCheckMatcher('connect', None))
+
+    def test_make_mongodb_check_with_username(self):
+        result = make_mongodb_check('localhost', 8080, 'foo')
+        self.assertIsInstance(result, PrefixCheckWrapper)
+        self.assertEqual(result.prefix, 'mongodb:localhost:8080:')
+        wrapped = result.wrapped
+        self.assertIsInstance(wrapped, MultiCheck)
+        self.assertIs(wrapped.strategy, sequential_strategy)
+        self.assertEqual(len(wrapped.subchecks), 2)
+        self.assertThat(wrapped.subchecks[0],
+                FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
+        self.assertThat(wrapped.subchecks[1],
+                FunctionCheckMatcher('connect with auth', None))
 
     def test_check_from_description_unknown_type(self):
         e = self.assertRaises(AssertionError,

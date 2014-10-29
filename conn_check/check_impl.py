@@ -5,10 +5,18 @@ from twisted.internet import reactor
 from twisted.internet.defer import (
     returnValue,
     inlineCallbacks,
-    maybeDeferred,
+    maybeDeferred as _maybeDeferred,
     DeferredList,
     Deferred)
 from twisted.python.failure import Failure
+
+
+def maybeDeferred(f, *args, **kwargs):
+    """Wrapper to Twisted's maybeDeferred so we can add a reference to the
+    wrapped deferred instance inside the original function dict."""
+    deferred = _maybeDeferred(f, *args, **kwargs)
+    f.func_dict['deferred'] = deferred
+    return deferred
 
 
 def maybeDeferToThread(f, *args, **kwargs):

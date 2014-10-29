@@ -344,8 +344,7 @@ def make_memcache_check(host, port, password=None, timeout=None,
 
     @inlineCallbacks
     def do_connect():
-        """Connect and authenticate.
-        """
+        """Connect and authenticate."""
         client_creator = ClientCreator(reactor, MemCacheProtocol)
         client = yield client_creator.connectTCP(host=host, port=port,
                                                  timeout=timeout)
@@ -354,6 +353,47 @@ def make_memcache_check(host, port, password=None, timeout=None,
 
     subchecks.append(make_check('connect', do_connect))
     return add_check_prefix('memcache:{}:{}'.format(host, port),
+                            sequential_check(subchecks))
+
+
+def make_mongodb_check(host, port=27017, username=None, password=None,
+                       database='test', timeout=10, **kwargs):
+    """Return a check for MongoDB connectivity."""
+
+    import txmongo
+    subchecks = []
+    subchecks.append(make_tcp_check(host, port, timeout=timeout))
+
+    port = int(port)
+
+    @inlineCallbacks
+    def do_connect():
+        """Try to establish a mongodb connection."""
+        conn = txmongo.MongoConnection(host, port)
+
+        conn.uri['options']['connectTimeoutMS'] = int(timeout*1000)
+        if username:
+            conn.uri['username'] = username
+        if password:
+            conn.uri['password'] = password
+
+        # We don't start our timeout callback until now, otherwise we might
+        # elapse part of our timeout period during the earlier TCP check
+        reactor.callLater(timeout, timeout_handler)
+
+        mongo = yield conn
+        names = yield mongo[database].collection_names()
+
+    def timeout_handler():
+        """Manual timeout handler as txmongo timeout args above don't work in
+        many situations."""
+        if 'deferred' in do_connect.func_dict:
+            err = ValueError("timeout connecting to mongodb")
+            do_connect.func_dict['deferred'].errback(err)
+
+    connect_info = "connect with auth" if any((username, password)) else "connect"
+    subchecks.append(make_check(connect_info, do_connect))
+    return add_check_prefix('mongodb:{}:{}'.format(host, port),
                             sequential_check(subchecks))
 
 
@@ -397,5 +437,13 @@ CHECKS = {
     'memcached': {
         'fn': make_memcache_check,
         'args': ['host', 'port'],
+    },
+    'mongodb': {
+        'fn': make_mongodb_check,
+        'args': ['host'],
+    },
+    'mongo': {
+        'fn': make_mongodb_check,
+        'args': ['host'],
     },
 }
