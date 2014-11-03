@@ -224,6 +224,7 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
             'url': url,
             'verify': not disable_tls_verification,
             'timeout': timeout,
+            'allow_redirects': False,
         }
         if headers:
             args['headers'] = headers
