@@ -21,6 +21,7 @@ from twisted.internet.protocol import (
 from twisted.protocols.memcache import MemCacheProtocol
 
 from txrequests import Session
+from requests.auth import HTTPDigestAuth
 from requests.packages import urllib3
 
 from .check_impl import (
@@ -194,6 +195,7 @@ def extract_host_port(url):
 def make_http_check(url, method='GET', expected_code=200, **kwargs):
     subchecks = []
     host, port, scheme = extract_host_port(url)
+    proxy_url = kwargs.get('proxy_url')
     proxy_host = kwargs.get('proxy_host')
     proxy_port = kwargs.get('proxy_port', 8000)
     timeout = kwargs.get('timeout', None)
@@ -207,7 +209,9 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
     @inlineCallbacks
     def do_request():
         proxies = {}
-        if proxy_host:
+        if proxy_url:
+            proxies['http'] = proxies['https']= proxy_url
+        elif proxy_host:
             proxies['http'] = proxies['https']= '{}:{}'.format(
                                                  proxy_host, proxy_port)
 
@@ -215,16 +219,18 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
         body = kwargs.get('body')
         disable_tls_verification = kwargs.get('disable_tls_verification',
                                               False)
-
-        if disable_tls_verification:
-            urllib3.disable_warnings()
+        allow_redirects = kwargs.get('allow_redirects', False)
+        params = kwargs.get('params')
+        cookies = kwargs.get('cookies')
+        auth = kwargs.get('auth')
+        digest_auth = kwargs.get('digest_auth')
 
         args = {
             'method': method,
             'url': url,
             'verify': not disable_tls_verification,
             'timeout': timeout,
-            'allow_redirects': False,
+            'allow_redirects': allow_redirects,
         }
         if headers:
             args['headers'] = headers
@@ -232,6 +238,17 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
             args['data'] = body
         if proxies:
             args['proxies'] = proxies
+        if params:
+            args['params'] = params
+        if cookies:
+            args['cookies'] = cookies
+        if auth:
+            args['auth'] = auth
+        if digest_auth:
+            args['auth'] = HTTPDigestAuth(digest_auth)
+
+        if disable_tls_verification:
+            urllib3.disable_warnings()
 
         with Session() as session:
             request = session.request(**args)
