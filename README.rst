@@ -98,6 +98,10 @@ method
 expected_code
     Optional status code that defines success. Default: 200.
 
+proxy_url
+    Optional HTTP/HTTPS proxy URL to connect via, including protocol,
+    if set proxy_{host,port} are ignored.
+
 proxy_host
     Optional HTTP/HTTPS proxy to connect via.
 
