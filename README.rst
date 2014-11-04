@@ -118,6 +118,21 @@ disable_tls_verification:
 timeout
     Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
 
+allow_redirects
+    Optional flag to Follow 30x redirects. Default: false.
+
+params
+    Optional dict of params to URL encode and pass in the querystring.
+
+cookies
+    Optional dict of cookies to pass in the request headers.
+
+auth
+    Optional simple HTTP auth credentials, as a tuple/list: ``(username, password)``.
+
+digest_auth
+    Optional digest HTTP auth credentials, as a tuple/list: ``(username, password)``.
+
 
 amqp
 ````
