@@ -132,10 +132,12 @@ cookies
     Optional dict of cookies to pass in the request headers.
 
 auth
-    Optional simple HTTP auth credentials, as a tuple/list: ``(username, password)``.
+    Optional `basic HTTP auth <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
+    credentials, as a tuple/list: ``(username, password)``.
 
 digest_auth
-    Optional digest HTTP auth credentials, as a tuple/list: ``(username, password)``.
+    Optional `digest HTTP auth <https://en.wikipedia.org/wiki/Digest_access_authentication>`_
+    credentials, as a tuple/list: ``(username, password)``.
 
 
 amqp
