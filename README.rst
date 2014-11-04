@@ -110,7 +110,8 @@ proxy_port
 
 headers:
     Optional headers to send, as a dict of key-values. Multiple values can be
-    given as a list under the same key.
+    given as a list/tuple of lists/tuples, e.g.:
+    ``[('foo', 'bar'), ('foo', 'baz')]``
 
 body:
     Optional raw request body string to send.
