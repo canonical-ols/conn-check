@@ -98,6 +98,10 @@ method
 expected_code
     Optional status code that defines success. Default: 200.
 
+proxy_url
+    Optional HTTP/HTTPS proxy URL to connect via, including protocol,
+    if set proxy_{host,port} are ignored.
+
 proxy_host
     Optional HTTP/HTTPS proxy to connect via.
 
@@ -117,6 +121,23 @@ disable_tls_verification:
 
 timeout
     Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
+
+allow_redirects
+    Optional flag to Follow 30x redirects. Default: false.
+
+params
+    Optional dict of params to URL encode and pass in the querystring.
+
+cookies
+    Optional dict of cookies to pass in the request headers.
+
+auth
+    Optional `basic HTTP auth <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
+    credentials, as a tuple/list: ``(username, password)``.
+
+digest_auth
+    Optional `digest HTTP auth <https://en.wikipedia.org/wiki/Digest_access_authentication>`_
+    credentials, as a tuple/list: ``(username, password)``.
 
 
 amqp
