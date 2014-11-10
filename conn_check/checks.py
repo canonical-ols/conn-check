@@ -424,10 +424,6 @@ CHECKS = {
         'fn': make_tls_check,
         'args': ['host', 'port'],
     },
-    'ssl': {
-        'fn': make_tls_check,
-        'args': ['host', 'port'],
-    },
     'udp': {
         'fn': make_udp_check,
         'args': ['host', 'port', 'send', 'expect'],
@@ -452,16 +448,16 @@ CHECKS = {
         'fn': make_memcache_check,
         'args': ['host', 'port'],
     },
-    'memcached': {
-        'fn': make_memcache_check,
-        'args': ['host', 'port'],
-    },
     'mongodb': {
         'fn': make_mongodb_check,
         'args': ['host'],
     },
-    'mongo': {
-        'fn': make_mongodb_check,
-        'args': ['host'],
-    },
+}
+
+CHECK_ALIASES = {
+    'mongo': 'mongodb',
+    'memcached': 'memcache',
+    'ssl': 'tls',
+    'postgresql': 'postgres',
+    'https': 'http',
 }

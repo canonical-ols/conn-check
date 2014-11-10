@@ -17,7 +17,7 @@ from .check_impl import (
     parallel_check,
     ResultTracker,
     )
-from .checks import CHECKS, load_tls_certs
+from .checks import CHECK_ALIASES, CHECKS, load_tls_certs
 from .patterns import (
     SimplePattern,
     SumPattern,
@@ -26,6 +26,10 @@ from .patterns import (
 
 def check_from_description(check_description):
     _type = check_description['type']
+
+    if _type in CHECK_ALIASES:
+        _type = CHECK_ALIASES[_type]
+
     check = CHECKS.get(_type, None)
     if check is None:
         raise AssertionError("Unknown check type: {}, available checks: {}".format(

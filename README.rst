@@ -87,7 +87,7 @@ timeout
 http
 ````
 
-Check that a HTTP/HTTPS request succeeds.
+Check that a HTTP/HTTPS request succeeds (`https` also works).
 
 url
     The URL to fetch.
@@ -171,7 +171,7 @@ timeout
 postgres
 ````````
 
-Check that a postgres db can be authenticated against.
+Check that a PostgreSQL db can be authenticated against (`postgresql` also works).
 
 host
     The host.
@@ -210,10 +210,10 @@ timeout
     Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
 
 
-memcached
-`````````
+memcache
+````````
 
-Check that a memcached server is present (`memcache` also works).
+Check that a memcached server is present (`memcached` also works).
 
 host
     The host.
