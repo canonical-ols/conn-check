@@ -1,6 +1,11 @@
 ChangeLog for conn-check
 ========================
 
+1.0.12 (17-11-2014)
+-------------------
+
+ - Command aliasing refactored, and more aliases added.
+
 1.0.11 (04-11-2014)
 -------------------
 
