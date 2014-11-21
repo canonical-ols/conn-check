@@ -6,7 +6,7 @@
   port: 8080
   send: aaaa
   expect: bbbb
-- type: ssl
+- type: tls
   host: login.ubuntu.com
   port: 443
   verify: true
