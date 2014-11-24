@@ -90,9 +90,21 @@ class OrderedOutput(object):
 
         self.failed = defaultdict(list)
         self.messages = defaultdict(list)
+        self.skipped = []
 
     def write(self, data):
+        if data[:7] == 'SKIPPED':
+            self.skipped.append(data)
+            return
+
         name, message = data.split(' ', 1)
+
+        name_parts = name.split(':', 3)
+        try:
+            name_parts[3] = ''
+        except IndexError:
+            pass
+        name = ':'.join(name_parts)
 
         if message[0:6] == 'FAILED':
             self.failed[name].append(data)
@@ -102,8 +114,10 @@ class OrderedOutput(object):
     def flush(self):
         for _type in ('failed', 'messages'):
             for name, messages in getattr(self, _type).items():
-                messages.sort()
                 map(self.output.write, messages)
+
+        self.skipped.sort()
+        map(self.output.write, self.skipped)
 
 
 class ConsoleOutput(ResultTracker):
@@ -133,7 +147,7 @@ class ConsoleOutput(ResultTracker):
 
     def notify_skip(self, name):
         """Register a check being skipped."""
-        self.output.write("SKIPPING: %s\n" % (name,))
+        self.output.write("SKIPPED: %s\n" % (name,))
 
     def notify_success(self, name, duration):
         """Register a success."""

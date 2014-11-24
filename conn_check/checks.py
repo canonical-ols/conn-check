@@ -259,9 +259,10 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
                     "Unexpected response code: {}".format(
                                                response.status_code))
 
-    subchecks.append(make_check('http:{}'.format(url), do_request,
+    subchecks.append(make_check('', do_request,
                      info='{} {}'.format(method, url)))
-    return sequential_check(subchecks)
+    return add_check_prefix('http:{}'.format(url),
+                            sequential_check(subchecks))
 
 
 def make_amqp_check(host, port, username, password, use_tls=True, vhost="/",
