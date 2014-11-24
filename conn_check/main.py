@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from collections import defaultdict
 import sys
 from threading import Thread
 import time
@@ -80,6 +81,29 @@ class TimestampOutput(object):
 
     def write(self, data):
         self.output.write("%.3f: %s" % (time.time() - self.start, data))
+
+
+class OrderedOutput(object):
+
+    def __init__(self, output):
+        self.output = output
+
+        self.failed = defaultdict(list)
+        self.messages = defaultdict(list)
+
+    def write(self, data):
+        name, message = data.split(' ', 1)
+
+        if message[0:6] == 'FAILED':
+            self.failed[name].append(data)
+        else:
+            self.messages[name].append(data)
+
+    def flush(self):
+        for _type in ('failed', 'messages'):
+            for name, messages in getattr(self, _type).items():
+                messages.sort()
+                map(self.output.write, messages)
 
 
 class ConsoleOutput(ResultTracker):
@@ -173,6 +197,10 @@ def main(*args):
     parser.add_argument("--connect-timeout", dest="connect_timeout",
                         action="store", default=10, type=float,
                         help="Network connection timeout.")
+    parser.add_argument("-U", "--unbuffered-output", dest="buffer_output",
+                        action="store_false", default=True,
+                        help="Don't buffer output, write to STDOUT right "
+                             "away.")
     options = parser.parse_args(list(args))
 
     load_tls_certs(options.cacerts_path)
@@ -198,6 +226,10 @@ def main(*args):
     if options.show_duration:
         output = TimestampOutput(output)
 
+    if options.buffer_output:
+        # We buffer output so we can order it for human readable output
+        output = OrderedOutput(output)
+
     results = ConsoleOutput(output=output,
                             show_tracebacks=options.show_tracebacks,
                             show_duration=options.show_duration,
@@ -220,6 +252,10 @@ def main(*args):
         reactor.callWhenRunning(run_checks, checks, pattern, results)
 
         reactor.run()
+
+        # Flush output, this really only has an effect when running buffered
+        # output
+        output.flush()
 
         if results.any_failed():
             return 2
