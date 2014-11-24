@@ -100,14 +100,10 @@ class OrderedOutput(object):
         name, message = data.split(' ', 1)
 
         # Standard check name format is {type}:{host}:{port}
-        name_parts = name.split(':', 3)
+        name_parts = name.split(':', 2)
         try:
-            name_parts[3] = ''
+            name_parts[2] = ''
         except IndexError:
-            # This probably means a different name format,
-            # perhaps {type}:{host} with no port, but it's more trouble than
-            # it's worth trying to accomodate for these so we'll just skip
-            # grouping this check output correctly
             pass
         name = ':'.join(name_parts)
 
