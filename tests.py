@@ -1,4 +1,5 @@
 import operator
+import random
 import testtools
 
 from testtools import matchers
@@ -26,7 +27,16 @@ from conn_check.checks import (
 from conn_check.main import (
     build_checks,
     check_from_description,
+    OrderedOutput,
     )
+
+
+class MockStdout(list):
+    """Not really a full file mock, just provides a write method on a list
+    object so we can compare it against lists of input strings"""
+
+    def write(self, data):
+        self.append("{}\n".format(data))
 
 
 class FunctionCheckMatcher(testtools.Matcher):
@@ -270,3 +280,38 @@ class ConnCheckTest(testtools.TestCase):
         self.assertThat(result,
                 MultiCheckMatcher(strategy=parallel_strategy,
                     subchecks=[FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080')]))
+
+    def test_ordered_output(self):
+        lines = [
+            'SKIPPED: xyz3:localhost:666',
+            'bar2:localhost:8080 FAILED: error',
+            'SKIPPED: foo2:localhost:8080',
+            'baz2:localhost:42 OK',
+            'SKIPPED: bar2:localhost:8080',
+            'xyz2:localhost:666 FAILED: error',
+            'xyz1:localhost:666 OK',
+            'foo1:localhost:8080 FAILED: error',
+            'baz1:localhost:42 OK',
+        ]
+        expected = [
+            'bar2:localhost:8080 FAILED: error\n',
+            'foo1:localhost:8080 FAILED: error\n',
+            'xyz2:localhost:666 FAILED: error\n',
+            'baz1:localhost:42 OK\n',
+            'baz2:localhost:42 OK\n',
+            'xyz1:localhost:666 OK\n',
+            'SKIPPED: bar2:localhost:8080\n',
+            'SKIPPED: foo2:localhost:8080\n',
+            'SKIPPED: xyz3:localhost:666\n'
+        ]
+
+        output = OrderedOutput(MockStdout())
+        map(output.write, lines)
+        output.flush()
+        self.assertEqual(expected, output.output)
+
+        output = OrderedOutput(MockStdout())
+        random.shuffle(lines)
+        map(output.write, lines)
+        output.flush()
+        self.assertEqual(expected, output.output)

@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import sys
 from threading import Thread
 import time
@@ -114,7 +114,8 @@ class OrderedOutput(object):
 
     def flush(self):
         for _type in ('failed', 'messages'):
-            for name, messages in getattr(self, _type).items():
+            for name, messages in sorted(getattr(self, _type).items()):
+                messages.sort()
                 map(self.output.write, messages)
 
         self.skipped.sort()
