@@ -113,23 +113,29 @@ class ConnCheckTest(testtools.TestCase):
 
     def test_make_http_check(self):
         result = make_http_check('http://localhost/')
-        self.assertThat(result,
-            MultiCheckMatcher(strategy=sequential_strategy,
-                subchecks=[
-                    FunctionCheckMatcher('tcp:localhost:80', 'localhost:80'),
-                    FunctionCheckMatcher('http:http://localhost/', 'GET http://localhost/')
-                ]
-            ))
+        self.assertIsInstance(result, PrefixCheckWrapper)
+        self.assertEqual(result.prefix, 'http:http://localhost/:')
+        wrapped = result.wrapped
+        self.assertIsInstance(wrapped, MultiCheck)
+        self.assertIs(wrapped.strategy, sequential_strategy)
+        self.assertEqual(len(wrapped.subchecks), 2)
+        self.assertThat(wrapped.subchecks[0],
+                FunctionCheckMatcher('tcp:localhost:80', 'localhost:80'))
+        self.assertThat(wrapped.subchecks[1],
+                FunctionCheckMatcher('', 'GET http://localhost/'))
 
     def test_make_http_check_https(self):
         result = make_http_check('https://localhost/')
-        self.assertThat(result,
-            MultiCheckMatcher(strategy=sequential_strategy,
-                subchecks=[
-                    FunctionCheckMatcher('tcp:localhost:443', 'localhost:443'),
-                    FunctionCheckMatcher('http:https://localhost/', 'GET https://localhost/')
-                ]
-            ))
+        self.assertIsInstance(result, PrefixCheckWrapper)
+        self.assertEqual(result.prefix, 'http:https://localhost/:')
+        wrapped = result.wrapped
+        self.assertIsInstance(wrapped, MultiCheck)
+        self.assertIs(wrapped.strategy, sequential_strategy)
+        self.assertEqual(len(wrapped.subchecks), 2)
+        self.assertThat(wrapped.subchecks[0],
+                FunctionCheckMatcher('tcp:localhost:443', 'localhost:443'))
+        self.assertThat(wrapped.subchecks[1],
+                FunctionCheckMatcher('', 'GET https://localhost/'))
 
     def test_make_amqp_check(self):
         result = make_amqp_check('localhost', 8080, 'foo',
