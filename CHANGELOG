@@ -1,6 +1,14 @@
 ChangeLog for conn-check
 ========================
 
+1.0.13 (unreleased)
+
+ - Output is not buffered and ordered, with FAILED checks first, skipped last,
+   and each check grouped by {type}:{host/url}.
+ - TCP subchecks triggered by a HTTP check are prefixed as such.
+ - There is now a -U/--unbuffered-output option to disable buffered/ordered output
+   and write out to STDOUT as soon as a result is collected.
+
 1.0.12 (17-11-2014)
 -------------------
 

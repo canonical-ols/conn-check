@@ -251,6 +251,15 @@ timeout
     Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
 
 
+Buffered/Ordered output
+-----------------------
+
+conn-check normally executes with output to ``STDOUT`` buffered so that the output can be ordered,
+with failed checks being printed first, grouping by destination etc.
+
+If you'd rather see results as they available you can use the ``-U``/``--unbuffered-output`` option
+to disable buffering.
+
 Building wheels
 ---------------
 

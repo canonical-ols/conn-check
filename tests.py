@@ -1,5 +1,7 @@
 import operator
+import random
 import testtools
+from StringIO import StringIO
 
 from testtools import matchers
 
@@ -26,6 +28,7 @@ from conn_check.checks import (
 from conn_check.main import (
     build_checks,
     check_from_description,
+    OrderedOutput,
     )
 
 
@@ -113,23 +116,29 @@ class ConnCheckTest(testtools.TestCase):
 
     def test_make_http_check(self):
         result = make_http_check('http://localhost/')
-        self.assertThat(result,
-            MultiCheckMatcher(strategy=sequential_strategy,
-                subchecks=[
-                    FunctionCheckMatcher('tcp:localhost:80', 'localhost:80'),
-                    FunctionCheckMatcher('http:http://localhost/', 'GET http://localhost/')
-                ]
-            ))
+        self.assertIsInstance(result, PrefixCheckWrapper)
+        self.assertEqual(result.prefix, 'http:http://localhost/:')
+        wrapped = result.wrapped
+        self.assertIsInstance(wrapped, MultiCheck)
+        self.assertIs(wrapped.strategy, sequential_strategy)
+        self.assertEqual(len(wrapped.subchecks), 2)
+        self.assertThat(wrapped.subchecks[0],
+                FunctionCheckMatcher('tcp:localhost:80', 'localhost:80'))
+        self.assertThat(wrapped.subchecks[1],
+                FunctionCheckMatcher('', 'GET http://localhost/'))
 
     def test_make_http_check_https(self):
         result = make_http_check('https://localhost/')
-        self.assertThat(result,
-            MultiCheckMatcher(strategy=sequential_strategy,
-                subchecks=[
-                    FunctionCheckMatcher('tcp:localhost:443', 'localhost:443'),
-                    FunctionCheckMatcher('http:https://localhost/', 'GET https://localhost/')
-                ]
-            ))
+        self.assertIsInstance(result, PrefixCheckWrapper)
+        self.assertEqual(result.prefix, 'http:https://localhost/:')
+        wrapped = result.wrapped
+        self.assertIsInstance(wrapped, MultiCheck)
+        self.assertIs(wrapped.strategy, sequential_strategy)
+        self.assertEqual(len(wrapped.subchecks), 2)
+        self.assertThat(wrapped.subchecks[0],
+                FunctionCheckMatcher('tcp:localhost:443', 'localhost:443'))
+        self.assertThat(wrapped.subchecks[1],
+                FunctionCheckMatcher('', 'GET https://localhost/'))
 
     def test_make_amqp_check(self):
         result = make_amqp_check('localhost', 8080, 'foo',
@@ -264,3 +273,38 @@ class ConnCheckTest(testtools.TestCase):
         self.assertThat(result,
                 MultiCheckMatcher(strategy=parallel_strategy,
                     subchecks=[FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080')]))
+
+    def test_ordered_output(self):
+        lines = [
+            'SKIPPED: xyz3:localhost:666\n',
+            'bar2:localhost:8080 FAILED: error\n',
+            'SKIPPED: foo2:localhost:8080\n',
+            'baz2:localhost:42 OK\n',
+            'SKIPPED: bar2:localhost:8080\n',
+            'xyz2:localhost:666 FAILED: error\n',
+            'xyz1:localhost:666 OK\n',
+            'foo1:localhost:8080 FAILED: error\n',
+            'baz1:localhost:42 OK\n',
+        ]
+        expected = (
+            'bar2:localhost:8080 FAILED: error\n'
+            'foo1:localhost:8080 FAILED: error\n'
+            'xyz2:localhost:666 FAILED: error\n'
+            'baz1:localhost:42 OK\n'
+            'baz2:localhost:42 OK\n'
+            'xyz1:localhost:666 OK\n'
+            'SKIPPED: bar2:localhost:8080\n'
+            'SKIPPED: foo2:localhost:8080\n'
+            'SKIPPED: xyz3:localhost:666\n'
+        )
+
+        output = OrderedOutput(StringIO())
+        map(output.write, lines)
+        output.flush()
+        self.assertEqual(expected, output.output.getvalue())
+
+        output = OrderedOutput(StringIO())
+        random.shuffle(lines)
+        map(output.write, lines)
+        output.flush()
+        self.assertEqual(expected, output.output.getvalue())
