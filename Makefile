@@ -30,7 +30,7 @@ install-debs:
 	sudo xargs --arg-file deb-dependencies.txt apt-get install -y
 
 install-deb-pkg-debs: install-debs
-	sudo apt-get install -y build-essential packaging-dev dh-make bzr-builddeb
+	sudo apt-get install -y build-essential packaging-dev dh-make
 
 build-deb: $(ENV)
 	-rm conn-check_$(CONN_CHECK_VERSION)-*_*
