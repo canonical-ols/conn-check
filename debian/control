@@ -1,0 +1,36 @@
+Source: conn-check
+Maintainer: James Westby, Wes Mason <james.westby@canonical.com, wesley.mason@canonical.com>
+Section: python
+Priority: optional
+Build-Depends: python-setuptools (>= 0.6b3), python-all (>= 2.6.6-3), debhelper (>= 7.4.3)
+Standards-Version: 3.9.1
+
+
+
+Package: python-conn-check
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}
+Description: Utility/library for checking connectivity between services
+ conn-check
+ ==========
+ .
+ conn-check allows for checking connectivity with external services.
+ .
+ You can write a config file that defines services that you need to
+ have access to, and conn-check will check connectivity with each.
+ .
+ It supports various types of services, all of which allow for
+ basic network checks, but some allow for confirming credentials
+ work also.
+ .
+ Configuration
+ -------------
+ .
+ The configuration is done via a yaml file. The file defines a list
+ of checks to do::
+ .
+     - type: tcp
+       host: localhost
+
+
+

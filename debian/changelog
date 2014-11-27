@@ -1,0 +1,5 @@
+conn-check (1.0.13-1) unstable; urgency=low
+
+  * source package automatically created by stdeb 0.8.2
+
+ -- James Westby, Wes Mason <james.westby@canonical.com, wesley.mason@canonical.com>  Thu, 27 Nov 2014 14:06:03 +0000
