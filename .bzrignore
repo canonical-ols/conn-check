@@ -3,3 +3,5 @@ conn_check.egg-info
 dist
 wheels
 virtualenv
+conn-check_1.0.13.orig.tar.gz
+.pc

@@ -3,6 +3,7 @@ WHEELSDIR=./wheels
 WHEELS_BRANCH=lp:~ubuntuone-hackers/conn-check/wheels
 WHEELS_BRANCH_DIR=/tmp/conn-check-wheels
 CONN_CHECK_REVNO=$(shell bzr revno)
+CONN_CHECK_VERSION=$(shell cat conn_check/version.txt)
 
 $(ENV):
 	virtualenv $(ENV)
@@ -19,6 +20,9 @@ clean-wheels:
 
 clean: clean-wheels
 	-rm -r $(ENV)
+	-rm -r dist
+	-rm -r build
+	-rm -r conn_check.egg-info
 	find . -name "*.pyc" -delete
 
 install-debs:
@@ -26,6 +30,12 @@ install-debs:
 
 install-deb-pkg-debs: install-debs
 	sudo apt-get install -y build-essential packaging-dev dh-make bzr-builddeb
+
+build-deb: $(ENV)
+	-rm dist/conn-check-$(CONN_CHECK_VERSION).tar.gz
+	$(ENV)/bin/python setup.py sdist
+	cp dist/conn-check-$(CONN_CHECK_VERSION).tar.gz conn-check_$(CONN_CHECK_VERSION).orig.tar.gz
+	debuild -S -sa
 
 cmd:
 	@echo $(ENV)/bin/conn-check
@@ -68,7 +78,7 @@ update-wheel-branch: $(WHEELS_BRANCH_DIR)
 upload: build test pip-wheel
 	$(ENV)/bin/python setup.py sdist bdist_wheel upload
 	@echo
-	@echo "Don't forget: bzr tag" `cat conn_check/version.txt` '&& bzr push'
+	@echo "Don't forget: bzr tag $(CONN_CHECK_VERSION) && bzr push"
 
 
 .PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload install-build-debs

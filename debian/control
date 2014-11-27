@@ -1,5 +1,5 @@
 Source: conn-check
-Maintainer: James Westby, Wes Mason <james.westby@canonical.com, wesley.mason@canonical.com>
+Maintainer: Wes Mason <wes@1stvamp.org>
 Section: python
 Priority: optional
 Build-Depends: python-setuptools (>= 0.6b3), python-all (>= 2.6.6-3), debhelper (>= 7.4.3)
@@ -23,14 +23,6 @@ Description: Utility/library for checking connectivity between services
  basic network checks, but some allow for confirming credentials
  work also.
  .
- Configuration
- -------------
- .
- The configuration is done via a yaml file. The file defines a list
- of checks to do::
- .
-     - type: tcp
-       host: localhost
 
 
 
