@@ -1,4 +1,4 @@
-conn-check (1.0.13-1) unstable; urgency=low
+conn-check (1.0.13-1) trusty; urgency=low
 
   * source package automatically created by stdeb 0.8.2
 
