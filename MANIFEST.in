@@ -1,4 +1,5 @@
-LICENSE
-**/*.rst
-**/*.txt
-**/*.xml
+include LICENSE
+include CHANGELOG
+include *.txt
+recursive-include conn_check *.txt
+recursive-include conn_check *.xml
