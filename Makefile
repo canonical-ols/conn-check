@@ -24,6 +24,9 @@ clean: clean-wheels
 install-debs:
 	sudo xargs --arg-file deb-dependencies.txt apt-get install -y
 
+install-build-debs: install-debs
+	sudo apt-get install -y build-essential dh-make bzr-builddeb
+
 cmd:
 	@echo $(ENV)/bin/conn-check
 
@@ -68,5 +71,5 @@ upload: build test pip-wheel
 	@echo "Don't forget: bzr tag" `cat conn_check/version.txt` '&& bzr push'
 
 
-.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload
+.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload install-build-debs
 .DEFAULT_GOAL := test
