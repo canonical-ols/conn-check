@@ -4,6 +4,7 @@ WHEELS_BRANCH=lp:~ubuntuone-hackers/conn-check/wheels
 WHEELS_BRANCH_DIR=/tmp/conn-check-wheels
 CONN_CHECK_REVNO=$(shell bzr revno)
 CONN_CHECK_VERSION=$(shell cat conn_check/version.txt)
+CONN_CHECK_PPA=ppa:wesmason/conn-check
 
 $(ENV):
 	virtualenv $(ENV)
@@ -32,10 +33,14 @@ install-deb-pkg-debs: install-debs
 	sudo apt-get install -y build-essential packaging-dev dh-make bzr-builddeb
 
 build-deb: $(ENV)
+	-rm conn-check_$(CONN_CHECK_VERSION)-*_*
 	-rm dist/conn-check-$(CONN_CHECK_VERSION).tar.gz
 	$(ENV)/bin/python setup.py sdist
 	cp dist/conn-check-$(CONN_CHECK_VERSION).tar.gz conn-check_$(CONN_CHECK_VERSION).orig.tar.gz
 	debuild -S -sa
+
+update-ppa:
+	cd .. && dput $(CONN_CHECK_PPA) conn-check_$(CONN_CHECK_VERSION)-*_source.changes
 
 cmd:
 	@echo $(ENV)/bin/conn-check
