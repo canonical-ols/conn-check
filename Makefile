@@ -24,8 +24,8 @@ clean: clean-wheels
 install-debs:
 	sudo xargs --arg-file deb-dependencies.txt apt-get install -y
 
-install-build-debs: install-debs
-	sudo apt-get install -y build-essential dh-make bzr-builddeb
+install-deb-pkg-debs: install-debs
+	sudo apt-get install -y build-essential packaging-dev dh-make bzr-builddeb
 
 cmd:
 	@echo $(ENV)/bin/conn-check
