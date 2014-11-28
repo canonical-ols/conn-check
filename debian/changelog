@@ -1,3 +1,15 @@
+conn-check (1.0.13-5) trusty; urgency=low
+
+  * Add copyright file in deb format.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 28 Nov 2014 12:41:00 +0000
+
+conn-check (1.0.13-4) trusty; urgency=low
+
+  * Fix dh_auto_install hook and removed .install hook.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 28 Nov 2014 11:29:00 +0000
+
 conn-check (1.0.13-3) trusty; urgency=low
 
   * Changed package Section to admin, and added Homepage.

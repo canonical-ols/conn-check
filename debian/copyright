@@ -1,0 +1,8 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: conn-check
+Upstream-Contact: Wes Mason <wesley.mason@canonical.com>
+Source: https://launchpad.net/conn-check
+
+Files: *
+Copyright: 2014, Canonical Ltd.
+License: GPL-3+
