@@ -1,9 +1,10 @@
 Source: conn-check
 Maintainer: Wes Mason <wes@1stvamp.org>
-Section: universe/admin
+Section: admin
 Priority: optional
 Build-Depends: python-setuptools (>= 0.6b3), python-all (>= 2.6.6-3), debhelper (>= 7.4.3)
 Standards-Version: 3.9.1
+Homepage: https://launchpad.net/conn-check
 Package: conn-check
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}, python-twisted-core, python-yaml, python-openssl, python-requests, python-pyasn1
