@@ -1,7 +1,8 @@
 conn-check (1.0.13-3) trusty; urgency=low
 
-  * Changed package Section to universe/admin.
+  * Changed package Section to admin, and added Homepage.
   * Cleaned up package description.
+  * Add .install hook to copy binaries into place.
 
  -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 28 Nov 2014 12:00:00 +0000
 
