@@ -1,3 +1,10 @@
+conn-check (1.0.13-3) trusty; urgency=low
+
+  * Changed package Section to universe/admin.
+  * Cleaned up package description.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 28 Nov 2014 12:00:00 +0000
+
 conn-check (1.0.13-2) trusty; urgency=low
 
   * package renamed to conn-check from python-conn-check
