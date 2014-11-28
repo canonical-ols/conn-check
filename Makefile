@@ -33,7 +33,7 @@ install-deb-pkg-debs: install-debs
 	sudo apt-get install -y build-essential packaging-dev dh-make
 
 build-deb: $(ENV)
-	-rm conn-check_$(CONN_CHECK_VERSION)-*_*
+	-rm ../conn-check_$(CONN_CHECK_VERSION)-*
 	-rm dist/conn-check-$(CONN_CHECK_VERSION).tar.gz
 	$(ENV)/bin/python setup.py sdist
 	cp dist/conn-check-$(CONN_CHECK_VERSION).tar.gz conn-check_$(CONN_CHECK_VERSION).orig.tar.gz

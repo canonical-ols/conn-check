@@ -7,9 +7,9 @@ Standards-Version: 3.9.1
 
 
 
-Package: python-conn-check
+Package: conn-check
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}
+Depends: ${misc:Depends}, ${python:Depends}, python-twisted-core, python-yaml, python-openssl, python-requests, python-pyasn1
 Description: Utility/library for checking connectivity between services
  conn-check
  ==========

@@ -1,5 +1,12 @@
+conn-check (1.0.13-2) trusty; urgency=low
+
+  * package renamed to conn-check from python-conn-check
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 27 Nov 2014 14:06:03 +0000
+
 conn-check (1.0.13-1) trusty; urgency=low
 
   * source package automatically created by stdeb 0.8.2
+  * dependencies modified to Debian/Ubuntu python-* packages
 
  -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 27 Nov 2014 14:06:03 +0000
