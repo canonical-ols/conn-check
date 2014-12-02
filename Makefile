@@ -5,6 +5,7 @@ WHEELS_BRANCH_DIR=/tmp/conn-check-wheels
 CONN_CHECK_REVNO=$(shell bzr revno)
 CONN_CHECK_VERSION=$(shell cat conn_check/version.txt)
 CONN_CHECK_PPA=ppa:wesmason/conn-check
+DEBIAN_PYTHON_CACHE_DIR=debian/pythoncache
 
 $(ENV):
 	virtualenv $(ENV)
@@ -23,6 +24,7 @@ clean: clean-wheels
 	-rm -r $(ENV)
 	-rm -r dist
 	-rm -r build
+	-rm -r $(DEBIAN_PYTHON_CACHE_DIR)
 	-rm -r conn_check.egg-info
 	find . -name "*.pyc" -delete
 
@@ -32,11 +34,23 @@ install-debs:
 install-deb-pkg-debs: install-debs
 	sudo apt-get install -y build-essential packaging-dev dh-make
 
-build-deb: $(ENV)
+$(ENV)/bin/pip2tgz: $(ENV)
+	$(ENV)/bin/pip install pip2pi
+
+build-deb-pip-cache: $(ENV)/bin/pip2tgz
+	mkdir -p $(DEBIAN_PYTHON_CACHE_DIR)
+	$(ENV)/bin/pip2tgz $(DEBIAN_PYTHON_CACHE_DIR) -r requirements.txt
+	$(ENV)/bin/dir2pi $(DEBIAN_PYTHON_CACHE_DIR)
+	sed -i '/pythoncache/d' debian/source/include-binaries
+	find debian/pythoncache -path "*.html" -prune -o -print >> debian/source/include-binaries
+
+build-deb: $(ENV) build-deb-pip-cache
 	-rm ../conn-check_$(CONN_CHECK_VERSION)-*
 	-rm dist/conn-check-$(CONN_CHECK_VERSION).tar.gz
 	$(ENV)/bin/python setup.py sdist
 	cp dist/conn-check-$(CONN_CHECK_VERSION).tar.gz conn-check_$(CONN_CHECK_VERSION).orig.tar.gz
+	sed -i '/orig.tar.gz/d' debian/source/include-binaries
+	echo 'conn-check_$(CONN_CHECK_VERSION).orig.tar.gz' >> debian/source/include-binaries
 	debuild -S -sa
 
 update-ppa:
@@ -86,5 +100,5 @@ upload: build test pip-wheel
 	@echo "Don't forget: bzr tag $(CONN_CHECK_VERSION) && bzr push"
 
 
-.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload install-build-debs
+.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload install-build-debs build-deb-pip-cache
 .DEFAULT_GOAL := test

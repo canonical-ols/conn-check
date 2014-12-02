@@ -2,13 +2,14 @@ Source: conn-check
 Maintainer: Wes Mason <wes@1stvamp.org>
 Section: admin
 Priority: optional
-Build-Depends: python-setuptools (>= 0.6b3), python-all (>= 2.6.6-3), debhelper (>= 7.4.3)
-Standards-Version: 3.9.1
+Build-Depends: python-all (>= 2.6.6-3), debhelper (>= 7.4.3), dh-virtualenv (>= 0.6), python-dev, libffi-dev, libssl-dev 
+Standards-Version: 3.9.5
 Homepage: https://launchpad.net/conn-check
 
 Package: conn-check
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-twisted-core, python-yaml, python-openssl, python-requests, python-pyasn1
+Pre-Depends: dpkg (>= 1.16.1), python2.7-minimal | python2.6-minimal, ${misc:Pre-Depends}
+Depends: ${misc:Depends}, ${python:Depends}
 Description: Utility/library for checking connectivity between services
  conn-check allows for checking connectivity with external services.
  You can write a config file that defines services that you need to

@@ -1,3 +1,147 @@
+conn-check (1.0.13-28) trusty; urgency=low
+
+  * Add libssl-dev  to build deps.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 22:58:01 +0000
+
+conn-check (1.0.13-27) trusty; urgency=low
+
+  * Add libffi-dev to build deps.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 21:58:56 +0000
+
+conn-check (1.0.13-26) trusty; urgency=low
+
+  * Add python-dev to build deps.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 17:41:06 +0000
+
+conn-check (1.0.13-25) trusty; urgency=low
+
+  * Preinstall cffi during build
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 17:11:05 +0000
+
+conn-check (1.0.13-24) trusty; urgency=low
+
+  * Preinstall six and setuptools during build
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 16:22:01 +0000
+
+conn-check (1.0.13-23) trusty; urgency=low
+
+  * Use PyYAML instead of pyyaml for local deps
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 15:43:00 +0000
+
+conn-check (1.0.13-22) trusty; urgency=low
+
+  * Use "Twisted" instead of "twisted" to match case in file:// PyPI URI.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 15:12:00 +0000
+
+conn-check (1.0.13-21) trusty; urgency=low
+
+  * Include entire python cache in debian dir.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 14:23:47 +0000
+
+conn-check (1.0.13-20) trusty; urgency=low
+
+  * Use pythoncache from debian dir.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 14:02:01 +0000
+
+conn-check (1.0.13-19) trusty; urgency=low
+
+  * Extract pythoncache from orig.tar.gz.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 13:23:10 +0000
+
+conn-check (1.0.13-18) trusty; urgency=low
+
+  * Build a full PyPI index and sync via pythoncache.tar.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 12:15:30 +0000
+
+conn-check (1.0.13-17) trusty; urgency=low
+
+  * Set --no-index and --find-links in pip during deb build.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 00:42:00 +0000
+
+conn-check (1.0.13-16) trusty; urgency=low
+
+  * Set pypi-url using $(CURDIR)
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 23:43:01 +0000
+
+conn-check (1.0.13-15) trusty; urgency=low
+
+  * Include individual eggs/wheels in include-binaries listing.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 23:43:01 +0000
+
+conn-check (1.0.13-14) trusty; urgency=low
+
+  * Use better egg/wheel caching.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 22:02:51 +0000
+
+conn-check (1.0.13-13) trusty; urgency=low
+
+  * Use cached eggs for pip.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 16:38:00 +0000
+
+conn-check (1.0.13-13) trusty; urgency=low
+
+  * Remove --no-test as not supported in dh-virtualenv on lp.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 11:43:05 +0000
+
+conn-check (1.0.13-12) trusty; urgency=low
+
+  * Stub out dh-test.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 11:38:01 +0000
+
+conn-check (1.0.13-11) trusty; urgency=low
+
+  * Stub out auto-build.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 11:23:01 +0000
+
+conn-check (1.0.13-10) trusty; urgency=low
+
+  * Override dh-auto-build with a different make target.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 11:12:45 +0000
+
+conn-check (1.0.13-9) trusty; urgency=low
+
+  * Disable post tests run in dh-make
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 10:59:07 +0000
+
+conn-check (1.0.13-8) trusty; urgency=low
+
+  * Disablei post tests run in dh-virtualenv.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 10:40:32 +0000
+
+conn-check (1.0.13-7) trusty; urgency=low
+
+  * Fix dh-virtualenv spec.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 28 Nov 2014 15:05:01 +0000
+
+conn-check (1.0.13-6) trusty; urgency=low
+
+  * First attempt at using dh-virtualenv to manage dependencies.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 28 Nov 2014 14:52:21 +0000
+
 conn-check (1.0.13-5) trusty; urgency=low
 
   * Add copyright file in deb format.
