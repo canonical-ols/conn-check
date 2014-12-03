@@ -1,3 +1,15 @@
+conn-check (1.0.13-31) trusty; urgency=low
+
+  * Bump.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 23:54:58 +0000
+
+conn-check (1.0.13-29) trusty; urgency=low
+
+  * Use dh-virtualenv >=0.7.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 22:58:01 +0000
+
 conn-check (1.0.13-28) trusty; urgency=low
 
   * Add libssl-dev  to build deps.
