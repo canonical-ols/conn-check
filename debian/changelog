@@ -1,3 +1,16 @@
+conn-check (1.0.13-44) trusty; urgency=low
+
+  * Ensure we have libpq-dev for psycopg2 build.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 04 Dec 2014 23:05:43 +0000
+
+conn-check (1.0.13-43) trusty; urgency=low
+
+  * Add amqp, postgres, redis and mongo virtualenv dependencies.
+  * Add python-* dependencies for above to Recommends.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 04 Dec 2014 23:05:43 +0000
+
 conn-check (1.0.13-42) trusty; urgency=low
 
   * Remove pkg_resources requires for txrequests too.
