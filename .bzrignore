@@ -6,3 +6,8 @@ virtualenv
 conn-check_*.orig.tar.gz
 .pc
 debian/pythoncache
+debian/conn-check
+debian/conn-check.debhelper.log
+debian/conn-check.postinst.debhelper
+debian/conn-check.substvars
+debian/files

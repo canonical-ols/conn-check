@@ -23,7 +23,6 @@ clean-wheels:
 clean: clean-wheels
 	-rm -r $(ENV)
 	-rm -r dist
-	-rm -r build
 	-rm -r $(DEBIAN_PYTHON_CACHE_DIR)
 	-rm -r conn_check.egg-info
 	find . -name "*.pyc" -delete
@@ -39,19 +38,24 @@ $(ENV)/bin/pip2tgz: $(ENV)
 
 build-deb-pip-cache: $(ENV)/bin/pip2tgz
 	mkdir -p $(DEBIAN_PYTHON_CACHE_DIR)
-	$(ENV)/bin/pip2tgz $(DEBIAN_PYTHON_CACHE_DIR) -r requirements.txt
+	ls *-requirements.txt | grep -vw 'devel\|test' | xargs -L 1 \
+		$(ENV)/bin/pip2tgz $(DEBIAN_PYTHON_CACHE_DIR) -r
+	-rm dist/conn-check-$(CONN_CHECK_VERSION).tar.gz
+	$(ENV)/bin/python setup.py sdist
+	$(ENV)/bin/pip2tgz $(DEBIAN_PYTHON_CACHE_DIR) dist/conn-check-$(CONN_CHECK_VERSION).tar.gz
 	$(ENV)/bin/dir2pi $(DEBIAN_PYTHON_CACHE_DIR)
 	sed -i '/pythoncache/d' debian/source/include-binaries
 	find debian/pythoncache -path "*.html" -prune -o -print >> debian/source/include-binaries
 
 build-deb: $(ENV) build-deb-pip-cache
 	-rm ../conn-check_$(CONN_CHECK_VERSION)-*
-	-rm dist/conn-check-$(CONN_CHECK_VERSION).tar.gz
-	$(ENV)/bin/python setup.py sdist
 	cp dist/conn-check-$(CONN_CHECK_VERSION).tar.gz conn-check_$(CONN_CHECK_VERSION).orig.tar.gz
 	sed -i '/orig.tar.gz/d' debian/source/include-binaries
 	echo 'conn-check_$(CONN_CHECK_VERSION).orig.tar.gz' >> debian/source/include-binaries
 	debuild -S -sa
+
+test-build-deb: build-deb
+	debuild
 
 update-ppa:
 	cd .. && dput $(CONN_CHECK_PPA) conn-check_$(CONN_CHECK_VERSION)-*_source.changes

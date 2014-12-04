@@ -1,3 +1,86 @@
+conn-check (1.0.13-42) trusty; urgency=low
+
+  * Remove pkg_resources requires for txrequests too.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 04 Dec 2014 12:05:01 +0000
+
+conn-check (1.0.13-41) trusty; urgency=low
+
+  * Remove python-* packages from conn-check packkage requires.txt so
+    installed entrypoint doesn't try loading pkg_resources for them (we don't
+    actually need any).
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 15:42:32 +0000
+
+conn-check (1.0.13-40) trusty; urgency=low
+
+  * Don't block the build if .so files aren't there to cleanup.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 15:42:32 +0000
+
+conn-check (1.0.13-39) trusty; urgency=low
+
+  * Manually clean up build packages as pip has install-time python path.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 15:08:01 +0000
+
+conn-check (1.0.13-38) trusty; urgency=low
+
+  * Don't ignore errors in post-build venv cleanup.
+  * Reference venv path directly with $(CURDIR).
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 14:03:06 +0000
+
+conn-check (1.0.13-37) trusty; urgency=low
+
+  * Reverted patched requirements that remove python-* deps, for the build
+    phase, as we remove these manually from venv post-build anyway, and we
+    need them in requirements.txt to generate a proper pythoncache.
+  * Remove pycparser post-build as this is just a cffi dep.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 13:12:45 +0000
+
+conn-check (1.0.13-36) trusty; urgency=low
+
+  * Include pyopenssl/cffi et al in pythoncache for virtualenv build (they get
+    removed from the virtualenv post-build).
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 13:12:45 +0000
+
+conn-check (1.0.13-35) trusty; urgency=low
+
+  * Ensure requirements.txt is patched to remove python-* in builder.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 13:04:01 +0000
+
+conn-check (1.0.13-34) trusty; urgency=low
+
+  * Cleanup build deps from virtualenv.
+  * Ensure we have cffi preinstalled for cryptography build.
+  * Ensure we have python-pyasn1 and python-zope.interface at install time.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 12:04:54 +0000
+
+conn-check (1.0.13-34) trusty; urgency=low
+
+  * Ensure requirements.txt is the same debian-requirements.txt in orig
+    payload.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 11:48:00 +0000
+
+conn-check (1.0.13-33) trusty; urgency=low
+
+  * Remove no-global-site-packages.txt as part of dh-virtualenv target to
+    enable site-packages in virtualenv.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 11:32:01 +0000
+
+conn-check (1.0.13-32) trusty; urgency=low
+
+  * Use python-* packages were possible.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 10:51:32 +0000
+
 conn-check (1.0.13-31) trusty; urgency=low
 
   * Bump.

@@ -4,7 +4,33 @@
 	dh $@ --with python-virtualenv
 
 override_dh_virtualenv:
-	dh_virtualenv --pypi-url file://$(CURDIR)/debian/pythoncache/simple --preinstall 'six' --preinstall 'setuptools' --preinstall 'cffi'
+	dh_virtualenv --pypi-url file://$(CURDIR)/debian/pythoncache/simple \
+		--preinstall 'six' --preinstall 'setuptools' --preinstall 'cffi' \
+		--extra-pip-arg 'conn-check[all]'
+	rm debian/conn-check/usr/share/python/conn-check/lib/python2*/no-global-site-packages.txt
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/twisted
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/Twisted*
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/requests*
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/cffi*
+	-rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/_cffi_backend.so
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/pycparser*
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/OpenSSL
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/pyOpenSSL*
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/pyasn1*
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/PyYAML*
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/yaml
+	-rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/_yaml.so
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/zope*
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/pymongo*
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/bson
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/gridfs
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/psycopg2*
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/txamqp
+	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/txAMQP*
+	sed -i '/Twisted/d' debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/conn_check*.egg*/requires.txt
+	sed -i '/pyasn1/d' debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/conn_check*.egg*/requires.txt
+	sed -i '/PyYAML/d' debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/conn_check*.egg*/requires.txt
+	sed -i '/requests/d' debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/conn_check*.egg*/requires.txt
 
 override_dh_auto_clean:
 	python setup.py clean -a

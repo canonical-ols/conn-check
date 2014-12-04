@@ -1,1 +1,1 @@
-txamqp
+txAMQP

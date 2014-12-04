@@ -1,1 +1,1 @@
-extend-diff-ignore="(conn_check\.egg-info|virtualenv|build.*|dist|Makefile)"
+extend-diff-ignore="(conn_check\.egg-info|virtualenv|build.*|dist|Makefile|debian-requirements)"
