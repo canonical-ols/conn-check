@@ -5,7 +5,7 @@
 
 override_dh_virtualenv:
 	dh_virtualenv --pypi-url file://$(CURDIR)/debian/pythoncache/simple \
-		--preinstall 'six' --preinstall 'setuptools' --preinstall 'cffi' \
+		--preinstall 'six' --preinstall 'setuptools' --preinstall 'pycparser' --preinstall 'cffi' \
 		--extra-pip-arg 'conn-check[all]'
 	rm debian/conn-check/usr/share/python/conn-check/lib/python2*/no-global-site-packages.txt
 	rm -r debian/conn-check/usr/share/python/conn-check/lib/python2*/site-packages/twisted

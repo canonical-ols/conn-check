@@ -1,3 +1,15 @@
+conn-check (1.0.13-46) trusty; urgency=low
+
+  * Switch secondary deps to Suggests instead of Recommends.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 04 Dec 2014 23:32:14 +0000
+
+conn-check (1.0.13-45) trusty; urgency=low
+
+  * Ensure dh-virtualenv preinstalls pycparser so cffi works at build time.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 04 Dec 2014 23:18:01 +0000
+
 conn-check (1.0.13-44) trusty; urgency=low
 
   * Ensure we have libpq-dev for psycopg2 build.
