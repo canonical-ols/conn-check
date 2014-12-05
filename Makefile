@@ -104,5 +104,5 @@ upload: build test pip-wheel
 	@echo "Don't forget: bzr tag $(CONN_CHECK_VERSION) && bzr push"
 
 
-.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload install-build-debs build-deb-pip-cache
+.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload install-build-debs build-deb-pip-cache test-build-deb
 .DEFAULT_GOAL := test
