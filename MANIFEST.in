@@ -1,5 +1,6 @@
 include LICENSE
 include CHANGELOG
+include *.rst
 include *.txt
 exclude deb-dependencies.txt
 recursive-include conn_check *.txt

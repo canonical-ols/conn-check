@@ -3,7 +3,6 @@ conn_check.egg-info
 dist
 wheels
 virtualenv
-conn-check_*.orig.tar.gz
 .pc
 debian/pythoncache
 debian/conn-check

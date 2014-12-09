@@ -69,4 +69,3 @@ debian/pythoncache/txAMQP-0.6.2.tar.gz
 debian/pythoncache/requests-2.5.0-py2.py3-none-any.whl
 debian/pythoncache/pymongo-2.7.2.tar.gz
 debian/pythoncache/zope.interface-4.1.1.tar.gz
-conn-check_1.0.13.orig.tar.gz
