@@ -1,6 +1,12 @@
 ChangeLog for conn-check
 ========================
 
+1.0.14 (unreleased)
+-------------------
+
+ - Package manifest fixes for debian package release.
+
+
 1.0.13 (26-11-2014)
 -------------------
 

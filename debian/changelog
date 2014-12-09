@@ -1,6 +1,7 @@
-conn-check (1.0.13-47) trusty; urgency=low
+conn-check (1.0.14-1) trusty; urgency=low
 
   * Added better build Makefile.
+  * Manifest changes released (1.0.14 bump).
 
  -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 09 Dec 2014 20:56:01 +0000
 
