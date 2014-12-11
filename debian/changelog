@@ -1,3 +1,12 @@
+conn-check (1.0.14-2) trusty; urgency=low
+
+  * Switch to using latest dh-virtualenv with global site-packages support.
+  * Remove extra conn-check wheel from pythoncache and ensure all requirements
+    files are vendored instead.
+  * Remove all upstram deps from pythoncache.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 10 Dec 2014 21:22:00 +0000
+
 conn-check (1.0.14-1) trusty; urgency=low
 
   * Added better build Makefile.
