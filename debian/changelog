@@ -1,3 +1,15 @@
+conn-check (1.0.14-4) trusty; urgency=low
+
+  * Re-add python-dev and libssl-dev for build time deps.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 12 Dec 2014 22:02:11 +0000
+
+conn-check (1.0.14-3) trusty; urgency=low
+
+  * Bump for lp rebuild.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 12 Dec 2014 21:53:59 +0000
+
 conn-check (1.0.14-2) trusty; urgency=low
 
   * Switch to using latest dh-virtualenv with global site-packages support.

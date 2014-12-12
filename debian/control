@@ -2,7 +2,7 @@ Source: conn-check
 Maintainer: Wes Mason <wes@1stvamp.org>
 Section: admin
 Priority: optional
-Build-Depends: python-all (>= 2.6.6-3), debhelper (>= 7.4.3), dh-virtualenv, python-twisted, python-yaml, python-openssl, python-requests, python-pyasn1, python-pyasn1-modules, python-zope.interface, python-cffi, python-six
+Build-Depends: python-all (>= 2.6.6-3), debhelper (>= 7.4.3), dh-virtualenv, python-dev, libffi-dev, libssl-dev , python-twisted, python-yaml, python-openssl, python-requests, python-pyasn1, python-pyasn1-modules, python-zope.interface, python-cffi, python-six
 Standards-Version: 3.9.5
 Homepage: https://launchpad.net/conn-check
 
