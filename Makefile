@@ -56,11 +56,12 @@ build-deb-pip-cache: $(ENV)/bin/pip2tgz
 	sed -i '/pythoncache/d' debian/source/include-binaries
 	find debian/pythoncache -path "*.html" -prune -o -print >> debian/source/include-binaries
 
-build-deb: build-deb-pip-cache
-	-rm ../conn-check_$(CONN_CHECK_VERSION)-*
-	-rm dist/conn-check-$(CONN_CHECK_VERSION).tar.gz
+../conn-check_$(CONN_CHECK_VERSION).orig.tar.gz:
 	$(ENV)/bin/python setup.py sdist
 	cp dist/conn-check-$(CONN_CHECK_VERSION).tar.gz ../conn-check_$(CONN_CHECK_VERSION).orig.tar.gz
+
+build-deb: build-deb-pip-cache ../conn-check_$(CONN_CHECK_VERSION).orig.tar.gz
+	-rm ../conn-check_$(CONN_CHECK_VERSION)-*
 	debuild -S -sa
 
 test-build-deb: build-deb
