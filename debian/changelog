@@ -1,0 +1,331 @@
+conn-check (1.0.15-1) trusty; urgency=low
+
+  * Removed need for initial patch by including missing files in packae
+    manifest.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 15 Dec 2014 12:13:40 +0000
+
+conn-check (1.0.14-4) trusty; urgency=low
+
+  * Re-add python-dev and libssl-dev for build time deps.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 12 Dec 2014 22:02:11 +0000
+
+conn-check (1.0.14-3) trusty; urgency=low
+
+  * Bump for lp rebuild.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 12 Dec 2014 21:53:59 +0000
+
+conn-check (1.0.14-2) trusty; urgency=low
+
+  * Switch to using latest dh-virtualenv with global site-packages support.
+  * Remove extra conn-check wheel from pythoncache and ensure all requirements
+    files are vendored instead.
+  * Remove all upstram deps from pythoncache.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 10 Dec 2014 21:22:00 +0000
+
+conn-check (1.0.14-1) trusty; urgency=low
+
+  * Added better build Makefile.
+  * Manifest changes released (1.0.14 bump).
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 09 Dec 2014 20:56:01 +0000
+
+conn-check (1.0.13-46) trusty; urgency=low
+
+  * Switch secondary deps to Suggests instead of Recommends.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 04 Dec 2014 23:32:14 +0000
+
+conn-check (1.0.13-45) trusty; urgency=low
+
+  * Ensure dh-virtualenv preinstalls pycparser so cffi works at build time.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 04 Dec 2014 23:18:01 +0000
+
+conn-check (1.0.13-44) trusty; urgency=low
+
+  * Ensure we have libpq-dev for psycopg2 build.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 04 Dec 2014 23:05:43 +0000
+
+conn-check (1.0.13-43) trusty; urgency=low
+
+  * Add amqp, postgres, redis and mongo virtualenv dependencies.
+  * Add python-* dependencies for above to Recommends.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 04 Dec 2014 23:05:43 +0000
+
+conn-check (1.0.13-42) trusty; urgency=low
+
+  * Remove pkg_resources requires for txrequests too.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 04 Dec 2014 12:05:01 +0000
+
+conn-check (1.0.13-41) trusty; urgency=low
+
+  * Remove python-* packages from conn-check packkage requires.txt so
+    installed entrypoint doesn't try loading pkg_resources for them (we don't
+    actually need any).
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 15:42:32 +0000
+
+conn-check (1.0.13-40) trusty; urgency=low
+
+  * Don't block the build if .so files aren't there to cleanup.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 15:42:32 +0000
+
+conn-check (1.0.13-39) trusty; urgency=low
+
+  * Manually clean up build packages as pip has install-time python path.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 15:08:01 +0000
+
+conn-check (1.0.13-38) trusty; urgency=low
+
+  * Don't ignore errors in post-build venv cleanup.
+  * Reference venv path directly with $(CURDIR).
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 14:03:06 +0000
+
+conn-check (1.0.13-37) trusty; urgency=low
+
+  * Reverted patched requirements that remove python-* deps, for the build
+    phase, as we remove these manually from venv post-build anyway, and we
+    need them in requirements.txt to generate a proper pythoncache.
+  * Remove pycparser post-build as this is just a cffi dep.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 13:12:45 +0000
+
+conn-check (1.0.13-36) trusty; urgency=low
+
+  * Include pyopenssl/cffi et al in pythoncache for virtualenv build (they get
+    removed from the virtualenv post-build).
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 13:12:45 +0000
+
+conn-check (1.0.13-35) trusty; urgency=low
+
+  * Ensure requirements.txt is patched to remove python-* in builder.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 13:04:01 +0000
+
+conn-check (1.0.13-34) trusty; urgency=low
+
+  * Cleanup build deps from virtualenv.
+  * Ensure we have cffi preinstalled for cryptography build.
+  * Ensure we have python-pyasn1 and python-zope.interface at install time.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 12:04:54 +0000
+
+conn-check (1.0.13-34) trusty; urgency=low
+
+  * Ensure requirements.txt is the same debian-requirements.txt in orig
+    payload.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 11:48:00 +0000
+
+conn-check (1.0.13-33) trusty; urgency=low
+
+  * Remove no-global-site-packages.txt as part of dh-virtualenv target to
+    enable site-packages in virtualenv.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 11:32:01 +0000
+
+conn-check (1.0.13-32) trusty; urgency=low
+
+  * Use python-* packages were possible.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 03 Dec 2014 10:51:32 +0000
+
+conn-check (1.0.13-31) trusty; urgency=low
+
+  * Bump.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 23:54:58 +0000
+
+conn-check (1.0.13-29) trusty; urgency=low
+
+  * Use dh-virtualenv >=0.7.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 22:58:01 +0000
+
+conn-check (1.0.13-28) trusty; urgency=low
+
+  * Add libssl-dev  to build deps.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 22:58:01 +0000
+
+conn-check (1.0.13-27) trusty; urgency=low
+
+  * Add libffi-dev to build deps.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 21:58:56 +0000
+
+conn-check (1.0.13-26) trusty; urgency=low
+
+  * Add python-dev to build deps.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 17:41:06 +0000
+
+conn-check (1.0.13-25) trusty; urgency=low
+
+  * Preinstall cffi during build
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 17:11:05 +0000
+
+conn-check (1.0.13-24) trusty; urgency=low
+
+  * Preinstall six and setuptools during build
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 16:22:01 +0000
+
+conn-check (1.0.13-23) trusty; urgency=low
+
+  * Use PyYAML instead of pyyaml for local deps
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 15:43:00 +0000
+
+conn-check (1.0.13-22) trusty; urgency=low
+
+  * Use "Twisted" instead of "twisted" to match case in file:// PyPI URI.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 15:12:00 +0000
+
+conn-check (1.0.13-21) trusty; urgency=low
+
+  * Include entire python cache in debian dir.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 14:23:47 +0000
+
+conn-check (1.0.13-20) trusty; urgency=low
+
+  * Use pythoncache from debian dir.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 14:02:01 +0000
+
+conn-check (1.0.13-19) trusty; urgency=low
+
+  * Extract pythoncache from orig.tar.gz.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 13:23:10 +0000
+
+conn-check (1.0.13-18) trusty; urgency=low
+
+  * Build a full PyPI index and sync via pythoncache.tar.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 12:15:30 +0000
+
+conn-check (1.0.13-17) trusty; urgency=low
+
+  * Set --no-index and --find-links in pip during deb build.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Tue, 02 Dec 2014 00:42:00 +0000
+
+conn-check (1.0.13-16) trusty; urgency=low
+
+  * Set pypi-url using $(CURDIR)
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 23:43:01 +0000
+
+conn-check (1.0.13-15) trusty; urgency=low
+
+  * Include individual eggs/wheels in include-binaries listing.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 23:43:01 +0000
+
+conn-check (1.0.13-14) trusty; urgency=low
+
+  * Use better egg/wheel caching.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 22:02:51 +0000
+
+conn-check (1.0.13-13) trusty; urgency=low
+
+  * Use cached eggs for pip.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 16:38:00 +0000
+
+conn-check (1.0.13-13) trusty; urgency=low
+
+  * Remove --no-test as not supported in dh-virtualenv on lp.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 11:43:05 +0000
+
+conn-check (1.0.13-12) trusty; urgency=low
+
+  * Stub out dh-test.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 11:38:01 +0000
+
+conn-check (1.0.13-11) trusty; urgency=low
+
+  * Stub out auto-build.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 11:23:01 +0000
+
+conn-check (1.0.13-10) trusty; urgency=low
+
+  * Override dh-auto-build with a different make target.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 11:12:45 +0000
+
+conn-check (1.0.13-9) trusty; urgency=low
+
+  * Disable post tests run in dh-make
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 10:59:07 +0000
+
+conn-check (1.0.13-8) trusty; urgency=low
+
+  * Disablei post tests run in dh-virtualenv.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 01 Dec 2014 10:40:32 +0000
+
+conn-check (1.0.13-7) trusty; urgency=low
+
+  * Fix dh-virtualenv spec.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 28 Nov 2014 15:05:01 +0000
+
+conn-check (1.0.13-6) trusty; urgency=low
+
+  * First attempt at using dh-virtualenv to manage dependencies.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 28 Nov 2014 14:52:21 +0000
+
+conn-check (1.0.13-5) trusty; urgency=low
+
+  * Add copyright file in deb format.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 28 Nov 2014 12:41:00 +0000
+
+conn-check (1.0.13-4) trusty; urgency=low
+
+  * Fix dh_auto_install hook and removed .install hook.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 28 Nov 2014 11:29:00 +0000
+
+conn-check (1.0.13-3) trusty; urgency=low
+
+  * Changed package Section to admin, and added Homepage.
+  * Cleaned up package description.
+  * Add .install hook to copy binaries into place.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 28 Nov 2014 12:00:00 +0000
+
+conn-check (1.0.13-2) trusty; urgency=low
+
+  * package renamed to conn-check from python-conn-check
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 27 Nov 2014 14:06:03 +0000
+
+conn-check (1.0.13-1) trusty; urgency=low
+
+  * source package automatically created by stdeb 0.8.2
+  * dependencies modified to Debian/Ubuntu python-* packages
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 27 Nov 2014 14:06:03 +0000

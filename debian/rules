@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --with python-virtualenv
+
+override_dh_virtualenv:
+	dh_virtualenv --pypi-url file://$(CURDIR)/debian/pythoncache/simple --use-system-packages
+
+override_dh_auto_clean:
+	python setup.py clean -a
+	find . -name \*.pyc -exec rm {} \;
+
+override_dh_auto_build:
+override_dh_auto_test:

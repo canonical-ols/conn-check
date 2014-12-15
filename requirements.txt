@@ -4,6 +4,6 @@ pyasn1
 pyOpenSSL
 service_identity
 requests >= 2.0
-twisted
+Twisted
 txrequests >= 0.9
-pyyaml
+PyYAML
