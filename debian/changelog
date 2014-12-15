@@ -1,3 +1,10 @@
+conn-check (1.0.15-1) trusty; urgency=low
+
+  * Removed need for initial patch by including missing files in packae
+    manifest.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 15 Dec 2014 12:13:40 +0000
+
 conn-check (1.0.14-4) trusty; urgency=low
 
   * Re-add python-dev and libssl-dev for build time deps.

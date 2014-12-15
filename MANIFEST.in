@@ -4,5 +4,6 @@ include *.rst
 include *.txt
 include tarmac_tests.sh
 include demo.yaml
+include tests.py
 recursive-include conn_check *.txt
 recursive-include conn_check *.xml
