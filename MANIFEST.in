@@ -2,6 +2,7 @@ include LICENSE
 include CHANGELOG
 include *.rst
 include *.txt
-exclude deb-dependencies.txt
+include tarmac_tests.sh
+include demo.yaml
 recursive-include conn_check *.txt
 recursive-include conn_check *.xml
