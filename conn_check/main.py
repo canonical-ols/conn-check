@@ -42,12 +42,27 @@ def check_from_description(check_description):
     res = check['fn'](**check_description)
     return res
 
+def filter_tags(check, tags, exclude):
+    if not tags and not exclude:
+        return True
 
-def build_checks(check_descriptions, connect_timeout):
+    check_tags = set(check.get('tags', []))
+
+    if tags:
+        result = bool(check_tags.intersection(tags))
+    else:
+        result = bool(check_tags.intersection(exclude))
+
+    return result
+
+
+def build_checks(check_descriptions, connect_timeout, tags, exclude_tags):
     def set_timeout(desc):
         new_desc = dict(timeout=connect_timeout)
         new_desc.update(desc)
         return new_desc
+    check_descriptions = filter(lambda c: filter_tags(c, tags, exclude_tags),
+                                check_descriptions)
     subchecks = map(check_from_description,
         map(set_timeout, check_descriptions))
     return parallel_check(subchecks)
@@ -217,6 +232,14 @@ def main(*args):
                         action="store_false", default=True,
                         help="Don't buffer output, write to STDOUT right "
                              "away.")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--tags", dest="tags",
+                       action="store", default="",
+                       help="Comma separated list of tagged checks to run.")
+    group.add_argument("--exclude-tags", dest="exclude_tags",
+                       action="store", default="",
+                       help="Comma separated list of tagged checks to "
+                            "exclude.")
     options = parser.parse_args(list(args))
 
     load_tls_certs(options.cacerts_path)
@@ -246,6 +269,9 @@ def main(*args):
         # We buffer output so we can order it for human readable output
         output = OrderedOutput(output)
 
+    tags = options.tags.split(',')
+    exclude_tags = options.tags.split(',')
+
     results = ConsoleOutput(output=output,
                             show_tracebacks=options.show_tracebacks,
                             show_duration=options.show_duration,
@@ -254,7 +280,8 @@ def main(*args):
     with open(options.config_file) as f:
         descriptions = yaml.load(f)
 
-    checks = build_checks(descriptions, options.connect_timeout)
+    checks = build_checks(descriptions, options.connect_timeout, tags,
+                          exclude_tags)
 
     if options.max_timeout is not None:
         def terminator():
