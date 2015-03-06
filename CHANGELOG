@@ -1,7 +1,7 @@
 ChangeLog for conn-check
 ========================
 
-1.0.16 (unreleased)
+1.0.16 (2015-03-06)
 -------------------
 
  - Add --include-tags and --exclude-tags args with support for the `tags` YAML check field.
