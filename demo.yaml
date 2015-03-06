@@ -6,16 +6,23 @@
   port: 8080
   send: aaaa
   expect: bbbb
+  tags:
+    - foo
 - type: tls
   host: login.ubuntu.com
   port: 443
   verify: true
+  tags:
+    - bar
 - type: redis
   host: 127.0.0.1
   port: 6379
   password: foobared
 - type: http
   url: https://login.ubuntu.com/
+  tags:
+    - foo
+    - bar
 - type: memcache
   host: 127.0.0.1
   port: 11211

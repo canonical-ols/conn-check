@@ -269,10 +269,53 @@ class ConnCheckTest(testtools.TestCase):
 
     def test_build_checks(self):
         description = [{'type': 'tcp', 'host': 'localhost', 'port': '8080'}]
-        result = build_checks(description, 10)
+        result = build_checks(description, 10, [], [])
         self.assertThat(result,
                 MultiCheckMatcher(strategy=parallel_strategy,
                     subchecks=[FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080')]))
+
+    def test_build_checks_with_tags(self):
+        descriptions = [
+            {'type': 'tcp', 'host': 'localhost', 'port': '8080'},
+            {'type': 'tcp', 'host': 'localhost2', 'port': '8080',
+             'tags': ['foo']},
+            {'type': 'tcp', 'host': 'localhost3', 'port': '8080',
+             'tags': ['foo', 'bar']},
+            {'type': 'tcp', 'host': 'localhost4', 'port': '8080',
+             'tags': ['baz']},
+            {'type': 'tcp', 'host': 'localhost5', 'port': '8080',
+             'tags': ['bar']},
+        ]
+        result = build_checks(descriptions, 10, ['foo', 'bar'], [])
+        expected_subchecks = [
+            FunctionCheckMatcher('tcp:localhost2:8080', 'localhost2:8080'),
+            FunctionCheckMatcher('tcp:localhost3:8080', 'localhost3:8080'),
+            FunctionCheckMatcher('tcp:localhost5:8080', 'localhost5:8080'),
+        ]
+        self.assertThat(result,
+                MultiCheckMatcher(strategy=parallel_strategy,
+                    subchecks=expected_subchecks))
+
+    def test_build_checks_with_excluded_tags(self):
+        descriptions = [
+            {'type': 'tcp', 'host': 'localhost', 'port': '8080'},
+            {'type': 'tcp', 'host': 'localhost2', 'port': '8080',
+             'tags': ['foo']},
+            {'type': 'tcp', 'host': 'localhost3', 'port': '8080',
+             'tags': ['foo', 'bar']},
+            {'type': 'tcp', 'host': 'localhost4', 'port': '8080',
+             'tags': ['baz']},
+            {'type': 'tcp', 'host': 'localhost5', 'port': '8080',
+             'tags': ['bar']},
+        ]
+        result = build_checks(descriptions, 10, [], ['bar', 'baz'])
+        expected_subchecks = [
+            FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'),
+            FunctionCheckMatcher('tcp:localhost2:8080', 'localhost2:8080'),
+        ]
+        self.assertThat(result,
+                MultiCheckMatcher(strategy=parallel_strategy,
+                    subchecks=expected_subchecks))
 
     def test_ordered_output(self):
         lines = [
