@@ -233,13 +233,12 @@ def main(*args):
                         help="Don't buffer output, write to STDOUT right "
                              "away.")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--tags", dest="tags",
+    group.add_argument("--include-tags", dest="include_tags",
                        action="store", default="",
-                       help="Comma separated list of tagged checks to run.")
+                       help="Comma separated list of tags to include.")
     group.add_argument("--exclude-tags", dest="exclude_tags",
                        action="store", default="",
-                       help="Comma separated list of tagged checks to "
-                            "exclude.")
+                       help="Comma separated list of tags to exclude.")
     options = parser.parse_args(list(args))
 
     load_tls_certs(options.cacerts_path)
@@ -269,7 +268,7 @@ def main(*args):
         # We buffer output so we can order it for human readable output
         output = OrderedOutput(output)
 
-    tags = options.tags.split(',') if options.tags else []
+    tags = options.include_tags.split(',') if options.include_tags else []
     exclude = options.exclude_tags.split(',') if options.exclude_tags  else []
 
     results = ConsoleOutput(output=output,

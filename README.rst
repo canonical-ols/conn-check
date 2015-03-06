@@ -255,7 +255,7 @@ Tags
 ----
 
 Every check type also supports a ``tags`` field, which is a list of tags that
-can be used with the ``--tags`` and ``--exclude-tags`` arguments to conn-check.
+can be used with the ``--include-tags`` and ``--exclude-tags`` arguments to conn-check.
 
 Example YAML::
 
@@ -266,7 +266,7 @@ Example YAML::
 
 To run just "external" checks::
 
-    conn-check --tags=external ...
+    conn-check --include-tags=external ...
 
 To run all the checks *except* external::
 
