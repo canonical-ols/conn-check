@@ -42,27 +42,29 @@ def check_from_description(check_description):
     res = check['fn'](**check_description)
     return res
 
-def filter_tags(check, tags, exclude):
-    if not tags and not exclude:
+def filter_tags(check, include, exclude):
+    if not include and not exclude:
         return True
 
     check_tags = set(check.get('tags', []))
 
-    if tags:
-        result = bool(check_tags.intersection(tags))
+    if include:
+        result = bool(check_tags.intersection(include))
     else:
         result = not bool(check_tags.intersection(exclude))
 
     return result
 
 
-def build_checks(check_descriptions, connect_timeout, tags, exclude_tags):
+def build_checks(check_descriptions, connect_timeout, include_tags,
+                 exclude_tags):
     def set_timeout(desc):
         new_desc = dict(timeout=connect_timeout)
         new_desc.update(desc)
         return new_desc
-    check_descriptions = filter(lambda c: filter_tags(c, tags, exclude_tags),
-                                check_descriptions)
+    check_descriptions = filter(
+        lambda c: filter_tags(c, include_tags, exclude_tags),
+        check_descriptions)
     subchecks = map(check_from_description,
         map(set_timeout, check_descriptions))
     return parallel_check(subchecks)
@@ -268,7 +270,7 @@ def main(*args):
         # We buffer output so we can order it for human readable output
         output = OrderedOutput(output)
 
-    tags = options.include_tags.split(',') if options.include_tags else []
+    include = options.include_tags.split(',') if options.include_tags else []
     exclude = options.exclude_tags.split(',') if options.exclude_tags  else []
 
     results = ConsoleOutput(output=output,
@@ -279,7 +281,7 @@ def main(*args):
     with open(options.config_file) as f:
         descriptions = yaml.load(f)
 
-    checks = build_checks(descriptions, options.connect_timeout, tags, exclude)
+    checks = build_checks(descriptions, options.connect_timeout, include, exclude)
 
     if options.max_timeout is not None:
         def terminator():
