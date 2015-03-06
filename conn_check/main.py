@@ -51,7 +51,7 @@ def filter_tags(check, tags, exclude):
     if tags:
         result = bool(check_tags.intersection(tags))
     else:
-        result = bool(check_tags.intersection(exclude))
+        result = not bool(check_tags.intersection(exclude))
 
     return result
 
@@ -269,8 +269,8 @@ def main(*args):
         # We buffer output so we can order it for human readable output
         output = OrderedOutput(output)
 
-    tags = options.tags.split(',')
-    exclude_tags = options.tags.split(',')
+    tags = options.tags.split(',') if options.tags else []
+    exclude = options.exclude_tags.split(',') if options.exclude_tags  else []
 
     results = ConsoleOutput(output=output,
                             show_tracebacks=options.show_tracebacks,
@@ -280,8 +280,7 @@ def main(*args):
     with open(options.config_file) as f:
         descriptions = yaml.load(f)
 
-    checks = build_checks(descriptions, options.connect_timeout, tags,
-                          exclude_tags)
+    checks = build_checks(descriptions, options.connect_timeout, tags, exclude)
 
     if options.max_timeout is not None:
         def terminator():
