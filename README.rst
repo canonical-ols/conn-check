@@ -251,6 +251,27 @@ timeout
     Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
 
 
+Tags
+----
+
+Every check type also supports a ``tags`` field, which is a list of tags that
+can be used with the ``--tags`` and ``--exclude-tags`` arguments to conn-check.
+
+Example YAML::
+
+    - type: http
+      url: http://google.com/
+      tags:
+        - external
+
+To run just "external" checks::
+
+    conn-check --tags=external ...
+
+To run all the checks *except* external::
+
+    conn-check --exclude-tags=external
+
 Buffered/Ordered output
 -----------------------
 
