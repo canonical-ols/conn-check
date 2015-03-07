@@ -1,3 +1,9 @@
+conn-check (1.0.16-2) trusty; urgency=low
+
+  * Fix issue with enum34 not being vendored in build files.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Sat, 07 Mar 2015 02:19:13 +0000
+
 conn-check (1.0.16-1) trusty; urgency=low
 
   * Add --include-tags and --exclude-tags args with support for the `tags` YAML check field.
