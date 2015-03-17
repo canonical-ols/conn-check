@@ -5,6 +5,7 @@ conn_check/main.pyc
 conn_check/patterns.pyc
 tests.pyc
 debian/pythoncache
+debian/pythoncache/cryptography-0.8.tar.gz
 debian/pythoncache/txmongo-0.6-py2.py3-none-any.whl
 debian/pythoncache/enum34-1.0.4.tar.gz
 debian/pythoncache/txrequests-0.9.2.tar.gz
@@ -15,6 +16,7 @@ debian/pythoncache/simple/characteristic/characteristic-14.3.0-py2.py3-none-any.
 debian/pythoncache/simple/txmongo
 debian/pythoncache/simple/txmongo/txmongo-0.6-py2.py3-none-any.whl
 debian/pythoncache/simple/cryptography
+debian/pythoncache/simple/cryptography/cryptography-0.8.tar.gz
 debian/pythoncache/simple/cryptography/cryptography-0.7.2.tar.gz
 debian/pythoncache/simple/service_identity
 debian/pythoncache/simple/service_identity/service_identity-14.0.0-py2.py3-none-any.whl
