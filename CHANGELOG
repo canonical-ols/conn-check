@@ -1,6 +1,11 @@
 ChangeLog for conn-check
 ========================
 
+1.0.17 (2015-04-08)
+-------------------
+
+ - Unpin python-requests for wider distribution (e.g. precise).
+
 1.0.16 (2015-03-06)
 -------------------
 
