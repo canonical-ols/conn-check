@@ -1,3 +1,9 @@
+conn-check (1.0.18-1) trusty; urgency=low
+
+  * Add backported requests.auth classes for systems with requests<1.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 9 Apr 2015 13:55:56 +0000
+
 conn-check (1.0.17-1) trusty; urgency=low
 
   * Remove python-requests pin to make precise backport easier.
