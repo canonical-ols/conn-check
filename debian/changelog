@@ -1,8 +1,8 @@
-conn-check (1.0.17-2) trusty; urgency=low
+conn-check (1.0.17-3) trusty; urgency=low
 
-  * Unpin requests in vendored txrequests and cryptography eggs.
+  * Unpin six in vendored cryptography egg.
 
- -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 9 Apr 2015 14:35:30 +0000
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Thu, 9 Apr 2015 16:06:01 +0000
 
 conn-check (1.0.17-1) trusty; urgency=low
 

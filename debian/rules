@@ -7,6 +7,7 @@ override_dh_virtualenv:
 	dh_virtualenv --pypi-url file://$(CURDIR)/debian/pythoncache/simple --use-system-packages
 	sed -i '/^requests/d' ./debian/conn-check/usr/share/python/conn-check/lib/python2.7/site-packages/txrequests-*.egg-info/requires.txt
 	sed -i '/^requests/d' ./debian/conn-check/usr/share/python/conn-check/lib/python2.7/site-packages/cryptography-*.egg-info/requires.txt
+	sed -i '/^six/d' ./debian/conn-check/usr/share/python/conn-check/lib/python2.7/site-packages/cryptography-*.egg-info/requires.txt
 
 override_dh_auto_clean:
 	python setup.py clean -a
