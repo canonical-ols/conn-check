@@ -1,11 +1,6 @@
 ChangeLog for conn-check
 ========================
 
-1.0.18 (2015-04-09)
--------------------
-
- - Add backported requests.auth classes for systems with requests<1.
-
 1.0.17 (2015-04-08)
 -------------------
 
