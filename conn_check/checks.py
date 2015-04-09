@@ -21,8 +21,13 @@ from twisted.internet.protocol import (
 from twisted.protocols.memcache import MemCacheProtocol
 
 from txrequests import Session
-from requests.auth import HTTPDigestAuth
 from requests.packages import urllib3
+
+from requests import __version__ as requests_version
+if int(requests_version.split('.')[0]) < 1:
+    from conn_check.requests_backports import HTTPDigestAuth
+else:
+    from requests.auth import HTTPDigestAuth
 
 from .check_impl import (
     add_check_prefix,
