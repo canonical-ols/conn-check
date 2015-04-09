@@ -14,6 +14,13 @@ limitations under the License.
 """
 
 
+import os
+import time
+import hashlib
+from urlparse import urlparse
+from requests.utils import parse_dict_header
+
+
 class AuthBase(object):
     """Base class that all auth implementations derive from"""
 
@@ -47,13 +54,13 @@ class HTTPDigestAuth(AuthBase):
         # lambdas assume digest modules are imported at the top level
         if _algorithm == 'MD5' or _algorithm == 'MD5-SESS':
             def md5_utf8(x):
-                if isinstance(x, str):
+                if isinstance(x, unicode):
                     x = x.encode('utf-8')
                 return hashlib.md5(x).hexdigest()
             hash_utf8 = md5_utf8
         elif _algorithm == 'SHA':
             def sha_utf8(x):
-                if isinstance(x, str):
+                if isinstance(x, unicode):
                     x = x.encode('utf-8')
                 return hashlib.sha1(x).hexdigest()
             hash_utf8 = sha_utf8
@@ -82,7 +89,7 @@ class HTTPDigestAuth(AuthBase):
         else:
             self.nonce_count = 1
         ncvalue = '%08x' % self.nonce_count
-        s = str(self.nonce_count).encode('utf-8')
+        s = unicode(self.nonce_count).encode('utf-8')
         s += nonce.encode('utf-8')
         s += time.ctime().encode('utf-8')
         s += os.urandom(8)
