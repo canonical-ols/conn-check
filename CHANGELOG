@@ -1,6 +1,12 @@
 ChangeLog for conn-check
 ========================
 
+1.0.18 (unreleased)
+-------------------
+
+ - Ensure pyOpenSSL is always used instead of the ssl modules,
+   see https://urllib3.readthedocs.org/en/latest/security.html#pyopenssl.
+
 1.0.17 (2015-04-08)
 -------------------
 

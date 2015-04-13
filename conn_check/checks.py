@@ -22,7 +22,13 @@ from twisted.protocols.memcache import MemCacheProtocol
 
 from txrequests import Session
 from requests.auth import HTTPDigestAuth
-from requests.packages import urllib3
+
+try:
+    from requests.packages.urllib3 import disable_warnings
+    from requests.packages.urllib3.contrib.pyopenssl import inject_into_urllib3
+except ImportError:
+    from urllib3 import disable_warnings
+    from urllib3.contrib.pyopenssl import inject_into_urllib3
 
 from .check_impl import (
     add_check_prefix,
@@ -30,6 +36,9 @@ from .check_impl import (
     sequential_check,
     )
 
+
+# Ensure we always use pyOpenSSL instead of the ssl builtin
+inject_into_urllib3()
 
 CA_CERTS = []
 
@@ -248,7 +257,7 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
             args['auth'] = HTTPDigestAuth(digest_auth)
 
         if disable_tls_verification:
-            urllib3.disable_warnings()
+            disable_warnings()
 
         with Session() as session:
             request = session.request(**args)

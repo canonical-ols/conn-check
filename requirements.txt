@@ -1,5 +1,6 @@
 characteristic >= 14.0
 cryptography >= 0.5
+ndg-httpsclient
 pyasn1
 pyOpenSSL
 service_identity
