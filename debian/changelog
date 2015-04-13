@@ -1,3 +1,10 @@
+conn-check (1.0.18-2) trusty; urgency=low
+
+  * Rename ndg-httpsclient requirement as ndg_httpsclient so it can be found
+    correctly during build.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 13 Apr 2015 12:35:01 +0000
+
 conn-check (1.0.18-1) trusty; urgency=low
 
   * Ensure pyOpenSSL is always used instead of the ssl modules,
