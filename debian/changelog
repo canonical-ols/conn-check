@@ -1,3 +1,10 @@
+conn-check (1.0.18-1) trusty; urgency=low
+
+  * Ensure pyOpenSSL is always used instead of the ssl modules,
+    see https://urllib3.readthedocs.org/en/latest/security.html#pyopenssl.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Mon, 13 Apr 2015 10:21:52 +0000
+
 conn-check (1.0.17-4) trusty; urgency=low
 
   * Ensure all non-deb'd deps are definitely vendored at build time.
