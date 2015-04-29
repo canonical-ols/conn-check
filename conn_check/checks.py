@@ -46,7 +46,8 @@ CA_CERTS = []
 def load_tls_certs(path):
     cert_map = {}
     for filepath in glob.glob("{}/*.pem".format(os.path.abspath(path))):
-        # There might be some dead symlinks in there, so let's make sure it's real.
+        # There might be some dead symlinks in there,
+        # so let's make sure it's real.
         if os.path.exists(filepath):
             data = open(filepath).read()
             x509 = load_certificate(FILETYPE_PEM, data)
@@ -117,8 +118,9 @@ def make_tls_check(host, port, disable_tls_verification=False, timeout=None,
     """Return a check for TLS setup."""
     return make_check("tls:{}:{}".format(host, port),
                       lambda: do_tcp_check(host, port, tls=True,
-                          tls_verify=(not disable_tls_verification),
-                          timeout=timeout),
+                                           tls_verify=(
+                                               not disable_tls_verification),
+                                           timeout=timeout),
                       info="%s:%s" % (host, port))
 
 
@@ -182,7 +184,7 @@ def make_udp_check(host, port, send, expect, timeout=None,
                    **kwargs):
     """Return a check for UDP connectivity."""
     return make_check("udp:{}:{}".format(host, port),
-            lambda: do_udp_check(host, port, send, expect, timeout),
+                      lambda: do_udp_check(host, port, send, expect, timeout),
                       info="%s:%s" % (host, port))
 
 
@@ -219,10 +221,10 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
     def do_request():
         proxies = {}
         if proxy_url:
-            proxies['http'] = proxies['https']= proxy_url
+            proxies['http'] = proxies['https'] = proxy_url
         elif proxy_host:
-            proxies['http'] = proxies['https']= '{}:{}'.format(
-                                                 proxy_host, proxy_port)
+            proxies['http'] = proxies['https'] = '{}:{}'.format(
+                proxy_host, proxy_port)
 
         headers = kwargs.get('headers')
         body = kwargs.get('body')
@@ -266,12 +268,16 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
             if response.status_code != expected_code:
                 raise RuntimeError(
                     "Unexpected response code: {}".format(
-                                               response.status_code))
+                        response.status_code))
 
     subchecks.append(make_check('', do_request,
                      info='{} {}'.format(method, url)))
     return add_check_prefix('http:{}'.format(url),
                             sequential_check(subchecks))
+
+
+def make_swift_check(keystone_url, username, password, **kwargs):
+    pass
 
 
 def make_amqp_check(host, port, username, password, use_tls=True, vhost="/",
@@ -378,6 +384,7 @@ def make_memcache_check(host, port, password=None, timeout=None,
                                                  timeout=timeout)
 
         version = yield client.version()
+        assert version is not None
 
     subchecks.append(make_check('connect', do_connect))
     return add_check_prefix('memcache:{}:{}'.format(host, port),
@@ -411,6 +418,7 @@ def make_mongodb_check(host, port=27017, username=None, password=None,
 
         mongo = yield conn
         names = yield mongo[database].collection_names()
+        assert names is not None
 
     def timeout_handler():
         """Manual timeout handler as txmongo timeout args above don't work in
@@ -419,7 +427,10 @@ def make_mongodb_check(host, port=27017, username=None, password=None,
             err = ValueError("timeout connecting to mongodb")
             do_connect.func_dict['deferred'].errback(err)
 
-    connect_info = "connect with auth" if any((username, password)) else "connect"
+    if any((username, password)):
+        connect_info = "connect with auth"
+    else:
+        connect_info = "connect"
     subchecks.append(make_check(connect_info, do_connect))
     return add_check_prefix('mongodb:{}:{}'.format(host, port),
                             sequential_check(subchecks))
