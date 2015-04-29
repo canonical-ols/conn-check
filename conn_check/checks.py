@@ -277,7 +277,10 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
 
 
 def make_swift_check(keystone_url, username, password, **kwargs):
-    pass
+    subchecks = []
+    subchecks.append(make_http_check(keystone_url,
+                                     auth=(username, password)))
+    return sequential_check(subchecks)
 
 
 def make_amqp_check(host, port, username, password, use_tls=True, vhost="/",
