@@ -140,6 +140,12 @@ class OrderedOutput(object):
         map(self.output.write, self.skipped)
 
 
+class FirewallRulesOutput(object):
+
+    def __init__(self, output):
+        self.output = output
+
+
 class ConsoleOutput(ResultTracker):
     """Displays check results."""
 
@@ -236,7 +242,7 @@ def main(*args):
                         action="store_false", default=True,
                         help="Don't buffer output, write to STDOUT right "
                              "away.")
-    parser.add_argument("-R", "--output-fw-rules", dest="outout_fw_rules",
+    parser.add_argument("-R", "--output-fw-rules", dest="output_fw_rules",
                         action="store_false", default=False,
                         help="Output proposed firewall rules in YAML.")
     group = parser.add_mutually_exclusive_group()
@@ -274,6 +280,9 @@ def main(*args):
     if options.buffer_output:
         # We buffer output so we can order it for human readable output
         output = OrderedOutput(output)
+
+    if options.output_fw_rules:
+        output = FirewallRulesOutput(output)
 
     include = options.include_tags.split(',') if options.include_tags else []
     exclude = options.exclude_tags.split(',') if options.exclude_tags else []
