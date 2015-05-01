@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 import sys
 from threading import Thread
 import time
@@ -33,14 +33,15 @@ def check_from_description(check_description):
 
     check = CHECKS.get(_type, None)
     if check is None:
-        raise AssertionError("Unknown check type: {}, available checks: {}".format(
-            _type, CHECKS.keys()))
+        raise AssertionError("Unknown check type: {}, available checks: {}"
+                             .format(_type, CHECKS.keys()))
     for arg in check['args']:
         if arg not in check_description:
             raise AssertionError('{} missing from check: {}'.format(arg,
-                check_description))
+                                 check_description))
     res = check['fn'](**check_description)
     return res
+
 
 def filter_tags(check, include, exclude):
     if not include and not exclude:
@@ -66,7 +67,7 @@ def build_checks(check_descriptions, connect_timeout, include_tags,
         lambda c: filter_tags(c, include_tags, exclude_tags),
         check_descriptions)
     subchecks = map(check_from_description,
-        map(set_timeout, check_descriptions))
+                    map(set_timeout, check_descriptions))
     return parallel_check(subchecks)
 
 
@@ -218,7 +219,8 @@ def main(*args):
                         help="Show tracebacks on failure")
     parser.add_argument("--validate", dest="validate",
                         action="store_true", default=False,
-                        help="Only validate the config file, don't run checks.")
+                        help="Only validate the config file, don't run checks."
+                        )
     parser.add_argument("--version", dest="print_version",
                         action="store_true", default=False,
                         help="Print the currently installed version.")
@@ -234,6 +236,9 @@ def main(*args):
                         action="store_false", default=True,
                         help="Don't buffer output, write to STDOUT right "
                              "away.")
+    parser.add_argument("-R", "--output-fw-rules", dest="outout_fw_rules",
+                        action="store_false", default=False,
+                        help="Output proposed firewall rules in YAML.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--include-tags", dest="include_tags",
                        action="store", default="",
@@ -271,7 +276,7 @@ def main(*args):
         output = OrderedOutput(output)
 
     include = options.include_tags.split(',') if options.include_tags else []
-    exclude = options.exclude_tags.split(',') if options.exclude_tags  else []
+    exclude = options.exclude_tags.split(',') if options.exclude_tags else []
 
     results = ConsoleOutput(output=output,
                             show_tracebacks=options.show_tracebacks,
@@ -281,7 +286,8 @@ def main(*args):
     with open(options.config_file) as f:
         descriptions = yaml.load(f)
 
-    checks = build_checks(descriptions, options.connect_timeout, include, exclude)
+    checks = build_checks(descriptions, options.connect_timeout,
+                          include, exclude)
 
     if options.max_timeout is not None:
         def terminator():
@@ -312,4 +318,3 @@ def run():
 
 if __name__ == '__main__':
     run()
-
