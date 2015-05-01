@@ -217,61 +217,63 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
     else:
         subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
-    @inlineCallbacks
-    def do_request():
-        proxies = {}
-        if proxy_url:
-            proxies['http'] = proxies['https'] = proxy_url
-        elif proxy_host:
-            proxies['http'] = proxies['https'] = '{}:{}'.format(
-                proxy_host, proxy_port)
+    if not kwargs.get('only_basic', False):
+        @inlineCallbacks
+        def do_request():
+            proxies = {}
+            if proxy_url:
+                proxies['http'] = proxies['https'] = proxy_url
+            elif proxy_host:
+                proxies['http'] = proxies['https'] = '{}:{}'.format(
+                    proxy_host, proxy_port)
 
-        headers = kwargs.get('headers')
-        body = kwargs.get('body')
-        disable_tls_verification = kwargs.get('disable_tls_verification',
-                                              False)
-        allow_redirects = kwargs.get('allow_redirects', False)
-        params = kwargs.get('params')
-        cookies = kwargs.get('cookies')
-        auth = kwargs.get('auth')
-        digest_auth = kwargs.get('digest_auth')
+            headers = kwargs.get('headers')
+            body = kwargs.get('body')
+            disable_tls_verification = kwargs.get('disable_tls_verification',
+                                                  False)
+            allow_redirects = kwargs.get('allow_redirects', False)
+            params = kwargs.get('params')
+            cookies = kwargs.get('cookies')
+            auth = kwargs.get('auth')
+            digest_auth = kwargs.get('digest_auth')
 
-        args = {
-            'method': method,
-            'url': url,
-            'verify': not disable_tls_verification,
-            'timeout': timeout,
-            'allow_redirects': allow_redirects,
-        }
-        if headers:
-            args['headers'] = headers
-        if body:
-            args['data'] = body
-        if proxies:
-            args['proxies'] = proxies
-        if params:
-            args['params'] = params
-        if cookies:
-            args['cookies'] = cookies
-        if auth:
-            args['auth'] = auth
-        if digest_auth:
-            args['auth'] = HTTPDigestAuth(digest_auth)
+            args = {
+                'method': method,
+                'url': url,
+                'verify': not disable_tls_verification,
+                'timeout': timeout,
+                'allow_redirects': allow_redirects,
+            }
+            if headers:
+                args['headers'] = headers
+            if body:
+                args['data'] = body
+            if proxies:
+                args['proxies'] = proxies
+            if params:
+                args['params'] = params
+            if cookies:
+                args['cookies'] = cookies
+            if auth:
+                args['auth'] = auth
+            if digest_auth:
+                args['auth'] = HTTPDigestAuth(digest_auth)
 
-        if disable_tls_verification:
-            disable_warnings()
+            if disable_tls_verification:
+                disable_warnings()
 
-        with Session() as session:
-            request = session.request(**args)
+            with Session() as session:
+                request = session.request(**args)
 
-            response = yield request
-            if response.status_code != expected_code:
-                raise RuntimeError(
-                    "Unexpected response code: {}".format(
-                        response.status_code))
+                response = yield request
+                if response.status_code != expected_code:
+                    raise RuntimeError(
+                        "Unexpected response code: {}".format(
+                            response.status_code))
 
-    subchecks.append(make_check('', do_request,
-                     info='{} {}'.format(method, url)))
+        subchecks.append(make_check('', do_request,
+                         info='{} {}'.format(method, url)))
+
     return add_check_prefix('http:{}'.format(url),
                             sequential_check(subchecks))
 
@@ -290,25 +292,26 @@ def make_amqp_check(host, port, username, password, use_tls=True, vhost="/",
     from txamqp.client import TwistedDelegate
     from txamqp.spec import load as load_spec
 
-    subchecks = []
-    subchecks.append(make_tcp_check(host, port, timeout=timeout))
+    if not kwargs.get('only_basic', False):
+        subchecks = []
+        subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
-    if use_tls:
-        subchecks.append(make_tls_check(host, port, verify=False,
-                                        timeout=timeout))
+        if use_tls:
+            subchecks.append(make_tls_check(host, port, verify=False,
+                                            timeout=timeout))
 
-    @inlineCallbacks
-    def do_auth():
-        """Connect and authenticate."""
-        delegate = TwistedDelegate()
-        spec = load_spec(resource_stream('conn_check', 'amqp0-8.xml'))
-        creator = ClientCreator(reactor, AMQClient,
-                                delegate, vhost, spec)
-        client = yield creator.connectTCP(host, port, timeout=timeout)
-        yield client.authenticate(username, password)
+        @inlineCallbacks
+        def do_auth():
+            """Connect and authenticate."""
+            delegate = TwistedDelegate()
+            spec = load_spec(resource_stream('conn_check', 'amqp0-8.xml'))
+            creator = ClientCreator(reactor, AMQClient,
+                                    delegate, vhost, spec)
+            client = yield creator.connectTCP(host, port, timeout=timeout)
+            yield client.authenticate(username, password)
 
-    subchecks.append(make_check("amqp:{}:{}".format(host, port),
-                                do_auth, info="user %s" % (username,),))
+        subchecks.append(make_check("amqp:{}:{}".format(host, port),
+                                    do_auth, info="user %s" % (username,),))
     return sequential_check(subchecks)
 
 
@@ -329,17 +332,19 @@ def make_postgres_check(host, port, username, password, database,
         connect_kw['port'] = port
         subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
-    if password is not None:
-        connect_kw['password'] = password
+    if not kwargs.get('only_basic', False):
+        if password is not None:
+            connect_kw['password'] = password
 
-    def check_auth():
-        """Try to establish a postgres connection and log in."""
-        conn = psycopg2.connect(**connect_kw)
-        conn.close()
+        def check_auth():
+            """Try to establish a postgres connection and log in."""
+            conn = psycopg2.connect(**connect_kw)
+            conn.close()
 
-    subchecks.append(make_check("postgres:{}:{}".format(host, port),
-                                check_auth, info="user %s" % (username,),
-                                blocking=True))
+        subchecks.append(make_check("postgres:{}:{}".format(host, port),
+                                    check_auth, info="user %s" % (username,),
+                                    blocking=True))
+
     return sequential_check(subchecks)
 
 
@@ -350,25 +355,30 @@ def make_redis_check(host, port, password=None, timeout=None,
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
-    @inlineCallbacks
-    def do_connect():
-        """Connect and authenticate.
-        """
-        client_creator = ClientCreator(reactor, txredis.client.RedisClient)
-        client = yield client_creator.connectTCP(host=host, port=port,
-                                                 timeout=timeout)
+    if not kwargs.get('only_basic', False):
+        @inlineCallbacks
+        def do_connect():
+            """Connect and authenticate.
+            """
+            client_creator = ClientCreator(reactor, txredis.client.RedisClient)
+            client = yield client_creator.connectTCP(host=host, port=port,
+                                                     timeout=timeout)
 
-        if password is None:
-            ping = yield client.ping()
-            if not ping:
-                raise RuntimeError("failed to ping redis")
+            if password is None:
+                ping = yield client.ping()
+                if not ping:
+                    raise RuntimeError("failed to ping redis")
+            else:
+                resp = yield client.auth(password)
+                if resp != 'OK':
+                    raise RuntimeError("failed to auth to redis")
+
+        if password is not None:
+            connect_info = "connect with auth"
         else:
-            resp = yield client.auth(password)
-            if resp != 'OK':
-                raise RuntimeError("failed to auth to redis")
+            connect_info = "connect"
+        subchecks.append(make_check(connect_info, do_connect))
 
-    connect_info = "connect with auth" if password is not None else "connect"
-    subchecks.append(make_check(connect_info, do_connect))
     return add_check_prefix('redis:{}:{}'.format(host, port),
                             sequential_check(subchecks))
 
@@ -379,17 +389,19 @@ def make_memcache_check(host, port, password=None, timeout=None,
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
-    @inlineCallbacks
-    def do_connect():
-        """Connect and authenticate."""
-        client_creator = ClientCreator(reactor, MemCacheProtocol)
-        client = yield client_creator.connectTCP(host=host, port=port,
-                                                 timeout=timeout)
+    if not kwargs.get('only_basic', False):
+        @inlineCallbacks
+        def do_connect():
+            """Connect and authenticate."""
+            client_creator = ClientCreator(reactor, MemCacheProtocol)
+            client = yield client_creator.connectTCP(host=host, port=port,
+                                                     timeout=timeout)
 
-        version = yield client.version()
-        assert version is not None
+            version = yield client.version()
+            assert version is not None
 
-    subchecks.append(make_check('connect', do_connect))
+        subchecks.append(make_check('connect', do_connect))
+
     return add_check_prefix('memcache:{}:{}'.format(host, port),
                             sequential_check(subchecks))
 
@@ -404,37 +416,39 @@ def make_mongodb_check(host, port=27017, username=None, password=None,
 
     port = int(port)
 
-    @inlineCallbacks
-    def do_connect():
-        """Try to establish a mongodb connection."""
-        conn = txmongo.MongoConnection(host, port)
+    if not kwargs.get('only_basic', False):
+        @inlineCallbacks
+        def do_connect():
+            """Try to establish a mongodb connection."""
+            conn = txmongo.MongoConnection(host, port)
 
-        conn.uri['options']['connectTimeoutMS'] = int(timeout*1000)
-        if username:
-            conn.uri['username'] = username
-        if password:
-            conn.uri['password'] = password
+            conn.uri['options']['connectTimeoutMS'] = int(timeout*1000)
+            if username:
+                conn.uri['username'] = username
+            if password:
+                conn.uri['password'] = password
 
-        # We don't start our timeout callback until now, otherwise we might
-        # elapse part of our timeout period during the earlier TCP check
-        reactor.callLater(timeout, timeout_handler)
+            # We don't start our timeout callback until now, otherwise we might
+            # elapse part of our timeout period during the earlier TCP check
+            reactor.callLater(timeout, timeout_handler)
 
-        mongo = yield conn
-        names = yield mongo[database].collection_names()
-        assert names is not None
+            mongo = yield conn
+            names = yield mongo[database].collection_names()
+            assert names is not None
 
-    def timeout_handler():
-        """Manual timeout handler as txmongo timeout args above don't work in
-        many situations."""
-        if 'deferred' in do_connect.func_dict:
-            err = ValueError("timeout connecting to mongodb")
-            do_connect.func_dict['deferred'].errback(err)
+        def timeout_handler():
+            """Manual timeout handler as txmongo timeout args above don't work
+            in many situations."""
+            if 'deferred' in do_connect.func_dict:
+                err = ValueError("timeout connecting to mongodb")
+                do_connect.func_dict['deferred'].errback(err)
 
-    if any((username, password)):
-        connect_info = "connect with auth"
-    else:
-        connect_info = "connect"
-    subchecks.append(make_check(connect_info, do_connect))
+        if any((username, password)):
+            connect_info = "connect with auth"
+        else:
+            connect_info = "connect"
+        subchecks.append(make_check(connect_info, do_connect))
+
     return add_check_prefix('mongodb:{}:{}'.format(host, port),
                             sequential_check(subchecks))
 

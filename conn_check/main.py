@@ -25,7 +25,7 @@ from .patterns import (
     )
 
 
-def check_from_description(check_description):
+def check_from_description(check_description, use_base_protocols=False):
     _type = check_description['type']
 
     if _type in CHECK_ALIASES:
@@ -39,6 +39,11 @@ def check_from_description(check_description):
         if arg not in check_description:
             raise AssertionError('{} missing from check: {}'.format(arg,
                                  check_description))
+
+    # Flag to force check function to only perform a base TCP/UDP check
+    if use_base_protocols:
+        check_description['only_basic'] = True
+
     res = check['fn'](**check_description)
     return res
 
@@ -58,16 +63,19 @@ def filter_tags(check, include, exclude):
 
 
 def build_checks(check_descriptions, connect_timeout, include_tags,
-                 exclude_tags):
+                 exclude_tags, use_base_protocols=False):
     def set_timeout(desc):
         new_desc = dict(timeout=connect_timeout)
         new_desc.update(desc)
         return new_desc
+
     check_descriptions = filter(
         lambda c: filter_tags(c, include_tags, exclude_tags),
         check_descriptions)
-    subchecks = map(check_from_description,
-                    map(set_timeout, check_descriptions))
+
+    subchecks = map(
+        lambda c: check_from_description(c, use_base_protocols),
+        map(set_timeout, check_descriptions))
     return parallel_check(subchecks)
 
 
@@ -243,8 +251,12 @@ def main(*args):
                         help="Don't buffer output, write to STDOUT right "
                              "away.")
     parser.add_argument("-R", "--output-fw-rules", dest="output_fw_rules",
-                        action="store_false", default=False,
-                        help="Output proposed firewall rules in YAML.")
+                        action="store_true", default=False,
+                        help="Output proposed firewall rules in YAML,"
+                        " implies -B/--use-base-protocols.")
+    parser.add_argument("-B", "--use-base-protocols",
+                        dest="use_base_protocols", action="store_true",
+                        default=False, help="Use only base TCP/UDP checks.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--include-tags", dest="include_tags",
                        action="store", default="",
@@ -296,7 +308,7 @@ def main(*args):
         descriptions = yaml.load(f)
 
     checks = build_checks(descriptions, options.connect_timeout,
-                          include, exclude)
+                          include, exclude, options.use_base_protocols)
 
     if options.max_timeout is not None:
         def terminator():
