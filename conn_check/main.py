@@ -154,12 +154,21 @@ class FirewallRulesOutput(object):
 
     def __init__(self, output):
         self.output = output
+        self.output_data = []
 
     def write(self, data):
-        return self.output.write(data)
+        parts = data.split(' ')[0][::-1]
+        port, host, _type = parts.split(':')[0:3]
+        d = {
+            'type': 'egress',
+            'from': 'localhost',
+            'to': host,
+            'ports': [int(port)]
+        }
+        self.output_data.append(d)
 
     def flush(self):
-        return self.output.flush()
+        self.output.write(yaml.dump(self.output_data))
 
 
 class ConsoleOutput(ResultTracker):
@@ -261,8 +270,7 @@ def main(*args):
     parser.add_argument("-R", "--output-fw-rules", dest="output_fw_rules",
                         action="store_true", default=False,
                         help="Output proposed firewall rules in YAML,"
-                        " implies -B/--use-base-protocols and"
-                        " -U/--unbuffered-output.")
+                        " implies -B/--use-base-protocols.")
     parser.add_argument("-B", "--use-base-protocols",
                         dest="use_base_protocols", action="store_true",
                         default=False, help="Use only base TCP/UDP checks.")
