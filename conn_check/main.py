@@ -153,6 +153,12 @@ class FirewallRulesOutput(object):
     def __init__(self, output):
         self.output = output
 
+    def write(self, data):
+        return self.output.write(data)
+
+    def flush(self):
+        return self.output.flush()
+
 
 class ConsoleOutput(ResultTracker):
     """Displays check results."""
@@ -253,7 +259,8 @@ def main(*args):
     parser.add_argument("-R", "--output-fw-rules", dest="output_fw_rules",
                         action="store_true", default=False,
                         help="Output proposed firewall rules in YAML,"
-                        " implies -B/--use-base-protocols.")
+                        " implies -B/--use-base-protocols and"
+                        " -U/--unbuffered-output.")
     parser.add_argument("-B", "--use-base-protocols",
                         dest="use_base_protocols", action="store_true",
                         default=False, help="Use only base TCP/UDP checks.")
@@ -289,12 +296,16 @@ def main(*args):
     if options.show_duration:
         output = TimestampOutput(output)
 
+    if options.output_fw_rules:
+        output = FirewallRulesOutput(output)
+
+        # Output is always unbuffered and we only need TCP/UDP checks
+        options.buffer_output = False
+        options.use_base_protocols = True
+
     if options.buffer_output:
         # We buffer output so we can order it for human readable output
         output = OrderedOutput(output)
-
-    if options.output_fw_rules:
-        output = FirewallRulesOutput(output)
 
     include = options.include_tags.split(',') if options.include_tags else []
     exclude = options.exclude_tags.split(',') if options.exclude_tags else []
