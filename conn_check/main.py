@@ -110,6 +110,7 @@ class TimestampOutput(object):
 
 
 class OrderedOutput(object):
+    """Outputs check results ordered by FAILED, SUCCESSFUL, SKIPPED checks."""
 
     def __init__(self, output):
         self.output = output
@@ -149,6 +150,7 @@ class OrderedOutput(object):
 
 
 class FirewallRulesOutput(object):
+    """Outputs a set of YAML firewall rules matching checks."""
 
     def __init__(self, output):
         self.output = output
@@ -161,7 +163,7 @@ class FirewallRulesOutput(object):
 
 
 class ConsoleOutput(ResultTracker):
-    """Displays check results."""
+    """Outputs check results to STDOUT."""
 
     def __init__(self, output, verbose, show_tracebacks, show_duration):
         """Initialize an instance."""
