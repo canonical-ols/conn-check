@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from collections import defaultdict
+import socket
 import sys
 from threading import Thread
 import time
@@ -154,21 +155,24 @@ class FirewallRulesOutput(object):
 
     def __init__(self, output):
         self.output = output
-        self.output_data = []
+        self.output_data = {}
+        self.hostname = socket.gethostname()
 
     def write(self, data):
         parts = data.split(' ')[0][::-1]
         port, host, _type = parts.split(':')[0:3]
-        d = {
-            'type': 'egress',
-            'from': 'localhost',
-            'to': host,
-            'ports': [int(port)]
-        }
-        self.output_data.append(d)
+        if host not in self.output_data:
+            self.output_data[host] = {
+                'type': 'egress',
+                'to': host,
+                'from': self.hostname,
+                'ports': [],
+            }
+
+        self.output_data[host]['ports'].append(int(port))
 
     def flush(self):
-        self.output.write(yaml.dump(self.output_data))
+        self.output.write(yaml.dump(self.output_data.values()))
 
 
 class ConsoleOutput(ResultTracker):
