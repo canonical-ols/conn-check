@@ -175,7 +175,6 @@ class FirewallRulesOutput(object):
         key = "{}:{}".format(host, protocol)
         if key not in self.output_data:
             self.output_data[key] = {
-                'type': 'egress',
                 'to': host,
                 'from': self.hostname,
                 'ports': [],
@@ -185,7 +184,7 @@ class FirewallRulesOutput(object):
         self.output_data[key]['ports'].append(int(port))
 
     def flush(self):
-        self.output.write(yaml.dump(self.output_data.values()))
+        self.output.write(yaml.dump({'egress': self.output_data.values()}))
 
 
 class ConsoleOutput(ResultTracker):
