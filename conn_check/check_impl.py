@@ -140,7 +140,7 @@ class PrefixResultWrapper(ResultTracker):
     def notify_failure(self, name, info, exc_info, duration):
         """Register failure."""
         self.wrapped.notify_failure(self.make_name(name),
-                                      info, exc_info, duration)
+                                    info, exc_info, duration)
 
 
 class FailureCountingResultWrapper(ResultTracker):
@@ -261,6 +261,15 @@ class PrefixCheckWrapper(Check):
 
 
 @inlineCallbacks
+def skipping_strategy(subchecks, pattern, results):
+    """Strategy used to print checks out by just skipping them all.
+    """
+    for subcheck in subchecks:
+        subcheck.skip(pattern, results)
+    raise StopIteration
+
+
+@inlineCallbacks
 def sequential_strategy(subchecks, pattern, results):
     """Run subchecks sequentially, skipping checks after the first failure.
 
@@ -293,6 +302,11 @@ def parallel_strategy(subchecks, pattern, results):
     deferreds = [maybeDeferred(subcheck.check, pattern, results)
                  for subcheck in subchecks]
     return DeferredList(deferreds)
+
+
+def skipping_check(subchecks):
+    """Return a check that skips everything, used for printing checks."""
+    return MultiCheck(subchecks=subchecks, strategy=skipping_strategy)
 
 
 def parallel_check(subchecks):
@@ -330,4 +344,3 @@ def make_check(name, check, info=None, blocking=False):
 def guard_check(check, predicate):
     """Wrap a check so that it is skipped unless the predicate is true."""
     return ConditionalCheck(wrapped=check, predicate=predicate)
-

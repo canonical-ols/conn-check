@@ -17,6 +17,7 @@ from . import get_version_string
 from .check_impl import (
     FailureCountingResultWrapper,
     parallel_check,
+    skipping_check,
     ResultTracker,
     )
 from .checks import CHECK_ALIASES, CHECKS, load_tls_certs
@@ -64,7 +65,7 @@ def filter_tags(check, include, exclude):
 
 
 def build_checks(check_descriptions, connect_timeout, include_tags,
-                 exclude_tags, use_base_protocols=False):
+                 exclude_tags, use_base_protocols=False, skip_checks=False):
     def set_timeout(desc):
         new_desc = dict(timeout=connect_timeout)
         new_desc.update(desc)
@@ -77,7 +78,12 @@ def build_checks(check_descriptions, connect_timeout, include_tags,
     subchecks = map(
         lambda c: check_from_description(c, use_base_protocols),
         map(set_timeout, check_descriptions))
-    return parallel_check(subchecks)
+
+    if skip_checks:
+        strategy_wrapper = skipping_check
+    else:
+        strategy_wrapper = parallel_check
+    return strategy_wrapper(subchecks)
 
 
 @inlineCallbacks
@@ -159,8 +165,12 @@ class FirewallRulesOutput(object):
         self.hostname = socket.gethostname()
 
     def write(self, data):
-        parts = data.split(' ')[0][::-1]
-        port, host, _type = parts.split(':')[0:3]
+        parts = data.lstrip('SKIPPING: ').rstrip()
+        # Here we take the list of colon separated values in reverse order, so
+        # we're guaranteed to get the host/port/type for the TCP/UDP check
+        # without the specific prefix (e.g. memcache, http)
+        port, host, _type = parts.split(':')[::-1][0:3]
+
         if host not in self.output_data:
             self.output_data[host] = {
                 'type': 'egress',
@@ -278,6 +288,10 @@ def main(*args):
     parser.add_argument("-B", "--use-base-protocols",
                         dest="use_base_protocols", action="store_true",
                         default=False, help="Use only base TCP/UDP checks.")
+    parser.add_argument("--skip-all-checks",
+                        dest="skip", action="store_true",
+                        default=False, help="Skip all checks, just print out"
+                        " what would be run.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--include-tags", dest="include_tags",
                        action="store", default="",
@@ -313,11 +327,11 @@ def main(*args):
     if options.output_fw_rules:
         output = FirewallRulesOutput(output)
 
-        # Output is always unbuffered and we only need TCP/UDP checks
-        options.buffer_output = False
+        # We only need TCP/UDP checks
         options.use_base_protocols = True
-
-    if options.buffer_output:
+        # We don't want to actually perform the checks
+        options.skip = True
+    elif options.buffer_output:
         # We buffer output so we can order it for human readable output
         output = OrderedOutput(output)
 
@@ -333,7 +347,8 @@ def main(*args):
         descriptions = yaml.load(f)
 
     checks = build_checks(descriptions, options.connect_timeout,
-                          include, exclude, options.use_base_protocols)
+                          include, exclude, options.use_base_protocols,
+                          options.skip)
 
     if options.max_timeout is not None:
         def terminator():
