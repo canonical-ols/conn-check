@@ -165,21 +165,24 @@ class FirewallRulesOutput(object):
         self.hostname = socket.gethostname()
 
     def write(self, data):
-        parts = data.lstrip('SKIPPING: ').rstrip()
+        parts = data.lstrip('SKIPPING: ')
         # Here we take the list of colon separated values in reverse order, so
-        # we're guaranteed to get the host/port/type for the TCP/UDP check
+        # we're guaranteed to get the host/port/proto for the TCP/UDP check
         # without the specific prefix (e.g. memcache, http)
-        port, host, _type = parts.split(':')[::-1][0:3]
+        port, host, protocol = parts.split(':')[::-1][0:3]
+        protocol = protocol.strip()
 
-        if host not in self.output_data:
-            self.output_data[host] = {
+        key = "{}:{}".format(host, protocol)
+        if key not in self.output_data:
+            self.output_data[key] = {
                 'type': 'egress',
                 'to': host,
                 'from': self.hostname,
                 'ports': [],
+                'protocol': protocol,
             }
 
-        self.output_data[host]['ports'].append(int(port))
+        self.output_data[key]['ports'].append(int(port))
 
     def flush(self):
         self.output.write(yaml.dump(self.output_data.values()))
