@@ -182,7 +182,9 @@ class FirewallRulesOutput(object):
                 'protocol': protocol,
             }
 
-        self.output_data[key]['ports'].append(int(port))
+        port = int(port)
+        if port not in self.output_data[key]['ports']:
+            self.output_data[key]['ports'].append(port)
 
     def flush(self):
         self.output.write(yaml.dump({'egress': self.output_data.values()}))
