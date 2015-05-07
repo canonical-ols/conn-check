@@ -1,6 +1,5 @@
 from argparse import ArgumentParser
 from collections import defaultdict
-from netaddr import IPNetwork
 import socket
 import sys
 from threading import Thread
@@ -163,7 +162,7 @@ class FirewallRulesOutput(object):
     def __init__(self, output):
         self.output = output
         self.output_data = {}
-        self.cidr = str(IPNetwork(socket.gethostbyname(socket.getfqdn())).cidr)
+        self.fqdn = socket.getfqdn()
 
     def write(self, data):
         parts = data.lstrip('SKIPPING: ')
@@ -176,8 +175,8 @@ class FirewallRulesOutput(object):
         key = "{}:{}".format(host, protocol)
         if key not in self.output_data:
             self.output_data[key] = {
-                'from': self.cidr,
-                'to': str(IPNetwork(socket.gethostbyname(host)).cidr),
+                'from_host': self.fqdn,
+                'to_host': host,
                 'ports': [],
                 'protocol': protocol,
             }
