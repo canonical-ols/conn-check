@@ -289,11 +289,11 @@ def main(*args):
                         action="store_true", default=False,
                         help="Output proposed firewall rules in YAML,"
                         " implies -B/--use-base-protocols and"
-                        " --skip-all-checks.")
+                        " --dry-run.")
     parser.add_argument("-B", "--use-base-protocols",
                         dest="use_base_protocols", action="store_true",
                         default=False, help="Use only base TCP/UDP checks.")
-    parser.add_argument("--skip-all-checks",
+    parser.add_argument("--dry-run",
                         dest="skip", action="store_true",
                         default=False, help="Skip all checks, just print out"
                         " what would be run.")
