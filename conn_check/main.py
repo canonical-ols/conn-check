@@ -160,15 +160,17 @@ class FirewallRulesOutput(object):
         self.output_data = {}
         self.fqdn = socket.getfqdn()
 
+    def notify_skip(self, name):
+        self.write(name)
+
     def write(self, data):
         if not any(x in data for x in ('tcp', 'udp')):
             return
 
-        parts = data.lstrip('SKIPPING: ')
         # Here we take the list of colon separated values in reverse order, so
         # we're guaranteed to get the host/port/proto for the TCP/UDP check
         # without the specific prefix (e.g. memcache, http)
-        port, host, protocol = parts.split(':')[::-1][0:3]
+        port, host, protocol = data.split(':')[::-1][0:3]
         protocol = protocol.strip()
 
         key = "{}:{}".format(host, protocol)
