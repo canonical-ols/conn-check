@@ -27,7 +27,7 @@ from .patterns import (
     )
 
 
-def check_from_description(check_description, use_base_protocols=False):
+def check_from_description(check_description):
     _type = check_description['type']
 
     if _type in CHECK_ALIASES:
@@ -41,10 +41,6 @@ def check_from_description(check_description, use_base_protocols=False):
         if arg not in check_description:
             raise AssertionError('{} missing from check: {}'.format(arg,
                                  check_description))
-
-    # Flag to force check function to only perform a base TCP/UDP check
-    if use_base_protocols:
-        check_description['only_basic'] = True
 
     res = check['fn'](**check_description)
     return res
@@ -65,7 +61,7 @@ def filter_tags(check, include, exclude):
 
 
 def build_checks(check_descriptions, connect_timeout, include_tags,
-                 exclude_tags, use_base_protocols=False, skip_checks=False):
+                 exclude_tags, skip_checks=False):
     def set_timeout(desc):
         new_desc = dict(timeout=connect_timeout)
         new_desc.update(desc)
@@ -76,7 +72,7 @@ def build_checks(check_descriptions, connect_timeout, include_tags,
         check_descriptions)
 
     subchecks = map(
-        lambda c: check_from_description(c, use_base_protocols),
+        lambda c: check_from_description(c),
         map(set_timeout, check_descriptions))
 
     if skip_checks:
@@ -165,6 +161,9 @@ class FirewallRulesOutput(object):
         self.fqdn = socket.getfqdn()
 
     def write(self, data):
+        if not any(x in data for x in ('tcp', 'udp')):
+            return
+
         parts = data.lstrip('SKIPPING: ')
         # Here we take the list of colon separated values in reverse order, so
         # we're guaranteed to get the host/port/proto for the TCP/UDP check
@@ -288,11 +287,7 @@ def main(*args):
     parser.add_argument("-R", "--output-fw-rules", dest="output_fw_rules",
                         action="store_true", default=False,
                         help="Output proposed firewall rules in YAML,"
-                        " implies -B/--use-base-protocols and"
-                        " --dry-run.")
-    parser.add_argument("-B", "--use-base-protocols",
-                        dest="use_base_protocols", action="store_true",
-                        default=False, help="Use only base TCP/UDP checks.")
+                        " implies --dry-run.")
     parser.add_argument("--dry-run",
                         dest="skip", action="store_true",
                         default=False, help="Skip all checks, just print out"
@@ -332,8 +327,6 @@ def main(*args):
     if options.output_fw_rules:
         output = FirewallRulesOutput(output)
 
-        # We only need TCP/UDP checks
-        options.use_base_protocols = True
         # We don't want to actually perform the checks
         options.skip = True
     elif options.buffer_output:
@@ -352,8 +345,7 @@ def main(*args):
         descriptions = yaml.load(f)
 
     checks = build_checks(descriptions, options.connect_timeout,
-                          include, exclude, options.use_base_protocols,
-                          options.skip)
+                          include, exclude, options.skip)
 
     if options.max_timeout is not None:
         def terminator():
