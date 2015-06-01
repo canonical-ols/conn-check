@@ -1,6 +1,5 @@
 from argparse import ArgumentParser
 from collections import defaultdict
-import socket
 import sys
 from threading import Thread
 import time
@@ -152,44 +151,6 @@ class OrderedOutput(object):
         map(self.output.write, self.skipped)
 
 
-class FirewallRulesOutput(object):
-    """Outputs a set of YAML firewall rules matching checks."""
-
-    def __init__(self, output):
-        self.output = output
-        self.output_data = {}
-        self.fqdn = socket.getfqdn()
-
-    def notify_skip(self, name):
-        self.write(name)
-
-    def write(self, data):
-        if not any(x in data for x in ('tcp', 'udp')):
-            return
-
-        # Here we take the list of colon separated values in reverse order, so
-        # we're guaranteed to get the host/port/proto for the TCP/UDP check
-        # without the specific prefix (e.g. memcache, http)
-        port, host, protocol = data.split(':')[::-1][0:3]
-        protocol = protocol.strip()
-
-        key = "{}:{}".format(host, protocol)
-        if key not in self.output_data:
-            self.output_data[key] = {
-                'from_host': self.fqdn,
-                'to_host': host,
-                'ports': [],
-                'protocol': protocol,
-            }
-
-        port = int(port)
-        if port not in self.output_data[key]['ports']:
-            self.output_data[key]['ports'].append(port)
-
-    def flush(self):
-        self.output.write(yaml.dump({'egress': self.output_data.values()}))
-
-
 class ConsoleOutput(ResultTracker):
     """Outputs check results to STDOUT."""
 
@@ -244,136 +205,172 @@ class ConsoleOutput(ResultTracker):
             self.output.write("%s\n" % (indented,))
 
 
-def main(*args):
-    """Parse arguments, then build and run checks in a reactor."""
+class Runner(object):
 
-    # We do this first because ArgumentParser won't let us mix and match
-    # non-default positional argument with a flag argument
-    if '--version' in sys.argv:
-        sys.stdout.write('conn-check {}\n'.format(get_version_string()))
+    def __init__(self, args):
+        self.make_arg_parser()
+        self.parse_options(args)
+        load_tls_certs(self.options.cacerts_path)
+        self.wrap_output(sys.stdout)
+        self.load_descriptions()
+
+    def make_arg_parser(self):
+        parser = NagiosCompatibleArgsParser()
+        parser.add_argument("config_file",
+                            help="Config file specifying the checks to run.")
+        parser.add_argument("patterns", nargs='*',
+                            help="Patterns to filter the checks.")
+        parser.add_argument("-v", "--verbose", dest="verbose",
+                            action="store_true", default=False,
+                            help="Show additional status")
+        parser.add_argument("-d", "--duration", dest="show_duration",
+                            action="store_true", default=False,
+                            help="Show duration")
+        parser.add_argument("-t", "--tracebacks", dest="show_tracebacks",
+                            action="store_true", default=False,
+                            help="Show tracebacks on failure")
+        parser.add_argument("--validate", dest="validate",
+                            action="store_true", default=False,
+                            help="Only validate the config file,"
+                            " don't run checks.")
+        parser.add_argument("--version", dest="print_version",
+                            action="store_true", default=False,
+                            help="Print the currently installed version.")
+        parser.add_argument("--tls-certs-path", dest="cacerts_path",
+                            action="store", default="/etc/ssl/certs/",
+                            help="Path to TLS CA certificates.")
+        parser.add_argument("--max-timeout", dest="max_timeout", type=float,
+                            action="store", help="Maximum execution time.")
+        parser.add_argument("--connect-timeout", dest="connect_timeout",
+                            action="store", default=10, type=float,
+                            help="Network connection timeout.")
+        parser.add_argument("-U", "--unbuffered-output", dest="buffer_output",
+                            action="store_false", default=True,
+                            help="Don't buffer output, write to STDOUT right "
+                            "away.")
+        parser.add_argument("--dry-run",
+                            dest="dry_run", action="store_true",
+                            default=False,
+                            help="Skip all checks, just print out"
+                            " what would be run.")
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument("--include-tags", dest="include_tags",
+                           action="store", default="",
+                           help="Comma separated list of tags to include.")
+        group.add_argument("--exclude-tags", dest="exclude_tags",
+                           action="store", default="",
+                           help="Comma separated list of tags to exclude.")
+        self.parser = parser
+
+    def get_reactor(self):
+        def make_daemon_thread(*args, **kw):
+            """Create a daemon thread."""
+            thread = Thread(*args, **kw)
+            thread.daemon = True
+            return thread
+
+        threadpool = ThreadPool(minthreads=1)
+        threadpool.threadFactory = make_daemon_thread
+        reactor.threadpool = threadpool
+        reactor.callWhenRunning(threadpool.start)
+
+        if self.options.max_timeout is not None:
+            def terminator():
+                # Hasta la vista, twisted
+                reactor.stop()
+                print('Maximum timeout reached: {}s'.format(
+                      self.options.max_timeout))
+
+            reactor.callLater(self.options.max_timeout, terminator)
+
+        return reactor
+
+    def parse_options(self, args):
+        options = self.parser.parse_args(list(args))
+
+        if options.include_tags:
+            options.include_tags = options.include_tags.split(',')
+        else:
+            options.include_tags = []
+
+        if options.exclude_tags:
+            options.exclude_tags = options.exclude_tags.split(',')
+        else:
+            options.exclude_tags = []
+
+        if options.patterns:
+            self.patterns = SumPattern(map(SimplePattern, options.patterns))
+        else:
+            self.patterns = SimplePattern("*")
+        self.options = options
+
+    def wrap_output(self, output):
+        if self.options.show_duration:
+            output = TimestampOutput(output)
+        if self.options.buffer_output:
+            # We buffer output so we can order it for human readable output
+            output = OrderedOutput(output)
+
+        results = ConsoleOutput(output=output,
+                                show_tracebacks=self.options.show_tracebacks,
+                                show_duration=self.options.show_duration,
+                                verbose=self.options.verbose)
+        if not self.options.dry_run:
+            results = FailureCountingResultWrapper(results)
+
+        self.output = output
+        self.results = results
+
+    def load_descriptions(self):
+        with open(self.options.config_file) as f:
+            descriptions = yaml.load(f)
+
+        self.descriptions = descriptions
+
+    def run(self):
+        checks = build_checks(self.descriptions,
+                              self.options.connect_timeout,
+                              self.options.include_tags,
+                              self.options.exclude_tags,
+                              self.options.dry_run)
+
+        if not self.options.validate:
+            reactor = self.get_reactor()
+            reactor.callWhenRunning(run_checks, checks, self.patterns,
+                                    self.results)
+
+            reactor.run()
+
+            # Flush output, this really only has an effect when running
+            # buffered output
+            self.output.flush()
+
+            if not self.options.dry_run and self.output.any_failed():
+                return 2
+
         return 0
 
-    parser = NagiosCompatibleArgsParser()
-    parser.add_argument("config_file",
-                        help="Config file specifying the checks to run.")
-    parser.add_argument("patterns", nargs='*',
-                        help="Patterns to filter the checks.")
-    parser.add_argument("-v", "--verbose", dest="verbose",
-                        action="store_true", default=False,
-                        help="Show additional status")
-    parser.add_argument("-d", "--duration", dest="show_duration",
-                        action="store_true", default=False,
-                        help="Show duration")
-    parser.add_argument("-t", "--tracebacks", dest="show_tracebacks",
-                        action="store_true", default=False,
-                        help="Show tracebacks on failure")
-    parser.add_argument("--validate", dest="validate",
-                        action="store_true", default=False,
-                        help="Only validate the config file, don't run checks."
-                        )
-    parser.add_argument("--version", dest="print_version",
-                        action="store_true", default=False,
-                        help="Print the currently installed version.")
-    parser.add_argument("--tls-certs-path", dest="cacerts_path",
-                        action="store", default="/etc/ssl/certs/",
-                        help="Path to TLS CA certificates.")
-    parser.add_argument("--max-timeout", dest="max_timeout", type=float,
-                        action="store", help="Maximum execution time.")
-    parser.add_argument("--connect-timeout", dest="connect_timeout",
-                        action="store", default=10, type=float,
-                        help="Network connection timeout.")
-    parser.add_argument("-U", "--unbuffered-output", dest="buffer_output",
-                        action="store_false", default=True,
-                        help="Don't buffer output, write to STDOUT right "
-                             "away.")
-    parser.add_argument("-R", "--output-fw-rules", dest="output_fw_rules",
-                        action="store_true", default=False,
-                        help="Output proposed firewall rules in YAML,"
-                        " implies --dry-run.")
-    parser.add_argument("--dry-run",
-                        dest="skip", action="store_true",
-                        default=False, help="Skip all checks, just print out"
-                        " what would be run.")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--include-tags", dest="include_tags",
-                       action="store", default="",
-                       help="Comma separated list of tags to include.")
-    group.add_argument("--exclude-tags", dest="exclude_tags",
-                       action="store", default="",
-                       help="Comma separated list of tags to exclude.")
-    options = parser.parse_args(list(args))
 
-    load_tls_certs(options.cacerts_path)
+def parse_version_arg():
+    """Manually check for --version in args and output version info.
+    We need to do this early because ArgumentParser won't let us mix
+    and match non-default positional argument with a flag argument
+    """
+    if '--version' in sys.argv:
+        sys.stdout.write('conn-check {}\n'.format(get_version_string()))
+        return True
 
-    if options.patterns:
-        pattern = SumPattern(map(SimplePattern, options.patterns))
-    else:
-        pattern = SimplePattern("*")
 
-    def make_daemon_thread(*args, **kw):
-        """Create a daemon thread."""
-        thread = Thread(*args, **kw)
-        thread.daemon = True
-        return thread
+def main(*args):
+    if parse_version_arg():
+        return 0
 
-    threadpool = ThreadPool(minthreads=1)
-    threadpool.threadFactory = make_daemon_thread
-    reactor.threadpool = threadpool
-    reactor.callWhenRunning(threadpool.start)
-
-    output = sys.stdout
-
-    if options.show_duration:
-        output = TimestampOutput(output)
-
-    if options.output_fw_rules:
-        output = FirewallRulesOutput(output)
-
-        # We don't want to actually perform the checks
-        options.skip = True
-    elif options.buffer_output:
-        # We buffer output so we can order it for human readable output
-        output = OrderedOutput(output)
-
-    include = options.include_tags.split(',') if options.include_tags else []
-    exclude = options.exclude_tags.split(',') if options.exclude_tags else []
-
-    results = ConsoleOutput(output=output,
-                            show_tracebacks=options.show_tracebacks,
-                            show_duration=options.show_duration,
-                            verbose=options.verbose)
-    results = FailureCountingResultWrapper(results)
-    with open(options.config_file) as f:
-        descriptions = yaml.load(f)
-
-    checks = build_checks(descriptions, options.connect_timeout,
-                          include, exclude, options.skip)
-
-    if options.max_timeout is not None:
-        def terminator():
-            # Hasta la vista, twisted
-            reactor.stop()
-            print('Maximum timeout reached: {}s'.format(options.max_timeout))
-
-        reactor.callLater(options.max_timeout, terminator)
-
-    if not options.validate:
-        reactor.callWhenRunning(run_checks, checks, pattern, results)
-
-        reactor.run()
-
-        # Flush output, this really only has an effect when running buffered
-        # output
-        output.flush()
-
-        if results.any_failed():
-            return 2
-        else:
-            return 0
+    runner = Runner(args)
+    return runner.run()
 
 
 def run():
-    exit(main(*sys.argv[1:]))
+    sys.exit(main(*sys.argv[1:]))
 
 
 if __name__ == '__main__':
