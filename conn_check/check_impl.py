@@ -262,8 +262,7 @@ class PrefixCheckWrapper(Check):
 
 @inlineCallbacks
 def skipping_strategy(subchecks, pattern, results):
-    """Strategy used to print checks out by just skipping them all.
-    """
+    """Strategy used to print checks out by just skipping them all."""
     for subcheck in subchecks:
         subcheck.skip(pattern, results)
     raise StopIteration
