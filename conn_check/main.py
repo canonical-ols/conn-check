@@ -205,7 +205,8 @@ class ConsoleOutput(ResultTracker):
             self.output.write("%s\n" % (indented,))
 
 
-class Runner(object):
+class Command(object):
+    """CLI command runner for the main conn-check endpoint."""
 
     def __init__(self, args):
         self.make_arg_parser()
@@ -213,8 +214,11 @@ class Runner(object):
         load_tls_certs(self.options.cacerts_path)
         self.wrap_output(sys.stdout)
         self.load_descriptions()
+        self.setup_reactor()
 
     def make_arg_parser(self):
+        """Set up an arg parser with our options."""
+
         parser = NagiosCompatibleArgsParser()
         parser.add_argument("config_file",
                             help="Config file specifying the checks to run.")
@@ -262,7 +266,9 @@ class Runner(object):
                            help="Comma separated list of tags to exclude.")
         self.parser = parser
 
-    def get_reactor(self):
+    def setup_reactor(self):
+        """Setup the Twisted reactor with required customisations."""
+
         def make_daemon_thread(*args, **kw):
             """Create a daemon thread."""
             thread = Thread(*args, **kw)
@@ -283,9 +289,9 @@ class Runner(object):
 
             reactor.callLater(self.options.max_timeout, terminator)
 
-        return reactor
-
     def parse_options(self, args):
+        """Parse args (e.g. sys.argv) into options and set some config."""
+
         options = self.parser.parse_args(list(args))
 
         if options.include_tags:
@@ -305,6 +311,9 @@ class Runner(object):
         self.options = options
 
     def wrap_output(self, output):
+        """Wraps an output stream (e.g. sys.stdout) with output and result
+        wrappers based on options."""
+
         if self.options.show_duration:
             output = TimestampOutput(output)
         if self.options.buffer_output:
@@ -322,12 +331,16 @@ class Runner(object):
         self.results = results
 
     def load_descriptions(self):
+        """Pre-load YAML checks file into a descriptions property."""
+
         with open(self.options.config_file) as f:
             descriptions = yaml.load(f)
 
         self.descriptions = descriptions
 
     def run(self):
+        """Run/validate/dry-run the given command with options."""
+
         checks = build_checks(self.descriptions,
                               self.options.connect_timeout,
                               self.options.include_tags,
@@ -335,17 +348,15 @@ class Runner(object):
                               self.options.dry_run)
 
         if not self.options.validate:
-            reactor = self.get_reactor()
             reactor.callWhenRunning(run_checks, checks, self.patterns,
                                     self.results)
-
             reactor.run()
 
             # Flush output, this really only has an effect when running
             # buffered output
             self.output.flush()
 
-            if not self.options.dry_run and self.output.any_failed():
+            if not self.options.dry_run and self.results.any_failed():
                 return 2
 
         return 0
@@ -354,8 +365,7 @@ class Runner(object):
 def parse_version_arg():
     """Manually check for --version in args and output version info.
     We need to do this early because ArgumentParser won't let us mix
-    and match non-default positional argument with a flag argument
-    """
+    and match non-default positional argument with a flag argument."""
     if '--version' in sys.argv:
         sys.stdout.write('conn-check {}\n'.format(get_version_string()))
         return True
@@ -365,8 +375,8 @@ def main(*args):
     if parse_version_arg():
         return 0
 
-    runner = Runner(args)
-    return runner.run()
+    cmd = Command(args)
+    return cmd.run()
 
 
 def run():

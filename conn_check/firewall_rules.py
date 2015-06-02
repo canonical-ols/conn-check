@@ -2,7 +2,7 @@ import sys
 import socket
 import yaml
 
-from .main import Runner, parse_version_arg
+from .main import Command, parse_version_arg
 
 
 class FirewallRulesOutput(object):
@@ -43,14 +43,18 @@ class FirewallRulesOutput(object):
         self.output.write(yaml.dump({'egress': self.output_data.values()}))
 
 
-class FirewallExportRunner(Runner):
+class FirewallExportCommand(Command):
+    """CLI command runner for conn-check-export-fw"""
+
     def wrap_output(self, output):
+        """Override some options in order to just output fw rules without
+        performing checks"""
         # We don't want to actually perform the checks
         self.options.dry_run = True
         self.options.buffer_output = False
         self.options.show_duration = False
 
-        super(FirewallExportRunner, self).wrap_output(output)
+        super(FirewallExportCommand, self).wrap_output(output)
 
         self.output = FirewallRulesOutput(self.output)
         self.results.output = self.output
@@ -60,8 +64,8 @@ def main(*args):
     if parse_version_arg():
         return 0
 
-    runner = FirewallExportRunner(args)
-    return runner.run()
+    cmd = FirewallExportCommand(args)
+    return cmd.run()
 
 
 def run():
