@@ -14,15 +14,22 @@ class FirewallRulesOutput(object):
         self.fqdn = socket.getfqdn()
 
     def notify_skip(self, name):
+        """Passes skips, which should be everything when using the
+        skipping_strategy, directly to write()."""
+
         self.write(name)
 
     def write(self, data):
+        """Filters out non-TCP/UDP checks and stores host/port/proto info for
+        output later as YAML."""
+
+        # We only need TCP/UDP checks
         if not any(x in data for x in ('tcp', 'udp')):
             return
 
         # Here we take the list of colon separated values in reverse order, so
-        # we're guaranteed to get the host/port/proto for the TCP/UDP check
-        # without the specific prefix (e.g. memcache, http)
+        # we should get just the host/port/proto for the check without the
+        # specific prefix (e.g. memcache, http)
         port, host, protocol = data.split(':')[::-1][0:3]
         protocol = protocol.strip()
 
@@ -40,6 +47,8 @@ class FirewallRulesOutput(object):
             self.output_data[key]['ports'].append(port)
 
     def flush(self):
+        """Outputs our structured egress firewall info as YAML."""
+
         self.output.write(yaml.dump({'egress': self.output_data.values()}))
 
 
