@@ -64,7 +64,8 @@ class Check(object):
         results.notify_start, then either results.notify_success or
         results.notify_failure.
         """
-        raise NotImplementedError("%r.check not implemented" % type(self))
+        raise NotImplementedError("{0!r}.check not implemented".format(
+                                  type(self)))
 
     def skip(self, pattern, results):
         """Indicate that this check has been skipped.
@@ -72,7 +73,8 @@ class Check(object):
         If the pattern matches and this is a leaf node in the check tree,
         implementations of Check.skip should call results.notify_skip.
         """
-        raise NotImplementedError("%r.skip not implemented" % type(self))
+        raise NotImplementedError("{0!r}.skip not implemented".format(
+                                  type(self)))
 
 
 class ConditionalCheck(Check):
@@ -123,7 +125,7 @@ class PrefixResultWrapper(ResultTracker):
 
     def make_name(self, name):
         """Make a name by prepending the prefix."""
-        return "%s%s" % (self.prefix, name)
+        return "{}{}".format(self.prefix, name)
 
     def notify_skip(self, name):
         """Register a check being skipped."""
@@ -332,7 +334,7 @@ def add_check_prefix(*args):
     args = list(args)
     check = args.pop(-1)
     path = ".".join(args)
-    return PrefixCheckWrapper(wrapped=check, prefix="%s:" % (path,))
+    return PrefixCheckWrapper(wrapped=check, prefix="{}:".format(path))
 
 
 def make_check(name, check, info=None, blocking=False):

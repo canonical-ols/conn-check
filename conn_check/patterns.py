@@ -1,5 +1,6 @@
 import re
 
+
 class Pattern(object):
     """Abstract base class for patterns used to select subsets of checks."""
 
@@ -21,13 +22,13 @@ class Pattern(object):
 
     def prefix_matches(self, partial_name):
         """Return True if the partial name (a prefix) is a potential match."""
-        raise NotImplementedError("%r.prefix_matches not implemented" %
-                                  type(self))
+        raise NotImplementedError("{0!r}.prefix_matches not "
+                                  "implemented".format(type(self)))
 
     def matches(self, name):
         """Return True if the given name matches."""
-        raise NotImplementedError("%r.match not implemented" %
-                                  type(self))
+        raise NotImplementedError("{0!r}.match not "
+                                  "implemented".format(type(self)))
 
 
 class FailedPattern(Pattern):

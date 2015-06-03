@@ -103,14 +103,14 @@ def do_tcp_check(host, port, tls=False, tls_verify=True,
         if ip == host:
             raise ValueError("timed out")
         else:
-            raise ValueError("timed out connecting to %s" % ip)
+            raise ValueError("timed out connecting to {}".format(ip))
 
 
 def make_tcp_check(host, port, timeout=None, **kwargs):
     """Return a check for TCP connectivity."""
     return make_check("tcp:{}:{}".format(host, port),
                       lambda: do_tcp_check(host, port, timeout=timeout),
-                      info="%s:%s" % (host, port))
+                      info="{}:{}".format(host, port))
 
 
 def make_tls_check(host, port, disable_tls_verification=False, timeout=None,
@@ -122,7 +122,7 @@ def make_tls_check(host, port, disable_tls_verification=False, timeout=None,
                        lambda: do_tcp_check(host, port, tls=True,
                                             tls_verify=verify,
                                             timeout=timeout),
-                       info="%s:%s" % (host, port))
+                       info="{}:{}".format(host, port))
 
     return check
 
@@ -180,7 +180,7 @@ def do_udp_check(host, port, send, expect, timeout=None):
         if ip == host:
             raise ValueError("timed out")
         else:
-            raise ValueError("timed out waiting for %s" % ip)
+            raise ValueError("timed out waiting for {}".format(ip))
 
 
 def make_udp_check(host, port, send, expect, timeout=None,
@@ -188,7 +188,7 @@ def make_udp_check(host, port, send, expect, timeout=None,
     """Return a check for UDP connectivity."""
     return make_check("udp:{}:{}".format(host, port),
                       lambda: do_udp_check(host, port, send, expect, timeout),
-                      info="%s:%s" % (host, port))
+                      info="{}:{}".format(host, port))
 
 
 def extract_host_port(url):
@@ -305,7 +305,7 @@ def make_amqp_check(host, port, username, password, use_tls=True, vhost="/",
         yield client.authenticate(username, password)
 
     subchecks.append(make_check("amqp:{}:{}".format(host, port),
-                                do_auth, info="user %s" % (username,),))
+                                do_auth, info="user {}".format(username),))
     return sequential_check(subchecks)
 
 
@@ -335,7 +335,7 @@ def make_postgres_check(host, port, username, password, database,
         conn.close()
 
     subchecks.append(make_check("postgres:{}:{}".format(host, port),
-                                check_auth, info="user %s" % (username,),
+                                check_auth, info="user {}".format(username),
                                 blocking=True))
 
     return sequential_check(subchecks)

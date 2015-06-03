@@ -98,7 +98,7 @@ class NagiosCompatibleArgsParser(ArgumentParser):
         an exit code of 3 rather than 2, to maintain compatibility with
         Nagios checks."""
         self.print_usage(sys.stderr)
-        self.exit(3, '%s: error: %s\n' % (self.prog, message))
+        self.exit(3, '{}: error: {}\n'.format(self.prog, message))
 
 
 class TimestampOutput(object):
@@ -108,7 +108,7 @@ class TimestampOutput(object):
         self.output = output
 
     def write(self, data):
-        self.output.write("%.3f: %s" % (time.time() - self.start, data))
+        self.output.write("{:.3f}: {}".format(time.time() - self.start, data))
 
 
 class OrderedOutput(object):
@@ -165,32 +165,32 @@ class ConsoleOutput(ResultTracker):
     def format_duration(self, duration):
         if not self.show_duration:
             return ""
-        return ": (%.3f ms)" % duration
+        return ": ({:.3f} ms)".format(duration)
 
     def notify_start(self, name, info):
         """Register the start of a check."""
         if self.verbose:
             if info:
-                info = " (%s)" % (info,)
+                info = " ({})".format(info)
             else:
                 info = ''
-            self.output.write("Starting %s%s...\n" % (name, info))
+            self.output.write("Starting {}{}...\n".format(name, info))
 
     def notify_skip(self, name):
         """Register a check being skipped."""
-        self.output.write("SKIPPED: %s\n" % (name,))
+        self.output.write("SKIPPED: {}\n".format(name))
 
     def notify_success(self, name, duration):
         """Register a success."""
-        self.output.write("%s OK%s\n" % (
+        self.output.write("{} OK{}\n".format(
             name, self.format_duration(duration)))
 
     def notify_failure(self, name, info, exc_info, duration):
         """Register a failure."""
         message = str(exc_info[1]).split("\n")[0]
         if info:
-            message = "(%s) %s" % (info, message)
-        self.output.write("%s FAILED%s - %s\n" % (
+            message = "({}) {}".format(info, message)
+        self.output.write("{} FAILED{} - {}\n".format(
             name, self.format_duration(duration), message))
 
         if self.show_tracebacks:
@@ -201,8 +201,8 @@ class ConsoleOutput(ResultTracker):
             lines = "".join(formatted).split("\n")
             if len(lines) > 0 and len(lines[-1]) == 0:
                 lines.pop()
-            indented = "\n".join(["  %s" % (line,) for line in lines])
-            self.output.write("%s\n" % (indented,))
+            indented = "\n".join(["  {}".format(line) for line in lines])
+            self.output.write("{}\n".format(indented))
 
 
 class Command(object):
