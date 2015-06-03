@@ -7,6 +7,7 @@ CONN_CHECK_VERSION=$(shell cat conn_check/version.txt)
 CONN_CHECK_PPA=ppa:wesmason/conn-check
 DEBIAN_PYTHON_CACHE_DIR=debian/pythoncache
 DEBIAN_PYTHON_PACKAGES_FILTER=Twisted txAMQP pyOpenSSL pyasn1 PyYAML psycopg2 requests cffi pycparser six setuptools zope.interface pymongo
+HERE := $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 
 $(ENV):
 	virtualenv $(ENV)
@@ -113,6 +114,10 @@ upload: build test pip-wheel
 	@echo
 	@echo "Don't forget: bzr tag $(CONN_CHECK_VERSION) && bzr push"
 
+docs: TYPE=html
+docs:
+	cd $(HERE)/docs && $(MAKE) $(TYPE)
 
-.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload install-build-debs build-deb-pip-cache test-build-deb
+
+.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload install-build-debs build-deb-pip-cache test-build-deb docs
 .DEFAULT_GOAL := test
