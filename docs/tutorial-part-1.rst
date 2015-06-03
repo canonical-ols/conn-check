@@ -24,6 +24,12 @@ accepts new translations via ``POST`` requests.
 Why use conn-check?
 -------------------
 
+Our `HWaaS` example service relies on not only 3 internal services, but also
+a completely external service (the Google Translate API), and any number of
+issues from network routing, firewall configuration and bad service
+configuration to external outages could cause issues after a new deployment
+(or at any time really, but we'll address that later in :ref:`nagios`).
+
 Yet another YAML file
 ---------------------
 
@@ -39,3 +45,8 @@ memcached
 HTTP
 ````
 
+
+.. _nagios:
+
+Using conn-check with Nagios
+----------------------------
