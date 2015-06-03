@@ -43,8 +43,8 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'conn-check = conn_check.main:run',
-            'conn-check-export-fw = conn_check.utils.firewall_rules:run',
+            'conn-check = conn_check.main:main',
+            'conn-check-export-fw = conn_check.utils.firewall_rules:main',
         ],
     },
     license='GPL3',

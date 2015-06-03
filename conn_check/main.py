@@ -371,7 +371,7 @@ def parse_version_arg():
         return True
 
 
-def main(*args):
+def run(*args):
     if parse_version_arg():
         return 0
 
@@ -379,9 +379,9 @@ def main(*args):
     return cmd.run()
 
 
-def run():
-    sys.exit(main(*sys.argv[1:]))
+def main():
+    sys.exit(run(*sys.argv[1:]))
 
 
 if __name__ == '__main__':
-    run()
+    main()
