@@ -48,7 +48,7 @@ def load_tls_certs(path):
     for filepath in glob.glob("{}/*.pem".format(os.path.abspath(path))):
         # There might be some dead symlinks in there,
         # so let's make sure it's real.
-        if os.path.exists(filepath):
+        if os.path.isfile(filepath):
             data = open(filepath).read()
             x509 = load_certificate(FILETYPE_PEM, data)
             # Now, de-duplicate in case the same cert has multiple names.
