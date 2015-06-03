@@ -2,7 +2,7 @@ import sys
 import socket
 import yaml
 
-from .main import Command, parse_version_arg
+from ..main import Command, parse_version_arg
 
 
 class FirewallRulesOutput(object):
