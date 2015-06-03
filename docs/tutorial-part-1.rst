@@ -19,3 +19,23 @@ accepts new translations via ``POST`` requests.
    available in the `PostgreSQL` DB.
  * The `Squid` HTTP proxy is sat between it and the Translate API to cache requests
    (varied by language), to avoid hitting Google's rate limiting.
+
+
+Why use conn-check?
+-------------------
+
+Yet another YAML file
+---------------------
+
+Let's examine those checks..
+----------------------------
+
+PostgreSQL
+``````````
+
+memcached
+`````````
+
+HTTP
+````
+
