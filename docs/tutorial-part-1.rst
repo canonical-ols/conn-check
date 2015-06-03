@@ -24,14 +24,42 @@ accepts new translations via ``POST`` requests.
 Why use conn-check?
 -------------------
 
-Our `HWaaS` example service relies on not only 3 internal services, but also
+Our `HWaaS` example service depends on not only 3 internal services, but also
 a completely external service (the Google Translate API), and any number of
 issues from network routing, firewall configuration and bad service
 configuration to external outages could cause issues after a new deployment
 (or at any time really, but we'll address that later in :ref:`nagios`).
 
+`conn-check` can verify connections to these dependencies using not just basic
+TCP/UDP connects, but also service specific ones, with authentication where
+needed, timeouts, and even permissions (e.g. can `user A` access
+`DB schema B`).
+
 Yet another YAML file
 ---------------------
+
+`conn-check` is configured using a `YAML <http://yaml.org/>`_ file containing
+a list of checks to perform in parallel (by default, but this too is
+configurable with a CLI option).
+
+Here's an example file (it could be called ``hwaas-cc.yaml``):
+
+.. code-block:: yaml
+
+    - type: postgresql
+      host: gibson.hwaas.internal
+      port: 5432
+      username: hwaas
+      password: 123456asdf
+      database: hwaas_production
+    - type: memcached
+      host: freeside.hwaas.internal
+      port: 11211
+    - type: http
+      url: https://www.googleapis.com/language/translate/v2?q=Hello%20World&target=de&source=en&key=BLAH
+      proxy_host: countzero.hwaas.internal
+      proxy_port: 8080
+      expected_code: 200
 
 Let's examine those checks..
 ----------------------------
