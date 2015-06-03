@@ -44,7 +44,7 @@ setup(
     entry_points={
         'console_scripts': [
             'conn-check = conn_check.main:run',
-            'conn-check-export-fw = conn_check.firewall_rules:run',
+            'conn-check-export-fw = conn_check.utils.firewall_rules:run',
         ],
     },
     license='GPL3',

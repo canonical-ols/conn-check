@@ -1,6 +1,12 @@
 ChangeLog for conn-check
 ========================
 
+1.1.0 (unreleased)
+-------------------
+
+ - Added new conn-check-export-fw tool to export firewall egress rules in a YAML format.
+ - Refactored CLI command handling code to make it easier to extend/override.
+
 1.0.18 (2015-04-13)
 -------------------
 
