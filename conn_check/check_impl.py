@@ -265,9 +265,10 @@ class PrefixCheckWrapper(Check):
 @inlineCallbacks
 def skipping_strategy(subchecks, pattern, results):
     """Strategy used to print checks out by just skipping them all."""
+    # We need at least one yield to make this a generator
+    yield
     for subcheck in subchecks:
         subcheck.skip(pattern, results)
-    raise StopIteration
 
 
 @inlineCallbacks
