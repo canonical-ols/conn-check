@@ -211,10 +211,8 @@ class Command(object):
     def __init__(self, args):
         self.make_arg_parser()
         self.parse_options(args)
-        load_tls_certs(self.options.cacerts_path)
         self.wrap_output(sys.stdout)
         self.load_descriptions()
-        self.setup_reactor()
 
     def make_arg_parser(self):
         """Set up an arg parser with our options."""
@@ -348,6 +346,10 @@ class Command(object):
                               self.options.dry_run)
 
         if not self.options.validate:
+            if not self.options.dry_run:
+                load_tls_certs(self.options.cacerts_path)
+
+            self.setup_reactor()
             reactor.callWhenRunning(run_checks, checks, self.patterns,
                                     self.results)
             reactor.run()
