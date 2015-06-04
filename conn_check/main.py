@@ -294,15 +294,17 @@ class Command(object):
 
         options = self.parser.parse_args(list(args))
 
+        include_tags = []
         if options.include_tags:
-            options.include_tags = options.include_tags.split(',')
-        else:
-            options.include_tags = []
+            include_tags = options.include_tags.split(',')
+            include_tags = [tag.strip() for tag in include_tags]
+        options.include_tags = include_tags
 
+        exclude_tags = []
         if options.exclude_tags:
-            options.exclude_tags = options.exclude_tags.split(',')
-        else:
-            options.exclude_tags = []
+            exclude_tags = options.exclude_tags.split(',')
+            exclude_tags = [tag.strip() for tag in exclude_tags]
+        options.exclude_tags = exclude_tags
 
         if options.patterns:
             self.patterns = SumPattern(map(SimplePattern, options.patterns))
