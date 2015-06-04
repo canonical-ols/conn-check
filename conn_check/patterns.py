@@ -22,12 +22,12 @@ class Pattern(object):
 
     def prefix_matches(self, partial_name):
         """Return True if the partial name (a prefix) is a potential match."""
-        raise NotImplementedError("{0!r}.prefix_matches not "
+        raise NotImplementedError("{}.prefix_matches not "
                                   "implemented".format(type(self)))
 
     def matches(self, name):
         """Return True if the given name matches."""
-        raise NotImplementedError("{0!r}.match not "
+        raise NotImplementedError("{}.match not "
                                   "implemented".format(type(self)))
 
 

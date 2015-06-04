@@ -64,7 +64,7 @@ class Check(object):
         results.notify_start, then either results.notify_success or
         results.notify_failure.
         """
-        raise NotImplementedError("{0!r}.check not implemented".format(
+        raise NotImplementedError("{}.check not implemented".format(
                                   type(self)))
 
     def skip(self, pattern, results):
@@ -73,7 +73,7 @@ class Check(object):
         If the pattern matches and this is a leaf node in the check tree,
         implementations of Check.skip should call results.notify_skip.
         """
-        raise NotImplementedError("{0!r}.skip not implemented".format(
+        raise NotImplementedError("{}.skip not implemented".format(
                                   type(self)))
 
 
