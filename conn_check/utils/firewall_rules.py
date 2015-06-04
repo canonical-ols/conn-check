@@ -14,14 +14,19 @@ class FirewallRulesOutput(object):
         self.fqdn = socket.getfqdn()
 
     def notify_skip(self, name):
-        """Passes skips, which should be everything when using the
-        skipping_strategy, directly to write()."""
+        """Passes skips.
+
+        Should pass everything when using the skipping_strategy, directly to
+        write().
+        """
 
         self.write(name)
 
     def write(self, data):
-        """Filters out non-TCP/UDP checks and stores host/port/proto info for
-        output later as YAML."""
+        """Filters out non-TCP/UDP checks.
+
+        Stores host/port/proto info for output later as YAML.
+        """
 
         # We only need TCP/UDP checks
         if not any(x in data for x in ('tcp', 'udp')):
@@ -56,8 +61,11 @@ class FirewallExportCommand(Command):
     """CLI command runner for conn-check-export-fw"""
 
     def wrap_output(self, output):
-        """Override some options in order to just output fw rules without
-        performing checks"""
+        """Wraps output stream.
+
+        Override some options in order to just output fw rules without
+        performing checks.
+        """
         # We don't want to actually perform the checks
         self.options.dry_run = True
         self.options.buffer_output = False

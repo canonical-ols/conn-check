@@ -429,8 +429,7 @@ def make_mongodb_check(host, port=27017, username=None, password=None,
             raise RuntimeError('Failed to retrieve collection names')
 
     def timeout_handler():
-        """Manual timeout handler as txmongo timeout args above don't work
-        in many situations."""
+        """Manual timeout handler as txmongo timeout args don't always work."""
         if 'deferred' in do_connect.func_dict:
             err = ValueError("timeout connecting to mongodb")
             do_connect.func_dict['deferred'].errback(err)

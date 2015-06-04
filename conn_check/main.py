@@ -93,10 +93,12 @@ def run_checks(checks, pattern, results):
 class NagiosCompatibleArgsParser(ArgumentParser):
 
     def error(self, message):
-        """A patched version of ArgumentParser.error which does the same
-        thing, e.g. prints an error message and exits, but does so with
-        an exit code of 3 rather than 2, to maintain compatibility with
-        Nagios checks."""
+        """A patched version of ArgumentParser.error.
+
+        Does the same thing as ArgumentParser.error, e.g. prints an error
+        message and exits, but does so with an exit code of 3 rather than 2,
+        to maintain compatibility with Nagios checks.
+        """
         self.print_usage(sys.stderr)
         self.exit(3, '{}: error: {}\n'.format(self.prog, message))
 
@@ -311,8 +313,7 @@ class Command(object):
         self.options = options
 
     def wrap_output(self, output):
-        """Wraps an output stream (e.g. sys.stdout) with output and result
-        wrappers based on options."""
+        """Wraps an output stream (e.g. sys.stdout) from options."""
 
         if self.options.show_duration:
             output = TimestampOutput(output)
@@ -366,8 +367,10 @@ class Command(object):
 
 def parse_version_arg():
     """Manually check for --version in args and output version info.
+
     We need to do this early because ArgumentParser won't let us mix
-    and match non-default positional argument with a flag argument."""
+    and match non-default positional argument with a flag argument.
+    """
     if '--version' in sys.argv:
         sys.stdout.write('conn-check {}\n'.format(get_version_string()))
         return True

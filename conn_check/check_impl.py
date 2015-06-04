@@ -12,17 +12,20 @@ from twisted.python.failure import Failure
 
 
 def maybeDeferred(f, *args, **kwargs):
-    """Wrapper to Twisted's maybeDeferred so we can add a reference to the
-    wrapped deferred instance inside the original function dict."""
+    """Wrapper to Twisted's maybeDeferred.
+
+    Adds a reference to the wrapped deferred instance inside the original
+    function dict so we can track if something is a deferred.
+    """
     deferred = _maybeDeferred(f, *args, **kwargs)
     f.func_dict['deferred'] = deferred
     return deferred
 
 
 def maybeDeferToThread(f, *args, **kwargs):
-    """
-    Call the function C{f} using a thread from the given threadpool and return
-    the result as a Deferred.
+    """Call the function C{f} using a thread from the given threadpool
+
+    Return sthe result as a Deferred.
 
     @param f: The function to call. May return a deferred.
     @param *args: positional arguments to pass to f.
