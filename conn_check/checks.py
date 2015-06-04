@@ -389,7 +389,8 @@ def make_memcache_check(host, port, password=None, timeout=None,
                                                  timeout=timeout)
 
         version = yield client.version()
-        assert version is not None
+        if version is None:
+            raise RuntimeError('Failed retrieve memcached server version')
 
     subchecks.append(make_check('connect', do_connect))
 
@@ -424,7 +425,8 @@ def make_mongodb_check(host, port=27017, username=None, password=None,
 
         mongo = yield conn
         names = yield mongo[database].collection_names()
-        assert names is not None
+        if names is None:
+            raise RuntimeError('Failed to retrieve collection names')
 
     def timeout_handler():
         """Manual timeout handler as txmongo timeout args above don't work
