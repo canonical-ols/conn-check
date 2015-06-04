@@ -336,9 +336,7 @@ class Command(object):
         """Pre-load YAML checks file into a descriptions property."""
 
         with open(self.options.config_file) as f:
-            descriptions = yaml.load(f)
-
-        self.descriptions = descriptions
+            self.descriptions = yaml.load(f)
 
     def run(self):
         """Run/validate/dry-run the given command with options."""
