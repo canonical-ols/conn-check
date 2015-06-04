@@ -30,7 +30,7 @@ class FirewallRulesOutput(object):
         # Here we take the list of colon separated values in reverse order, so
         # we should get just the host/port/proto for the check without the
         # specific prefix (e.g. memcache, http)
-        port, host, protocol = data.split(':')[::-1][0:3]
+        port, host, protocol = reversed(data.split(':')[-3:])
         protocol = protocol.strip()
 
         key = "{}:{}".format(host, protocol)
