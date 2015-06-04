@@ -103,6 +103,7 @@ instead.
 
 HTTP
 ````
+
 .. code-block:: yaml
 
     - type: http
@@ -136,16 +137,45 @@ so that it can be used as a regular `Nagios <https://www.nagios.org/>`_ check
 for more constant monitoring of your service deployment (not just ad-hoc at
 deploy time).
 
-An example NRPE config file, assuming ``conn-check`` is system installed:
+Example NRPE config files, assuming ``conn-check`` is system installed:
 
-.. code-block::
+.. code-block:: ini
 
     # /etc/nagios/nrpe.d/check_conn_check.cfg
-    command[conn_check]=/usr/bin/conn-check  --exclude-tags=no-nagios --max-timeout=10 /var/conn-check/hwaas-cc.yaml
+    command[conn_check]=/usr/bin/conn-check --max-timeout=10  --exclude-tags=no-nagios /var/conn-check/hwaas-cc.yaml
+    
+    
+    # /var/lib/nagios/export/service__hwaas_conn_check.cfg
+    define service {
+        use                             active-service
+        host_name                       hwaas-web1.internal
+        service_description             connection checks with conn-check
+        check_command                   check_nrpe!conn_check
+        servicegroups                   web,hwaas
+    }
 
 A few arguments to note:
+
+``--max-timeout=10``: This sets the global timeout to 10 seconds, which means
+it will error if the total time for all checks combined goes above 10s, which
+is the default max time allowed by Nagios for a plugin to run.
+
+This way we still get all the individual check results back even if one of them
+went above the threshold.
+
 
 ``--exclude-tags=no-nagios``: Although optional, this allows you to exclude
 any check tagged with ``no-nagios``, which is especially handy for checks to
 external/third-party services that you don't want to be hit constantly
 by Nagios.
+
+For example if we didn't want Nagios to hit Google every few minutes:
+
+.. code-block:: yaml
+
+    - type: http
+      url: https://www.googleapis.com/language/translate/v2?q=Hello%20World&target=de&source=en&key=BLAH
+      proxy_host: countzero.hwaas.internal
+      proxy_port: 8080
+      expected_code: 200
+      tags: [no-nagios]
