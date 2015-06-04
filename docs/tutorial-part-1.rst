@@ -67,14 +67,85 @@ Let's examine those checks..
 PostgreSQL
 ``````````
 
+.. code-block:: yaml
+
+    - type: postgresql
+      host: gibson.hwaas.internal
+      port: 5432
+      username: hwaas
+      password: 123456asdf
+      database: hwaas_production
+
+`type`: This one doesn't require much explanation, except the fact that you
+can use either "postgresql" or "postgres" (many checks have aliases).
+
+`host`, `port`: The host to connect to is always, understandably, required,
+but if not supplied the default psql port of ``5432`` will be used.
+
+`username`, `password`: Auth detailed are required and important when used with ...
+
+... `database`: This is the psql schema to attempt to switch to use, and
+`username` has permission to access.
+
 memcached
 `````````
 
+.. code-block:: yaml
+
+    - type: memcached
+      host: freeside.hwaas.internal
+      port: 11211
+
+`type`: The alias "memcache" will also work.
+
+`host`, `port`: If port isn't supplied the memcached default ``11211`` is used
+instead.
+
 HTTP
 ````
+.. code-block:: yaml
 
+    - type: http
+      url: https://www.googleapis.com/language/translate/v2?q=Hello%20World&target=de&source=en&key=BLAH
+      proxy_host: countzero.hwaas.internal
+      proxy_port: 8080
+      expected_code: 200
+
+`type`: The alias "https" will also work.
+
+`url`: As we're doing a simple GET to the Translate API I've included the
+``key`` in the querystring, but you could also include auth defailts as HTTP
+headers using the ``headers`` check option.
+
+`proxy_host`, `proxy_port`: We supply the host/port to our Squid proxy here,
+we could also use the ``proxy_url`` check option instead to define the proxy
+as a standard HTTP URL (makes it possible to define a HTTPS proxy).
+
+`expected_code`: This is the `status code <http://en.wikipedia.org/wiki/List_of_HTTP_status_codes>`_
+we expect to get back from the service if the request was successful, anything
+other than ``200`` in this case will cause the check to fail.
 
 .. _nagios:
 
 Using conn-check with Nagios
 ----------------------------
+
+`conn-check` output tries to stay as close as possible to the
+`Nagios plugin guidelines <https://nagios-plugins.org/doc/guidelines.html#PLUGOUTPUT>`_
+so that it can be used as a regular `Nagios <https://www.nagios.org/>`_ check
+for more constant monitoring of your service deployment (not just ad-hoc at
+deploy time).
+
+An example NRPE config file, assuming ``conn-check`` is system installed:
+
+.. code-block::
+
+    # /etc/nagios/nrpe.d/check_conn_check.cfg
+    command[conn_check]=/usr/bin/conn-check  --exclude-tags=no-nagios --max-timeout=10 /var/conn-check/hwaas-cc.yaml
+
+A few arguments to note:
+
+``--exclude-tags=no-nagios``: Although optional, this allows you to exclude
+any check tagged with ``no-nagios``, which is especially handy for checks to
+external/third-party services that you don't want to be hit constantly
+by Nagios.
