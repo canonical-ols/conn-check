@@ -137,9 +137,7 @@ so that it can be used as a regular `Nagios <https://www.nagios.org/>`_ check
 for more constant monitoring of your service deployment (not just ad-hoc at
 deploy time).
 
-Example NRPE config files, assuming ``conn-check`` is system installed:
-
-.. code-block:: ini
+Example NRPE config files, assuming ``conn-check`` is system installed::
 
     # /etc/nagios/nrpe.d/check_conn_check.cfg
     command[conn_check]=/usr/bin/conn-check --max-timeout=10  --exclude-tags=no-nagios /var/conn-check/hwaas-cc.yaml

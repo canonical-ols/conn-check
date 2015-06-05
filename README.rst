@@ -1,5 +1,5 @@
-conn-check
-==========
+About conn-check
+================
 
 conn-check allows for checking connectivity with external services.
 
