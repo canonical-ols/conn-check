@@ -1,13 +1,14 @@
-ENV=virtualenv
-WHEELSDIR=./wheels
-WHEELS_BRANCH=lp:~ubuntuone-hackers/conn-check/wheels
-WHEELS_BRANCH_DIR=/tmp/conn-check-wheels
-CONN_CHECK_REVNO=$(shell bzr revno)
-CONN_CHECK_VERSION=$(shell cat conn_check/version.txt)
-CONN_CHECK_PPA=ppa:wesmason/conn-check
-DEBIAN_PYTHON_CACHE_DIR=debian/pythoncache
-DEBIAN_PYTHON_PACKAGES_FILTER=Twisted txAMQP pyOpenSSL pyasn1 PyYAML psycopg2 requests cffi pycparser six setuptools zope.interface pymongo
-HERE := $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+ENV = virtualenv
+WHEELSDIR = ./wheels
+WHEELS_BRANCH = lp:~ubuntuone-hackers/conn-check/wheels
+WHEELS_BRANCH_DIR = /tmp/conn-check-wheels
+CONN_CHECK_REVNO = $(shell bzr revno)
+CONN_CHECK_VERSION = $(shell cat conn_check/version.txt)
+CONN_CHECK_PPA = ppa:wesmason/conn-check
+DEBIAN_PYTHON_CACHE_DIR = debian/pythoncache
+DEBIAN_PYTHON_PACKAGES_FILTER = Twisted txAMQP pyOpenSSL pyasn1 PyYAML psycopg2 requests cffi pycparser six setuptools zope.interface pymongo
+HERE = $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+DOCS_DIR = $(HERE)/docs
 
 $(ENV):
 	virtualenv $(ENV)
@@ -22,7 +23,10 @@ test: $(ENV)
 clean-wheels:
 	-rm -r $(WHEELSDIR)
 
-clean: clean-wheels
+clean-docs:
+	-rm -r $(DOCS_DIR)/_build
+
+clean: clean-wheels clean-docs
 	-rm -r $(ENV)
 	-rm -r dist
 	-rm -r $(DEBIAN_PYTHON_CACHE_DIR)
@@ -119,8 +123,8 @@ upload: build test pip-wheel
 
 docs: TYPE=html
 docs:
-	cd $(HERE)/docs && $(MAKE) $(TYPE)
+	cd $(DOCS_DIR) && $(MAKE) $(TYPE)
 
 
-.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload install-build-debs build-deb-pip-cache test-build-deb docs
+.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload install-build-debs build-deb-pip-cache test-build-deb docs clean-docs
 .DEFAULT_GOAL := test
