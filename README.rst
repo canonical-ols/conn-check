@@ -281,6 +281,33 @@ with failed checks being printed first, grouping by destination etc.
 If you'd rather see results as they available you can use the ``-U``/``--unbuffered-output`` option
 to disable buffering.
 
+Generating firewall rules
+-------------------------
+
+conn-check includes the ``conn-check-export-fw`` utility which takes the same arguments as
+``conn-check`` but runs using ``--dry-run`` mode and outputs a set of `egress` firewall
+rules in an easy to parse YAML format, for example:
+
+.. code-block::
+
+    # Generated from the conn-check demo.yaml file
+    egress:
+    - from_host: mydevmachine
+      ports: [8080]
+      protocol: udp
+      to_host: localhost
+    - from_host: mydevmachine
+      ports: [80, 443]
+      protocol: tcp
+      to_host: login.ubuntu.com
+    - from_host: mydevmachine
+      ports: [6379, 11211]
+      protocol: tcp
+      to_host: 127.0.0.1
+
+You can then use this output to generate your environment's firewall rules (e.g. with
+`EC2 security groups`, `OpenStack Neutron`, `iptables` etc.).
+
 Building wheels
 ---------------
 

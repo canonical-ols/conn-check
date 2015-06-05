@@ -74,6 +74,9 @@ update-ppa:
 cmd:
 	@echo $(ENV)/bin/conn-check
 
+fw-cmd:
+	@echo $(ENV)/bin/conn-check-export-fw
+
 pip-wheel: $(ENV)
 	@$(ENV)/bin/pip install wheel
 
