@@ -14,7 +14,9 @@ Configuration
 -------------
 
 The configuration is done via a yaml file. The file defines a list
-of checks to do::
+of checks to do:
+
+.. code-block:: yaml
 
     - type: tcp
       host: localhost
@@ -257,7 +259,9 @@ Tags
 Every check type also supports a ``tags`` field, which is a list of tags that
 can be used with the ``--include-tags`` and ``--exclude-tags`` arguments to conn-check.
 
-Example YAML::
+Example YAML:
+
+.. code-block:: yaml
 
     - type: http
       url: http://google.com/
@@ -288,7 +292,7 @@ conn-check includes the ``conn-check-export-fw`` utility which takes the same ar
 ``conn-check`` but runs using ``--dry-run`` mode and outputs a set of `egress` firewall
 rules in an easy to parse YAML format, for example:
 
-.. code-block::
+.. code-block:: yaml
 
     # Generated from the conn-check demo.yaml file
     egress:
