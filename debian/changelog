@@ -1,3 +1,11 @@
+conn-check (1.1.0-1) vivid; urgency=low
+
+  * Added new conn-check-export-fw tool to export firewall egress rules in a YAML
+    format.
+  * Refactored CLI command handling code to make it easier to extend/override.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 05 Jun 2015 12:32:31 +0000
+
 conn-check (1.0.18-2) trusty; urgency=low
 
   * Rename ndg-httpsclient requirement as ndg_httpsclient so it can be found
