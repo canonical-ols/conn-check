@@ -1,3 +1,15 @@
+conn-check (1.1.0-4) vivid; urgency=low
+
+  * More vivid build fixes, mostly python-pymongo being a bad python citizen.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 05 Jun 2015 16:07:14 +0000
+
+conn-check (1.1.0-3) vivid; urgency=low
+
+  * Patch requirements for pip2pi change.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 05 Jun 2015 15:30:02 +0000
+
 conn-check (1.1.0-2) vivid; urgency=low
 
   * Missing python-setuptools for vivid builds.

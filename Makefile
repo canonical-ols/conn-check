@@ -6,7 +6,7 @@ CONN_CHECK_REVNO=$(shell bzr revno)
 CONN_CHECK_VERSION=$(shell cat conn_check/version.txt)
 CONN_CHECK_PPA=ppa:wesmason/conn-check
 DEBIAN_PYTHON_CACHE_DIR=debian/pythoncache
-DEBIAN_PYTHON_PACKAGES_FILTER=Twisted txAMQP pyOpenSSL pyasn1 PyYAML psycopg2 requests cffi pycparser six setuptools zope.interface pymongo
+DEBIAN_PYTHON_PACKAGES_FILTER=Twisted txAMQP pyOpenSSL pyasn1 PyYAML psycopg2 requests cffi pycparser six setuptools zope.interface
 
 $(ENV):
 	virtualenv $(ENV)

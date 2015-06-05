@@ -1,0 +1,31 @@
+Description: pip2pi vendoring changed for underscores.
+
+Patch requirements to match vendored pip2pi packages.
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: https://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: <YYYY-MM-DD>
+
+--- conn-check-1.1.0.orig/requirements.txt
++++ conn-check-1.1.0/requirements.txt
+@@ -1,9 +1,9 @@
+ characteristic >= 14.0
+ cryptography >= 0.5
+-ndg_httpsclient
++ndg-httpsclient
+ pyasn1
+ pyOpenSSL
+-service_identity
++service-identity
+ requests
+ Twisted
+ txrequests >= 0.9

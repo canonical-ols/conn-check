@@ -15,9 +15,12 @@ debian/pythoncache/characteristic-14.3.0-py2.py3-none-any.whl
 debian/pythoncache/txmongo-15.0.0-py2.py3-none-any.whl
 debian/pythoncache/service_identity-14.0.0-py2.py3-none-any.whl
 debian/pythoncache/cryptography-0.9.tar.gz
+debian/pythoncache/pymongo-3.0.2.tar.gz
 debian/pythoncache/simple
 debian/pythoncache/simple/cryptography
 debian/pythoncache/simple/cryptography/cryptography-0.9.tar.gz
+debian/pythoncache/simple/pymongo
+debian/pythoncache/simple/pymongo/pymongo-3.0.2.tar.gz
 debian/pythoncache/simple/txrequests
 debian/pythoncache/simple/txrequests/txrequests-0.9.2.tar.gz
 debian/pythoncache/simple/txredis
