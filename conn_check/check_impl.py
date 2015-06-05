@@ -12,17 +12,20 @@ from twisted.python.failure import Failure
 
 
 def maybeDeferred(f, *args, **kwargs):
-    """Wrapper to Twisted's maybeDeferred so we can add a reference to the
-    wrapped deferred instance inside the original function dict."""
+    """Wrapper to Twisted's maybeDeferred.
+
+    Adds a reference to the wrapped deferred instance inside the original
+    function dict so we can track if something is a deferred.
+    """
     deferred = _maybeDeferred(f, *args, **kwargs)
     f.func_dict['deferred'] = deferred
     return deferred
 
 
 def maybeDeferToThread(f, *args, **kwargs):
-    """
-    Call the function C{f} using a thread from the given threadpool and return
-    the result as a Deferred.
+    """Call the function C{f} using a thread from the given threadpool
+
+    Return sthe result as a Deferred.
 
     @param f: The function to call. May return a deferred.
     @param *args: positional arguments to pass to f.
@@ -64,7 +67,8 @@ class Check(object):
         results.notify_start, then either results.notify_success or
         results.notify_failure.
         """
-        raise NotImplementedError("%r.check not implemented" % type(self))
+        raise NotImplementedError("{}.check not implemented".format(
+                                  type(self)))
 
     def skip(self, pattern, results):
         """Indicate that this check has been skipped.
@@ -72,7 +76,8 @@ class Check(object):
         If the pattern matches and this is a leaf node in the check tree,
         implementations of Check.skip should call results.notify_skip.
         """
-        raise NotImplementedError("%r.skip not implemented" % type(self))
+        raise NotImplementedError("{}.skip not implemented".format(
+                                  type(self)))
 
 
 class ConditionalCheck(Check):
@@ -123,7 +128,7 @@ class PrefixResultWrapper(ResultTracker):
 
     def make_name(self, name):
         """Make a name by prepending the prefix."""
-        return "%s%s" % (self.prefix, name)
+        return "{}{}".format(self.prefix, name)
 
     def notify_skip(self, name):
         """Register a check being skipped."""
@@ -140,7 +145,7 @@ class PrefixResultWrapper(ResultTracker):
     def notify_failure(self, name, info, exc_info, duration):
         """Register failure."""
         self.wrapped.notify_failure(self.make_name(name),
-                                      info, exc_info, duration)
+                                    info, exc_info, duration)
 
 
 class FailureCountingResultWrapper(ResultTracker):
@@ -261,6 +266,15 @@ class PrefixCheckWrapper(Check):
 
 
 @inlineCallbacks
+def skipping_strategy(subchecks, pattern, results):
+    """Strategy used to print checks out by just skipping them all."""
+    # We need at least one yield to make this a generator
+    yield
+    for subcheck in subchecks:
+        subcheck.skip(pattern, results)
+
+
+@inlineCallbacks
 def sequential_strategy(subchecks, pattern, results):
     """Run subchecks sequentially, skipping checks after the first failure.
 
@@ -295,6 +309,11 @@ def parallel_strategy(subchecks, pattern, results):
     return DeferredList(deferreds)
 
 
+def skipping_check(subchecks):
+    """Return a check that skips everything, used for printing checks."""
+    return MultiCheck(subchecks=subchecks, strategy=skipping_strategy)
+
+
 def parallel_check(subchecks):
     """Return a check that runs the given subchecks in parallel."""
     return MultiCheck(subchecks=subchecks, strategy=parallel_strategy)
@@ -319,7 +338,7 @@ def add_check_prefix(*args):
     args = list(args)
     check = args.pop(-1)
     path = ".".join(args)
-    return PrefixCheckWrapper(wrapped=check, prefix="%s:" % (path,))
+    return PrefixCheckWrapper(wrapped=check, prefix="{}:".format(path))
 
 
 def make_check(name, check, info=None, blocking=False):
@@ -330,4 +349,3 @@ def make_check(name, check, info=None, blocking=False):
 def guard_check(check, predicate):
     """Wrap a check so that it is skipped unless the predicate is true."""
     return ConditionalCheck(wrapped=check, predicate=predicate)
-

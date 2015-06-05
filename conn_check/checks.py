@@ -46,8 +46,9 @@ CA_CERTS = []
 def load_tls_certs(path):
     cert_map = {}
     for filepath in glob.glob("{}/*.pem".format(os.path.abspath(path))):
-        # There might be some dead symlinks in there, so let's make sure it's real.
-        if os.path.exists(filepath):
+        # There might be some dead symlinks in there,
+        # so let's make sure it's real.
+        if os.path.isfile(filepath):
             data = open(filepath).read()
             x509 = load_certificate(FILETYPE_PEM, data)
             # Now, de-duplicate in case the same cert has multiple names.
@@ -102,24 +103,28 @@ def do_tcp_check(host, port, tls=False, tls_verify=True,
         if ip == host:
             raise ValueError("timed out")
         else:
-            raise ValueError("timed out connecting to %s" % ip)
+            raise ValueError("timed out connecting to {}".format(ip))
 
 
 def make_tcp_check(host, port, timeout=None, **kwargs):
     """Return a check for TCP connectivity."""
     return make_check("tcp:{}:{}".format(host, port),
                       lambda: do_tcp_check(host, port, timeout=timeout),
-                      info="%s:%s" % (host, port))
+                      info="{}:{}".format(host, port))
 
 
 def make_tls_check(host, port, disable_tls_verification=False, timeout=None,
                    **kwargs):
     """Return a check for TLS setup."""
-    return make_check("tls:{}:{}".format(host, port),
-                      lambda: do_tcp_check(host, port, tls=True,
-                          tls_verify=(not disable_tls_verification),
-                          timeout=timeout),
-                      info="%s:%s" % (host, port))
+
+    verify = not disable_tls_verification
+    check = make_check("tls:{}:{}".format(host, port),
+                       lambda: do_tcp_check(host, port, tls=True,
+                                            tls_verify=verify,
+                                            timeout=timeout),
+                       info="{}:{}".format(host, port))
+
+    return check
 
 
 class UDPCheckProtocol(DatagramProtocol):
@@ -175,15 +180,15 @@ def do_udp_check(host, port, send, expect, timeout=None):
         if ip == host:
             raise ValueError("timed out")
         else:
-            raise ValueError("timed out waiting for %s" % ip)
+            raise ValueError("timed out waiting for {}".format(ip))
 
 
 def make_udp_check(host, port, send, expect, timeout=None,
                    **kwargs):
     """Return a check for UDP connectivity."""
     return make_check("udp:{}:{}".format(host, port),
-            lambda: do_udp_check(host, port, send, expect, timeout),
-                      info="%s:%s" % (host, port))
+                      lambda: do_udp_check(host, port, send, expect, timeout),
+                      info="{}:{}".format(host, port))
 
 
 def extract_host_port(url):
@@ -219,10 +224,10 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
     def do_request():
         proxies = {}
         if proxy_url:
-            proxies['http'] = proxies['https']= proxy_url
+            proxies['http'] = proxies['https'] = proxy_url
         elif proxy_host:
-            proxies['http'] = proxies['https']= '{}:{}'.format(
-                                                 proxy_host, proxy_port)
+            proxies['http'] = proxies['https'] = '{}:{}'.format(
+                proxy_host, proxy_port)
 
         headers = kwargs.get('headers')
         body = kwargs.get('body')
@@ -266,10 +271,11 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
             if response.status_code != expected_code:
                 raise RuntimeError(
                     "Unexpected response code: {}".format(
-                                               response.status_code))
+                        response.status_code))
 
     subchecks.append(make_check('', do_request,
                      info='{} {}'.format(method, url)))
+
     return add_check_prefix('http:{}'.format(url),
                             sequential_check(subchecks))
 
@@ -299,7 +305,7 @@ def make_amqp_check(host, port, username, password, use_tls=True, vhost="/",
         yield client.authenticate(username, password)
 
     subchecks.append(make_check("amqp:{}:{}".format(host, port),
-                                do_auth, info="user %s" % (username,),))
+                                do_auth, info="user {}".format(username),))
     return sequential_check(subchecks)
 
 
@@ -329,8 +335,9 @@ def make_postgres_check(host, port, username, password, database,
         conn.close()
 
     subchecks.append(make_check("postgres:{}:{}".format(host, port),
-                                check_auth, info="user %s" % (username,),
+                                check_auth, info="user {}".format(username),
                                 blocking=True))
+
     return sequential_check(subchecks)
 
 
@@ -358,8 +365,12 @@ def make_redis_check(host, port, password=None, timeout=None,
             if resp != 'OK':
                 raise RuntimeError("failed to auth to redis")
 
-    connect_info = "connect with auth" if password is not None else "connect"
+    if password is not None:
+        connect_info = "connect with auth"
+    else:
+        connect_info = "connect"
     subchecks.append(make_check(connect_info, do_connect))
+
     return add_check_prefix('redis:{}:{}'.format(host, port),
                             sequential_check(subchecks))
 
@@ -378,8 +389,11 @@ def make_memcache_check(host, port, password=None, timeout=None,
                                                  timeout=timeout)
 
         version = yield client.version()
+        if version is None:
+            raise RuntimeError('Failed retrieve memcached server version')
 
     subchecks.append(make_check('connect', do_connect))
+
     return add_check_prefix('memcache:{}:{}'.format(host, port),
                             sequential_check(subchecks))
 
@@ -411,16 +425,21 @@ def make_mongodb_check(host, port=27017, username=None, password=None,
 
         mongo = yield conn
         names = yield mongo[database].collection_names()
+        if names is None:
+            raise RuntimeError('Failed to retrieve collection names')
 
     def timeout_handler():
-        """Manual timeout handler as txmongo timeout args above don't work in
-        many situations."""
+        """Manual timeout handler as txmongo timeout args don't always work."""
         if 'deferred' in do_connect.func_dict:
             err = ValueError("timeout connecting to mongodb")
             do_connect.func_dict['deferred'].errback(err)
 
-    connect_info = "connect with auth" if any((username, password)) else "connect"
+    if any((username, password)):
+        connect_info = "connect with auth"
+    else:
+        connect_info = "connect"
     subchecks.append(make_check(connect_info, do_connect))
+
     return add_check_prefix('mongodb:{}:{}'.format(host, port),
                             sequential_check(subchecks))
 
