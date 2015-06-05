@@ -1,3 +1,9 @@
+conn-check (1.1.0-5) vivid; urgency=low
+
+  * Fix for pip with latest dh-virtualenv on vivid builds.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Fri, 05 Jun 2015 22:05:10 +0000
+
 conn-check (1.1.0-4) vivid; urgency=low
 
   * More vivid build fixes, mostly python-pymongo being a bad python citizen.
