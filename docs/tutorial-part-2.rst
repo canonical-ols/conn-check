@@ -50,6 +50,7 @@ effort like so:
 
 .. code-block:: python
 
+    #!/usr/bin/env python
     from conn_check_configs.django import *
 
     if __name__ == '__main__':
@@ -79,7 +80,33 @@ hand-written config:
 Customising generated checks
 ----------------------------
 
+In order to generate the checks we need for Squid / Google Translate API, we
+can add some custom callbacks:
 
+.. code-block:: python
+
+    #!/usr/bin/env python
+    from conn_check_configs.django import *
+
+
+    def make_proxied_translate_check(settings, options):
+        checks = []
+        if settings['PROXY_HOST']:
+            checks.append({
+                'type': 'http',
+                'url': 'https://www.googleapis.com/language/translate/v2?q='
+                       'Hello%20World&target=de&source=en&key=BLAH',
+                'proxy_host': settings['PROXY_HOST'],
+                'proxy_port': int(settings.get('PROXY_PORT', 8080)),
+                'expected_code': 200,
+            })
+        return checks
+
+    EXTRA_CHECK_MAKERS.append(make_proxied_translate_check)
+
+
+    if __name__ == '__main__':
+        run()
 
 A note on statstd checks
 ------------------------
