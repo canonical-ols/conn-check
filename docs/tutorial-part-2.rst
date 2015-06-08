@@ -10,3 +10,37 @@ Let's assume that you've actually created the ``Hello World`` service from
 
 `"Hang on, aren't all these connections I want conn-check to check for me
 already defined in my Django settings module?"`
+
+conn-check-configs
+------------------
+
+Yes, yes they are, and with the handy-dandy
+`conn-check-configs <https://pypi.python.org/pypi/conn-check-configs>`_
+package you can automatically generate conn-check config YAML from a range of
+different standard Django settings values (in theory from other environments
+too, such as `Juju <https://jujucharms.com/>`_, but for now just Django).
+
+exempli gratia
+--------------
+
+Given the following ``settings.py`` in our `HWaaS` service:
+
+.. code-block:: python
+
+    DATABASES = {
+        'default': {
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'HOST': 'gibson.hwass.internal',
+                'NAME': 'hwaas_production',
+                'PASSWORD': '123456asdf',
+                'PORT': 11211,
+                'USER': 'hwaas',
+    }
+    CACHES = {
+        'default': {
+            'LOCATION': 'freeside.hwaas.internal:11211',
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        },
+    }
+    PROXY_HOST = 'countzero.hwaas.internal'
+    PROXY_PORT = 8080
