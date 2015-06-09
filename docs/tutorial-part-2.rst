@@ -23,7 +23,7 @@ too, such as `Juju <https://jujucharms.com/>`_, but for now just Django).
 exempli gratia
 --------------
 
-Given the following ``settings.py`` in our *HWaaS* service:
+Given the following ``settings.py`` in our *HWaaS* app:
 
 .. code-block:: python
 
