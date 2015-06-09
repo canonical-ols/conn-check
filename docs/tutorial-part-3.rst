@@ -11,14 +11,14 @@ to your Juju environment.
 
 You'd be right..
 
-Adding conn-check charm support to your app's charm
----------------------------------------------------
+Adding conn-check charm support to your apps charm
+--------------------------------------------------
 
 The `conn-check charm <https://jujucharms.com/u/ubuntuone-hackers/conn-check/trusty>`_
-is a subordinate charm that can be added alongside your application's charm,
+is a subordinate charm that can be added alongside your applications charm,
 and will install/configure conn-check on your application units.
 
-To enable support for the conn-check subordinate in your application's charm
+To enable support for the conn-check subordinate in your applications charm
 you just need to implement the ``conn-check-relation-changed`` hook, e.g.:
 
 .. code-block:: bash
