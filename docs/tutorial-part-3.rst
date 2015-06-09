@@ -11,8 +11,26 @@ to your Juju environment.
 
 You'd be right..
 
-The conn-check charm
---------------------
+Adding conn-check charm support to your app's charm
+---------------------------------------------------
+
+The `conn-check charm <https://jujucharms.com/u/ubuntuone-hackers/conn-check/trusty>`_
+is a subordinate charm that can be added alongside your application's charm,
+and will install/configure conn-check on your application units.
+
+To enable support for the conn-check subordinate in your application's charm
+you just need to implement the ``conn-check-relation-changed`` hook, e.g.:
+
+.. code-block:: bash
+
+    #!/bin/bash
+    set -e
+    CONFIG_PATH=/var/conn-check.yaml
+
+    juju-log "Writing conn-check config to ${CONFIG_PATH}"
+    /path/to/hwaas/settings-to-conn-check.py -f $CONFIG_PATH -m hwaas.settings
+    
+    relation-set config-path=$CONFIG_PATH
 
 
 Nagios
