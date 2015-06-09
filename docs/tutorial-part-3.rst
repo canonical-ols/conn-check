@@ -29,8 +29,16 @@ you just need to implement the ``conn-check-relation-changed`` hook, e.g.:
 
     juju-log "Writing conn-check config to ${CONFIG_PATH}"
     /path/to/hwaas/settings-to-conn-check.py -f $CONFIG_PATH -m hwaas.settings
+
+    # Ensure conn-check and nagios can both access the config file
+    chown conn-check:nagios $CONFIG_PATH
+    chmod 0660 $CONFIG_PATH
     
-    relation-set config-path="${CONFIG_PATH}"
+    # Set the config path, we could also tell the conn-check charm
+    # to write the config file for us by setting the "config" option
+    # but this is deprecated in favour of writing the file ourselves
+    # and setting "config_path"
+    relation-set config_path="${CONFIG_PATH}"
 
 
 Nagios
