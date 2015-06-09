@@ -30,7 +30,7 @@ you just need to implement the ``conn-check-relation-changed`` hook, e.g.:
     juju-log "Writing conn-check config to ${CONFIG_PATH}"
     /path/to/hwaas/settings-to-conn-check.py -f $CONFIG_PATH -m hwaas.settings
     
-    relation-set config-path=$CONFIG_PATH
+    relation-set config-path="${CONFIG_PATH}"
 
 
 Nagios
