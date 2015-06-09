@@ -139,3 +139,40 @@ our dependencies we update our ``settings.py`` to include:
 **Note**: You don't actually need the django-statsd app to have
 conn-check-configs generate statsd checks, only the use of ``STATSD_HOST``
 and ``STATSD_PORT`` in your settings module matters.
+
+Another run of our ``settings-to-conn-check.py`` script will result in the
+extra statsd check:
+
+.. code-block:: yaml
+
+    - type: udp
+      host: bigend.hwaas.internal
+      port: 10021
+      send: conncheck.test:1|c
+      expect: 
+
+As you can see this is just a generic UDP check that attempts to send an
+incremental counter metric to the statsd host.
+
+Unfortunately the fire-and-forget nature of this use of statsd/UDP will not
+error in a number of common situations (the simplest being that statsd is not
+running on the target host, or even a routing issue along the way).
+
+It will catch simple problems such as not being able to open up the local UDP
+port to send from, but that's usually not enough.
+
+If you use a third-party implementation of statsd, such as 
+`txStatsD <https://launchpad.net/txstatsd>`_ then you might have the ability
+to define a pair of health check strings, for example with this check:
+
+.. code-block:: yaml
+
+    - type: udp
+      host: bigend.hwaas.internal
+      port: 10021
+      send: Hakuna
+      expect: Matata
+
+In the above we would configure our txStatD (for example) instance to respond
+to the string ``Hakuna`` with the string ``Matata``, which would catch pretty
+much all our possible issues with contacting our metrics service.
