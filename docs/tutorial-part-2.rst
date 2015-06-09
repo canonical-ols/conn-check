@@ -8,8 +8,8 @@ Let's assume that you've actually created the ``Hello World`` service from
 :doc:`part 1 </tutorial-part-1>` as a
 `Django app <https://www.djangoproject.com/>`_, and you think to yourself:
 
-`"Hang on, aren't all these connections I want conn-check to check for me
-already defined in my Django settings module?"`
+*"Hang on, aren't all these connections I want conn-check to check for me
+already defined in my Django settings module?"*
 
 conn-check-configs
 ------------------
@@ -23,7 +23,7 @@ too, such as `Juju <https://jujucharms.com/>`_, but for now just Django).
 exempli gratia
 --------------
 
-Given the following ``settings.py`` in our `HWaaS` service:
+Given the following ``settings.py`` in our *HWaaS* service:
 
 .. code-block:: python
 
@@ -60,7 +60,7 @@ effort like so:
     if __name__ == '__main__':
         run()
 
-This will output `postgresql` and `memcached` checks to similar our 
+This will output *postgresql* and *memcached* checks to similar our 
 hand-written config:
 
 .. code-block:: sh
@@ -138,12 +138,12 @@ The above generates our required HTTP check:
 A note on statstd checks
 ------------------------
 
-Getting more operational visibility on how `HWaaS` runs would be great,
+Getting more operational visibility on how *HWaaS* runs would be great,
 wouldn't it?
 
 So let's add some metrics collection using
 `StatsD <https://github.com/etsy/statsd>`_, and as luck would have it we can
-get a lot for `nearly free` with the
+get a lot for *nearly free* with the
 `django-statsd <https://django-statsd.readthedocs.org/>`_, after adding it to
 our dependencies we update our ``settings.py`` to include:
 
