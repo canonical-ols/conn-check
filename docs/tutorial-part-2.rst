@@ -17,7 +17,7 @@ conn-check-configs
 Yes, yes they are, and with the handy-dandy
 `conn-check-configs <https://pypi.python.org/pypi/conn-check-configs>`_
 package you can automatically generate conn-check config YAML from a range of
-different standard Django settings values (in theory from other environments
+standard Django settings values (in theory from other environments
 too, such as `Juju <https://jujucharms.com/>`_, but for now just Django).
 
 exempli gratia
@@ -27,6 +27,9 @@ Given the following ``settings.py`` in our `HWaaS` service:
 
 .. code-block:: python
 
+    INSTALLED_APPS = [
+        'hwaas'
+    ]
     DATABASES = {
         'default': {
                 'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -111,4 +114,28 @@ can add some custom callbacks:
 A note on statstd checks
 ------------------------
 
+Getting more operational visibility on how `HWaaS` runs would be great,
+wouldn't it?
 
+So let's add some metrics collection using
+`StatsD <https://github.com/etsy/statsd>`_, and as luck would have it we can
+get a lot for `nearly free` with the
+`django-statsd <https://django-statsd.readthedocs.org/>`_, after adding it to
+our dependencies we update our ``settings.py`` to include:
+
+.. code-block:: python
+
+    INSTALLED_APPS = [
+        'hwaas'
+        'django_statsd',
+    ]
+    MIDDLEWARE_CLASSES = [
+        'django_statsd.middleware.GraphiteMiddleware',
+    ]
+    STATSD_CLIENT = 'django_statsd.clients.normal'
+    STATSD_HOST = 'bigend.hwaas.internal'
+    STATSD_PORT = 10021
+
+**Note**: You don't actually need the django-statsd app to have
+conn-check-configs generate statsd checks, only the use of ``STATSD_HOST``
+and ``STATSD_PORT`` in your settings module matters.
