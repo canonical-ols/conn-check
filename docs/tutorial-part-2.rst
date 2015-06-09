@@ -47,6 +47,7 @@ Given the following ``settings.py`` in our `HWaaS` service:
     }
     PROXY_HOST = 'countzero.hwaas.internal'
     PROXY_PORT = 8080
+    TRANSLATE_API_KEY = 'BLAH'
 
 We can create a ``settings-to-conn-check.py`` script with the least possible
 effort like so:
@@ -98,7 +99,8 @@ can add some custom callbacks:
             checks.append({
                 'type': 'http',
                 'url': 'https://www.googleapis.com/language/translate/v2?q='
-                       'Hello%20World&target=de&source=en&key=BLAH',
+                       'Hello%20World&target=de&source=en&key={}'.format(
+                           settings['TRANSLATE_API_KEY']),
                 'proxy_host': settings['PROXY_HOST'],
                 'proxy_port': int(settings.get('PROXY_PORT', 8080)),
                 'expected_code': 200,
@@ -110,6 +112,28 @@ can add some custom callbacks:
 
     if __name__ == '__main__':
         run()
+
+
+In the above we define a callable which takes 2 params, ``settings`` which
+is a wrapper around the Django settings module, and ``options`` which is
+an object containing the command line arguments that were passed to the script.
+
+The ``settings`` module is not the direct settings module but a dict-like
+wrapper so that you can access the settings just a like a dict (using indices,
+``.get`` method, etc.)
+
+To ensure ``make_proxied_translate_check`` is collected and called by the main
+``run`` function we add it to the ``EXTRA_CHECK_MAKERS`` list.
+
+The above generates our required HTTP check:
+
+.. code-block:: yaml
+
+    - type: http
+      url: https://www.googleapis.com/language/translate/v2?q=Hello%20World&target=de&source=en&key=BLAH
+      proxy_host: countzero.hwaas.internal
+      proxy_port: 8080
+      expected_code: 200
 
 A note on statstd checks
 ------------------------
@@ -163,7 +187,22 @@ port to send from, but that's usually not enough.
 
 If you use a third-party implementation of statsd, such as 
 `txStatsD <https://launchpad.net/txstatsd>`_ then you might have the ability
-to define a pair of health check strings, for example with this check:
+to define a pair of health check strings, for example by changing the send
+and expect values in the ``STATSD_CHECK`` dict we can send and expect different
+strings:
+
+.. code-block:: python
+
+    #!/usr/bin/env python
+    from conn_check_configs.django import *
+
+    STATSD_CHECK['send'] = 'Hakuna'
+    STATSD_CHECK['expect'] = 'Matata'
+
+    if __name__ == '__main__':
+        run()
+
+Which generates this check:
 
 .. code-block:: yaml
 
@@ -175,4 +214,4 @@ to define a pair of health check strings, for example with this check:
 
 In the above we would configure our txStatD (for example) instance to respond
 to the string ``Hakuna`` with the string ``Matata``, which would catch pretty
-much all our possible issues with contacting our metrics service.
+much all the possible issues with contacting our metrics service.
