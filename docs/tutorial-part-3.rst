@@ -72,7 +72,7 @@ Nagios
 ------
 
 The conn-check charm provides the ``nrpe-external-master`` relation which
-means it can act as a Nagios plugin executor, meaning if you have a Nagios
+means it can act as a Nagios plugin executor, so if you have a Nagios
 master in your environment for monitoring then conn-check can be regularly
 run along with your other monitoring checks to ensure your environments
 connections are as you expect them to be.
