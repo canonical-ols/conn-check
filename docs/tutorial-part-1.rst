@@ -77,7 +77,7 @@ PostgreSQL
       database: hwaas_production
 
 *type*: This one doesn't require much explanation, except the fact that you
-can use either "postgresql" or "postgres" (many checks have aliases).
+can use either `postgresql`` or ``postgres`` (many checks have aliases), :doc:`see the readme </readme>`..
 
 *host*, *port*: The host to connect to is always, understandably, required,
 but if not supplied the default psql port of ``5432`` will be used.
@@ -96,7 +96,7 @@ memcached
       host: freeside.hwaas.internal
       port: 11211
 
-*type*: The alias "memcache" will also work.
+*type*: ``memcache`` or ``memcached`` are valid, :doc:`see the readme </readme>`.
 
 *host*, *port*: If port isn't supplied the memcached default ``11211`` is used
 instead.
@@ -112,7 +112,7 @@ HTTP
       proxy_port: 8080
       expected_code: 200
 
-*type*: The alias "https" will also work.
+*type*: ``http`` or ``https`` are valid, :doc:`see the readme </readme>`.
 
 *url*: As we're doing a simple GET to the Translate API I've included the
 ``key`` in the querystring, but you could also include auth defailts as HTTP
