@@ -55,7 +55,7 @@ effort like so:
 .. code-block:: python
 
     #!/usr/bin/env python
-    from conn_check_configs.django import *
+    from conn_check_configs.django import run
 
     if __name__ == '__main__':
         run()
@@ -90,7 +90,7 @@ can add some custom callbacks:
 .. code-block:: python
 
     #!/usr/bin/env python
-    from conn_check_configs.django import *
+    from conn_check_configs.django import EXTRA_CHECK_MAKERS, run
 
 
     def make_proxied_translate_check(settings, options):
@@ -194,7 +194,7 @@ strings:
 .. code-block:: python
 
     #!/usr/bin/env python
-    from conn_check_configs.django import *
+    from conn_check_configs.django import STATSD_CHECK, run
 
     STATSD_CHECK['send'] = 'Hakuna'
     STATSD_CHECK['expect'] = 'Matata'
