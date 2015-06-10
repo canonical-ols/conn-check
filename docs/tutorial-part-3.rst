@@ -56,7 +56,13 @@ in your ``metadata.yaml``:
             scope: container
 
 When deploying conn-check with your service you then deploy the subordinate,
-relate it to your service, and optionally set it as a :ref:`nagios` provider.
+relate it to your service (you can aslo optionally set it as a :ref:`nagios`
+provider):
+
+.. code-block:: sh
+
+    $ juju deploy cs:~ubuntuone-hackers/trusty/conn-check-31 my-service-conn-check revision=108 # pin to the rev of conn-check you want to use
+    $ juju add-relation my-service conn-check
 
 
 .. _nagios:
@@ -64,6 +70,24 @@ relate it to your service, and optionally set it as a :ref:`nagios` provider.
 Nagios
 ------
 
+The conn-check charm provides the ``nrpe-external-master`` relation which
+means it can act as a Nagios plugin executor, meaning if you have a Nagios
+master in your environment for monitoring then conn-check can be regularly
+run along with your other monitoring checks to ensure your environments
+connections are as you expect them to be.
+
+To set this up you need to relate the deployed subordinate to your servie nrpe:
+
+.. code-block:: sh
+
+    $ # assuming something like:
+    $ # juju deploy nagios nagios-master
+    $ # juju deploy nrpe my-service-nrpe
+    $ # juju add-relation my-service:monitors my-service-nrpe:monitors
+    $ juju add-relation my-service-conn-check my-service-nrpe
+
+For more details on Juju and Nagios you can see
+`this handy blog post <https://maas.ubuntu.com/2012/08/07/juju-and-nagios-sittin-in-a-tree-part-1>`_.
 
 Actions
 -------
