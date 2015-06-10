@@ -197,7 +197,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('index', 'ConnCheck.tex', u'conn-check Documentation',
-   u'Wes Mason', 'manual'),
+   u'Canonical', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -227,7 +227,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'conncheck', u'conn-check Documentation',
-     [u'Wes Mason'], 1)
+     [u'Canonical'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -241,7 +241,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'ConnCheck', u'conn-check Documentation',
-   u'Wes Mason', 'ConnCheck', 'Network connection checking utility.',
+   u'Canonical', 'ConnCheck', 'Network connection checking utility.',
    'Miscellaneous'),
 ]
 
