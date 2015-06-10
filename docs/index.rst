@@ -5,10 +5,12 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-   :glob:
 
-   *
-
+   readme
+   tutorial-part-1
+   tutorial-part-2
+   tutorial-part-3
+   History <history>
 
 
 Indices and tables
