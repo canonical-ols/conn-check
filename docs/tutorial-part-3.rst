@@ -56,7 +56,7 @@ in your ``metadata.yaml``:
             scope: container
 
 When deploying conn-check with your service you then deploy the subordinate,
-relate it to your service (you can aslo optionally set it as a :ref:`nagios`
+relate it to your service (you can also optionally set it as a :ref:`nagios`
 provider):
 
 .. code-block:: sh
