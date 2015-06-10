@@ -96,6 +96,7 @@ To manually run conn-check on all units, or a single unit, you can use the
 supplied ``run-check`` and ``run-nagios-check`` actions:
 
 .. code-block:: sh
+
     $ # all checks on all units
     $ juju run --service my-service-conn-check 'actions/run-check'
     $ # all checks on just unit 0
@@ -111,5 +112,6 @@ juju-run from working with subordinate charms, you can work around this with
 juju-ssh:
 
 .. code-block:: sh
+
     $ # all checks on just unit 0
     $ juju ssh my-service-conn-check/0 'juju-run my-service-conn-check/0 actions/run-check'
