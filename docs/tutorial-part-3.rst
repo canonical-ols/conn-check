@@ -19,7 +19,7 @@ is a subordinate charm that can be added alongside your applications charm,
 and will install/configure conn-check on your application units.
 
 To enable support for the conn-check subordinate in your applications charm
-you just need to implement the ``conn-check-relation-changed`` hook, e.g.:
+you need to implement the ``conn-check-relation-changed`` hook, e.g.:
 
 .. code-block:: bash
 
@@ -28,11 +28,11 @@ you just need to implement the ``conn-check-relation-changed`` hook, e.g.:
     CONFIG_PATH=/var/conn-check.yaml
 
     juju-log "Writing conn-check config to ${CONFIG_PATH}"
-    /path/to/hwaas/settings-to-conn-check.py -f $CONFIG_PATH -m hwaas.settings
+    /path/to/hwaas/settings-to-conn-check.py -f ${CONFIG_PATH} -m hwaas.settings
 
     # Ensure conn-check and nagios can both access the config file
-    chown conn-check:nagios $CONFIG_PATH
-    chmod 0660 $CONFIG_PATH
+    chown conn-check:nagios ${CONFIG_PATH}
+    chmod 0660 ${CONFIG_PATH}
     
     # Set the config path, we could also tell the conn-check charm
     # to write the config file for us by setting the "config" option
@@ -40,6 +40,26 @@ you just need to implement the ``conn-check-relation-changed`` hook, e.g.:
     # and setting "config_path"
     relation-set config_path="${CONFIG_PATH}"
 
+You may note that we set the user to ``conn-check`` and the group to ``nagios``,
+you can actually get away with just setting the group to ``nagios`` as this
+will give both conn-check and nagios access to the config file, but you might
+as well set the user anyway otherwise it's likely to be ``root``.
+
+You'll also need to tell Juju your charm provides the ``conn-check`` relation
+in your ``metadata.yaml``:
+
+.. code-block:: yaml
+
+    provides:
+        conn-check:
+            interface: conn-check
+            scope: container
+
+When deploying conn-check with your service you then deploy the subordinate,
+relate it to your service, and optionally set it as a :ref:`nagios` provider.
+
+
+.. _nagios:
 
 Nagios
 ------
