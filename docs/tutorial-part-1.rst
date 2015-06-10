@@ -82,9 +82,9 @@ can use either `postgresql`` or ``postgres`` (many checks have aliases), :doc:`s
 *host*, *port*: The host to connect to is always, understandably, required,
 but if not supplied the default psql port of ``5432`` will be used.
 
-*username*, *password*: Auth details are required and important when used with ...
+*username*, *password*: Auth details are required and important when used with…
 
-... *database*: This is the psql schema to attempt to switch to use, and
+…*database*: This is the psql schema to attempt to switch to use, and
 *username* has permission to access.
 
 memcached

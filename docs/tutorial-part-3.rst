@@ -9,7 +9,7 @@ framework and deployment toolset from Canonical, given conn-check is also by
 Canonical you might expect there is an easy yet flexible way to add conn-check
 to your Juju environment.
 
-You'd be right..
+You'd be right…
 
 Adding conn-check charm support to your apps charm
 --------------------------------------------------
