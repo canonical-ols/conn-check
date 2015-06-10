@@ -63,7 +63,7 @@ provider):
 
     $ juju deploy cs:~ubuntuone-hackers/trusty/conn-check-31 my-service-conn-check
     $ juju set my-service-conn-check revision=108 # pin to the rev of conn-check you want to use
-    $ juju add-relation my-service conn-check
+    $ juju add-relation my-service my-service-conn-check
 
 
 .. _nagios:
