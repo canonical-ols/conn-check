@@ -501,6 +501,10 @@ CHECKS = {
         'fn': make_mongodb_check,
         'args': ['host'],
     },
+    'smtp': {
+        'fn': make_smtp_check,
+        'args': ['host', 'port', 'username', 'password'],
+    },
 }
 
 CHECK_ALIASES = {
