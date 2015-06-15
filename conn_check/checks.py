@@ -309,6 +309,26 @@ def make_amqp_check(host, port, username, password, use_tls=True, vhost="/",
     return sequential_check(subchecks)
 
 
+def make_smtp_check(host, port, username, password, use_tls=True, timeout=None,
+                    **kwargs):
+    """Return a check for SMTP connectivity."""
+
+    subchecks = []
+    subchecks.append(make_tcp_check(host, port, timeout=timeout))
+
+    if use_tls:
+        subchecks.append(make_tls_check(host, port, verify=False,
+                                        timeout=timeout))
+
+    @inlineCallbacks
+    def do_connect():
+        """Connect and authenticate."""
+
+    subchecks.append(make_check("smtp:{}:{}".format(host, port),
+                                do_connect, info="user {}".format(username),))
+    return sequential_check(subchecks)
+
+
 def make_postgres_check(host, port, username, password, database,
                         timeout=None, **kwargs):
     """Return a check for Postgres connectivity."""
