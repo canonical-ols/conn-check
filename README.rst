@@ -28,6 +28,9 @@ of checks to do:
 
 Each check defines a type, and then options as appropriate for that type.
 
+For a step by step guide on configuring conn-check for your application
+`see the tutorial <http://conn-check.readthedocs.org/>`_.
+
 Check Types
 -----------
 
