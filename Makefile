@@ -126,7 +126,7 @@ docs:
 	cd $(DOCS_DIR) && $(MAKE) $(TYPE)
 
 update-rtd:
-	curl -X POST http://readthedocs.org/build/conn-check
+	-curl -X POST http://readthedocs.org/build/conn-check
 
 
 .PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload install-build-debs build-deb-pip-cache test-build-deb docs clean-docs
