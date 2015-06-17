@@ -1,5 +1,5 @@
-conn-check
-==========
+About conn-check
+================
 
 conn-check allows for checking connectivity with external services.
 
@@ -14,7 +14,9 @@ Configuration
 -------------
 
 The configuration is done via a yaml file. The file defines a list
-of checks to do::
+of checks to do:
+
+.. code-block:: yaml
 
     - type: tcp
       host: localhost
@@ -25,6 +27,9 @@ of checks to do::
       disable_tls_verification: false
 
 Each check defines a type, and then options as appropriate for that type.
+
+For a step by step guide on configuring conn-check for your application
+`see the tutorial <http://conn-check.readthedocs.org/>`_.
 
 Check Types
 -----------
@@ -257,7 +262,9 @@ Tags
 Every check type also supports a ``tags`` field, which is a list of tags that
 can be used with the ``--include-tags`` and ``--exclude-tags`` arguments to conn-check.
 
-Example YAML::
+Example YAML:
+
+.. code-block:: yaml
 
     - type: http
       url: http://google.com/
@@ -288,7 +295,7 @@ conn-check includes the ``conn-check-export-fw`` utility which takes the same ar
 ``conn-check`` but runs using ``--dry-run`` mode and outputs a set of `egress` firewall
 rules in an easy to parse YAML format, for example:
 
-.. code-block::
+.. code-block:: yaml
 
     # Generated from the conn-check demo.yaml file
     egress:
@@ -305,21 +312,21 @@ rules in an easy to parse YAML format, for example:
       protocol: tcp
       to_host: 127.0.0.1
 
-You can then use this output to generate your environment's firewall rules (e.g. with
+You can then use this output to generate your environments firewall rules (e.g. with
 `EC2 security groups`, `OpenStack Neutron`, `iptables` etc.).
 
 Building wheels
 ---------------
 
 To allow for easier/more portable distribution of this tool you can build
-conn-check and all it's dependencies as `Python wheels <http://legacy.python.org/dev/peps/pep-0427/>`_::
+conn-check and all its dependencies as `Python wheels <http://legacy.python.org/dev/peps/pep-0427/>`_::
 
     make clean-wheels
     make build-wheels
     make build-wheels-extra EXTRA=amqp
     make build-wheels-extra EXTRA=redis
 
-The `build-wheels` make target will build conn-check and it's base
+The `build-wheels` make target will build conn-check and its base
 dependencies, but to include the optional extra dependencies for other
 checks such as amqp, redis or postgres you need to use the
 `build-wheels-extra` target with the `EXTRA` env value.

@@ -11,3 +11,4 @@ debian/conn-check.postinst.debhelper
 debian/conn-check.substvars
 debian/files
 debian-requirements-filtered.txt
+_build
