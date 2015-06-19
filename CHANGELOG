@@ -1,6 +1,11 @@
 ChangeLog for conn-check
 ========================
 
+1.2.0 (2015-06-19)
+------------------
+
+ - Added new smtp check to test auth/sending with SMTP servers.
+
 1.1.0 (2015-06-05)
 ------------------
 
