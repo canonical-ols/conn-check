@@ -3,6 +3,8 @@ conn_check/check_impl.pyc
 conn_check/checks.pyc
 conn_check/main.pyc
 conn_check/patterns.pyc
+conn_check/utils/__init__.pyc
+conn_check/firewall_rules.pyc
 tests.pyc
 debian/pythoncache
 debian/pythoncache/idna-2.0-py2.py3-none-any.whl
