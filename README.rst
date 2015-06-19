@@ -260,6 +260,9 @@ smtp
 ````
 
 Check that we can reach, authenticate with and send an email using an SMTP server.
+**Note**: if this check succeeds an email is actually sent to the email
+defined in ``to_address``, be careful how this is check is configured so it doesn't
+unintentionally spam anyone.
 
 host
     The host.
