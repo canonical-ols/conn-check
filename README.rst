@@ -256,6 +256,46 @@ timeout
     Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
 
 
+smtp
+````
+
+Check that we can reach, authenticate with and send an email using an SMTP server.
+
+host
+    The host.
+
+port
+    The port, normally 465 for TLS and 25 for plaintext.
+
+username
+    Username to authenticate with.
+
+password
+    Password to authenticate with.
+
+from_address:
+    Email address to send `from`.
+
+to_address:
+    Email address to send `to`.
+
+message:
+    Optional email body.
+
+subject:
+    Optional email subject.
+
+helo_fallback:
+    Optional flag that defines whether to fall back to ``HELO`` if the ``EHLO``
+    extended command set fails.
+
+use_tls:
+    Optional flag to enable TLS security on connection. Default: true.
+
+timeout
+    Optional connection timeout in seconds. Default: 10 (or value from ``--connect-timeout``).
+
+
 Tags
 ----
 
