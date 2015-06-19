@@ -260,9 +260,14 @@ smtp
 ````
 
 Check that we can reach, authenticate with and send an email using an SMTP server.
-**Note**: if this check succeeds an email is actually sent to the email
+
+**Note 1**: if this check succeeds an email is actually sent to the email
 defined in ``to_address``, be careful how this is check is configured so it doesn't
 unintentionally spam anyone.
+
+**Note 2**: only EHLO/HELO over a TLS connection is supported with the ``use_tls``
+flag, this check cannot currently create new TLS connection using the
+`STARTTLS Extension <https://tools.ietf.org/html/rfc3207>`_.
 
 host
     The host.
