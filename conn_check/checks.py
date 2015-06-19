@@ -1,3 +1,4 @@
+from email.mime.text import MIMEText
 import glob
 import os
 from pkg_resources import resource_stream
@@ -312,8 +313,8 @@ def make_amqp_check(host, port, username, password, use_tls=True, vhost="/",
 
 
 def make_smtp_check(host, port, username, password, from_address, to_address,
-                    message, helo_fallback=False, use_tls=True, timeout=None,
-                    **kwargs):
+                    message='', subject='', helo_fallback=False, use_tls=True,
+                    timeout=None, **kwargs):
     """Return a check for SMTP connectivity."""
 
     subchecks = []
@@ -332,12 +333,14 @@ def make_smtp_check(host, port, username, password, from_address, to_address,
             from twisted.internet import ssl as twisted_ssl
             context_factory = twisted_ssl.ClientContextFactory()
 
+        body = MIMEText(message)
+        body['Subject'] = subject
         factory = ESMTPSenderFactory(
             username,
             password,
             from_address,
             to_address,
-            StringIO(message),
+            StringIO(body.as_string()),
             result_deferred,
             contextFactory=context_factory,
             requireTransportSecurity=use_tls,
@@ -350,7 +353,7 @@ def make_smtp_check(host, port, username, password, from_address, to_address,
             reactor.connectTCP(host, port, factory)
         result = yield result_deferred
 
-        if len(result.batons) == 0:
+        if result[0] == 0:
             raise RuntimeError("failed to send email via smtp")
 
     subchecks.append(make_check("smtp:{}:{}".format(host, port),
