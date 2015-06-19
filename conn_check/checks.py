@@ -1,6 +1,8 @@
+from email.mime.text import MIMEText
 import glob
 import os
 from pkg_resources import resource_stream
+from StringIO import StringIO
 import urlparse
 
 from OpenSSL import SSL
@@ -18,6 +20,7 @@ from twisted.internet.protocol import (
     DatagramProtocol,
     Protocol,
     )
+from twisted.mail.smtp import ESMTPSenderFactory
 from twisted.protocols.memcache import MemCacheProtocol
 
 from txrequests import Session
@@ -309,6 +312,55 @@ def make_amqp_check(host, port, username, password, use_tls=True, vhost="/",
     return sequential_check(subchecks)
 
 
+def make_smtp_check(host, port, username, password, from_address, to_address,
+                    message='', subject='', helo_fallback=False, use_tls=True,
+                    timeout=None, **kwargs):
+    """Return a check for SMTP connectivity."""
+
+    subchecks = []
+    subchecks.append(make_tcp_check(host, port, timeout=timeout))
+
+    if use_tls:
+        subchecks.append(make_tls_check(host, port, verify=False,
+                                        timeout=timeout))
+
+    @inlineCallbacks
+    def do_connect():
+        """Connect and authenticate."""
+        result_deferred = Deferred()
+        context_factory = None
+        if use_tls:
+            from twisted.internet import ssl as twisted_ssl
+            context_factory = twisted_ssl.ClientContextFactory()
+
+        body = MIMEText(message)
+        body['Subject'] = subject
+        factory = ESMTPSenderFactory(
+            username,
+            password,
+            from_address,
+            to_address,
+            StringIO(body.as_string()),
+            result_deferred,
+            contextFactory=context_factory,
+            requireTransportSecurity=use_tls,
+            requireAuthentication=True,
+            heloFallback=helo_fallback)
+
+        if use_tls:
+            reactor.connectSSL(host, port, factory, context_factory)
+        else:
+            reactor.connectTCP(host, port, factory)
+        result = yield result_deferred
+
+        if result[0] == 0:
+            raise RuntimeError("failed to send email via smtp")
+
+    subchecks.append(make_check("smtp:{}:{}".format(host, port),
+                                do_connect, info="user {}".format(username),))
+    return sequential_check(subchecks)
+
+
 def make_postgres_check(host, port, username, password, database,
                         timeout=None, **kwargs):
     """Return a check for Postgres connectivity."""
@@ -480,6 +532,10 @@ CHECKS = {
     'mongodb': {
         'fn': make_mongodb_check,
         'args': ['host'],
+    },
+    'smtp': {
+        'fn': make_smtp_check,
+        'args': ['host', 'port', 'username', 'password'],
     },
 }
 

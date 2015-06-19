@@ -21,6 +21,7 @@ from conn_check.checks import (
     make_mongodb_check,
     make_postgres_check,
     make_redis_check,
+    make_smtp_check,
     make_tls_check,
     make_tcp_check,
     make_udp_check,
@@ -245,6 +246,32 @@ class ConnCheckTest(testtools.TestCase):
                 FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
         self.assertThat(wrapped.subchecks[1],
                 FunctionCheckMatcher('connect with auth', None))
+
+    def test_make_smtp_check(self):
+        result = make_smtp_check('localhost', 8080, 'foo', 'bar',
+                                 'foo@example.com', 'bax@example.com',
+                                 use_tls=True)
+        self.assertIsInstance(result, MultiCheck)
+        self.assertIs(result.strategy, sequential_strategy)
+        self.assertEqual(len(result.subchecks), 3)
+        self.assertThat(result.subchecks[0],
+                FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
+        self.assertThat(result.subchecks[1],
+                FunctionCheckMatcher('tls:localhost:8080', 'localhost:8080'))
+        self.assertThat(result.subchecks[2],
+                FunctionCheckMatcher('smtp:localhost:8080', 'user foo'))
+
+    def test_make_smtp_check_no_tls(self):
+        result = make_smtp_check('localhost', 8080, 'foo', 'bar',
+                                 'foo@example.com', 'bax@example.com',
+                                 use_tls=False)
+        self.assertIsInstance(result, MultiCheck)
+        self.assertIs(result.strategy, sequential_strategy)
+        self.assertEqual(len(result.subchecks), 2)
+        self.assertThat(result.subchecks[0],
+                FunctionCheckMatcher('tcp:localhost:8080', 'localhost:8080'))
+        self.assertThat(result.subchecks[1],
+                FunctionCheckMatcher('smtp:localhost:8080', 'user foo'))
 
     def test_check_from_description_unknown_type(self):
         e = self.assertRaises(AssertionError,
