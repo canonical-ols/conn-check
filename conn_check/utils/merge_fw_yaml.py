@@ -25,15 +25,27 @@ def merge_yaml(paths):
     return merged_rules.values()
 
 
+RULES_GENERATORS = {}
+
+
 def run(*args):
     parser = ArgumentParser()
+    parser.add_argument('-t', '--type', dest='output_type', required=True,
+                        help="Rules output type, e.g. neutron, aws, iptables")
     parser.add_argument("paths", nargs='*',
-                        help="Paths to YAML files to merge.")
+                        help="Paths to YAML files to combine/parse.")
     options = parser.parse_args(list(args))
 
-    sys.stdout.write(yaml.dump(merge_yaml(options.paths)))
-
-    return 0
+    rules = merge_yaml(options.paths)
+    output_rules = RULES_GENERATORS.get(options.output_type,
+                                        lambda r: None)(rules)
+    if output_rules is not None:
+        sys.stdout.write(output_rules)
+        return 0
+    else:
+        sys.stderr.write('Error: invalid output type ({})\n'.format(
+                         options.output_type))
+        return 1
 
 
 def main():
