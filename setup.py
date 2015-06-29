@@ -45,6 +45,7 @@ setup(
         'console_scripts': [
             'conn-check = conn_check.main:main',
             'conn-check-export-fw = conn_check.utils.firewall_rules:main',
+            'conn-check-convert-fw = conn_check.utils.convert_fw_rules:main',
         ],
     },
     license='GPL3',

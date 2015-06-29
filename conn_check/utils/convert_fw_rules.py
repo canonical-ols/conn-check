@@ -32,7 +32,7 @@ def run(*args):
     parser = ArgumentParser()
     parser.add_argument('-t', '--type', dest='output_type', required=True,
                         help="Rules output type, e.g. neutron, aws, iptables")
-    parser.add_argument("paths", nargs='*',
+    parser.add_argument("paths", nargs='+',
                         help="Paths to YAML files to combine/parse.")
     options = parser.parse_args(list(args))
 
