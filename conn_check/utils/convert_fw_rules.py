@@ -28,9 +28,9 @@ def merge_yaml(paths):
 
 
 def output_aws_rules(rules, **kwargs):
-    group_id = kwargs.get('group_id', '$AWS_SECGROUP_ID')
-    cmd = ('authorize-security-group-egress --group-id {group_id} --protocol'
-           ' {protocol} --port {port} --cidr {cidr}')
+    group_id = kwargs.get('group', '$AWS_SECGROUP_ID')
+    cmd = ('aws ec2 authorize-security-group-egress --group-id {group_id}'
+           '--protocol {protocol} --port {port} --cidr {cidr}')
     output = []
     for rule in rules:
         for port in rule['ports']:
@@ -45,8 +45,28 @@ def output_aws_rules(rules, **kwargs):
     return '\n'.join(output)
 
 
-def output_neutron_rules(rules):
+def output_neutron_rules(rules, **kwargs):
+    group_name = kwargs.get('group', '$OS_SECGROUP_NAME')
+    if kwargs.get('use_nova', False):
+        cmd = ('nova secgroup-add-rule {group_name} {protocol} {port} {port}'
+               ' {cidr}')
+    else:
+        cmd = ('neutron security-group-rule-create --direction egress'
+               '--ethertype IPv4 --protocol {protocol} --port-range-min {port}'
+               ' --port-range-max {port} --remote-ip-prefix {cidr}'
+               ' {group_name}')
+
     output = []
+    for rule in rules:
+        for port in rule['ports']:
+            params = {
+                'group_name': group_name,
+                'cidr': str(IPNetwork(gethostbyname(rule['to_host'])).cidr),
+                'port': port,
+            }
+            params.update(rule)
+            output.append(cmd.format(**params))
+
     return '\n'.join(output)
 
 
@@ -72,13 +92,17 @@ def run(*args):
                         help="Rules output type, e.g. neutron, aws, iptables.")
     parser.add_argument("paths", nargs='+',
                         help="Paths to YAML files to combine/parse.")
-    parser.add_argument('--aws-group-id', dest='aws_group_id', required=False,
-                        help="AWS security group ID if output is aws/amazon.")
+    parser.add_argument('--group', dest='group', required=False,
+                        help="AWS security group ID or OpenStack Neutron group"
+                        " name.")
+    parser.add_argument('--use-nova', dest='use_nova', default=False,
+                        action="store_true",
+                        help="Output novaclient commands for OpenStack rules.")
     options = parser.parse_args(list(args))
 
-    kwargs = {}
-    if options.aws_group_id:
-        kwargs['group_id'] = options.aws_group_id
+    kwargs = {'use_nova': options.use_nova}
+    if options.group:
+        kwargs['group'] = options.group
 
     rules = merge_yaml(options.paths)
     output_rules = RULES_GENERATORS.get(options.output_type.lower(),
