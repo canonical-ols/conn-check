@@ -4,5 +4,6 @@
 -r mongodb-requirements.txt
 -r redis-requirements.txt
 -r postgres-requirements.txt
+-r fwutils-requirements.txt
 
 -r requirements.txt

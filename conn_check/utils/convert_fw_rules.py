@@ -1,4 +1,6 @@
 from argparse import ArgumentParser
+from netaddr import IPNetwork
+from socket import gethostbyname
 import sys
 import yaml
 
@@ -25,22 +27,64 @@ def merge_yaml(paths):
     return merged_rules.values()
 
 
-RULES_GENERATORS = {}
+def output_aws_rules(rules, **kwargs):
+    group_id = kwargs.get('group_id', '$AWS_SECGROUP_ID')
+    cmd = ('authorize-security-group-egress --group-id {group_id} --protocol'
+           ' {protocol} --port {port} --cidr {cidr}')
+    output = []
+    for rule in rules:
+        for port in rule['ports']:
+            params = {
+                'group_id': group_id,
+                'cidr': str(IPNetwork(gethostbyname(rule['to_host'])).cidr),
+                'port': port,
+            }
+            params.update(rule)
+            output.append(cmd.format(**params))
+
+    return '\n'.join(output)
+
+
+def output_neutron_rules(rules):
+    output = []
+    return '\n'.join(output)
+
+
+def output_iptables_rules(rules):
+    output = []
+    return '\n'.join(output)
+
+
+RULES_GENERATORS = {
+    'aws': output_aws_rules,
+    'amazon': output_aws_rules,
+    'ec2': output_aws_rules,
+    'neutron': output_neutron_rules,
+    'openstack': output_neutron_rules,
+    'os': output_neutron_rules,
+    'iptables': output_iptables_rules,
+}
 
 
 def run(*args):
     parser = ArgumentParser()
     parser.add_argument('-t', '--type', dest='output_type', required=True,
-                        help="Rules output type, e.g. neutron, aws, iptables")
+                        help="Rules output type, e.g. neutron, aws, iptables.")
     parser.add_argument("paths", nargs='+',
                         help="Paths to YAML files to combine/parse.")
+    parser.add_argument('--aws-group-id', dest='aws_group_id', required=False,
+                        help="AWS security group ID if output is aws/amazon.")
     options = parser.parse_args(list(args))
 
+    kwargs = {}
+    if options.aws_group_id:
+        kwargs['group_id'] = options.aws_group_id
+
     rules = merge_yaml(options.paths)
-    output_rules = RULES_GENERATORS.get(options.output_type,
-                                        lambda r: None)(rules)
+    output_rules = RULES_GENERATORS.get(options.output_type.lower(),
+                                        lambda r: None)(rules, **kwargs)
     if output_rules is not None:
-        sys.stdout.write(output_rules)
+        sys.stdout.write('{}\n'.format(output_rules))
         return 0
     else:
         sys.stderr.write('Error: invalid output type ({})\n'.format(
