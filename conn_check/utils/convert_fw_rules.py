@@ -27,69 +27,49 @@ def merge_yaml(paths):
     return merged_rules.values()
 
 
-def output_aws_rules(rules, **kwargs):
-    group_id = kwargs.get('group', '$AWS_SECGROUP_ID')
-    cmd = ('aws ec2 authorize-security-group-egress --group-id {group_id}'
-           '--protocol {protocol} --port {port} --cidr {cidr}')
-    output = []
-    for rule in rules:
-        for port in rule['ports']:
-            params = {
-                'group_id': group_id,
-                'cidr': str(IPNetwork(gethostbyname(rule['to_host'])).cidr),
-                'port': port,
-            }
-            params.update(rule)
-            output.append(cmd.format(**params))
-
-    return '\n'.join(output)
-
-
-def output_neutron_rules(rules, **kwargs):
-    group_name = kwargs.get('group', '$OS_SECGROUP_NAME')
-    if kwargs.get('use_nova', False):
-        cmd = ('nova secgroup-add-rule {group_name} {protocol} {port} {port}'
-               ' {cidr}')
-    else:
-        cmd = ('neutron security-group-rule-create --direction egress'
-               '--ethertype IPv4 --protocol {protocol} --port-range-min {port}'
-               ' --port-range-max {port} --remote-ip-prefix {cidr}'
-               ' {group_name}')
-
-    output = []
-    for rule in rules:
-        for port in rule['ports']:
-            params = {
-                'group_name': group_name,
-                'cidr': str(IPNetwork(gethostbyname(rule['to_host'])).cidr),
-                'port': port,
-            }
-            params.update(rule)
-            output.append(cmd.format(**params))
-
-    return '\n'.join(output)
-
-
-def output_iptables_rules(rules):
-    output = []
-    return '\n'.join(output)
-
-
-RULES_GENERATORS = {
-    'aws': output_aws_rules,
-    'amazon': output_aws_rules,
-    'ec2': output_aws_rules,
-    'neutron': output_neutron_rules,
-    'openstack': output_neutron_rules,
-    'os': output_neutron_rules,
-    'iptables': output_iptables_rules,
+COMMANDS = {
+    'aws': ('aws ec2 authorize-security-group-egress --group-id {group}'
+            '--protocol {protocol} --port {port} --cidr {cidr}'),
+    'neutron': ('neutron security-group-rule-create --direction egress'
+                ' --ethertype IPv4 --protocol {protocol} '
+                ' --port-range-min {port} --port-range-max {port} '
+                ' --remote-ip-prefix {cidr} {group}'),
+    'nova': ('nova secgroup-add-rule {group} {protocol} {port} {port} {cidr}'),
+    'iptables': '',
 }
+
+COMMAND_TYPES = {
+    'aws': 'aws',
+    'amazon': 'aws',
+    'ec2': 'aws',
+    'neutron': 'neutron',
+    'openstack': 'neutron',
+    'os': 'neutron',
+    'nova': 'nova',
+    'iptables': 'iptables',
+}
+
+
+def output_secgroup_commands(cmd_type, rules, group='$SECGROUP'):
+    output = []
+    for rule in rules:
+        for port in rule['ports']:
+            params = {
+                'group': group,
+                'cidr': str(IPNetwork(gethostbyname(rule['to_host'])).cidr),
+                'port': port,
+            }
+            params.update(rule)
+            output.append(COMMANDS[cmd_type].format(**params))
+
+    return '\n'.join(output)
 
 
 def run(*args):
     parser = ArgumentParser()
     parser.add_argument('-t', '--type', dest='output_type', required=True,
-                        help="Rules output type, e.g. neutron, aws, iptables.")
+                        help="Rules output type, e.g. neutron, nova, aws,"
+                        " iptables.")
     parser.add_argument("paths", nargs='+',
                         help="Paths to YAML files to combine/parse.")
     parser.add_argument('--group', dest='group', required=False,
@@ -100,20 +80,19 @@ def run(*args):
                         help="Output novaclient commands for OpenStack rules.")
     options = parser.parse_args(list(args))
 
-    kwargs = {'use_nova': options.use_nova}
-    if options.group:
-        kwargs['group'] = options.group
-
     rules = merge_yaml(options.paths)
-    output_rules = RULES_GENERATORS.get(options.output_type.lower(),
-                                        lambda r: None)(rules, **kwargs)
-    if output_rules is not None:
-        sys.stdout.write('{}\n'.format(output_rules))
-        return 0
-    else:
+
+    output_type = options.output_type.lower()
+    if output_type not in COMMAND_TYPES:
         sys.stderr.write('Error: invalid output type ({})\n'.format(
                          options.output_type))
         return 1
+
+    cmd_type = COMMAND_TYPES.get(output_type)
+    output_rules = output_secgroup_commands(cmd_type, rules, options.group)
+
+    sys.stdout.write('{}\n'.format(output_rules))
+    return 0
 
 
 def main():
