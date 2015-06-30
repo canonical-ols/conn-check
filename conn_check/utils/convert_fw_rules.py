@@ -5,6 +5,26 @@ import sys
 import yaml
 
 
+COMMANDS = {
+    'aws': ('aws ec2 authorize-security-group-egress --group-id {group}'
+            '--protocol {protocol} --port {port} --cidr {cidr}'),
+    'neutron': ('neutron security-group-rule-create --direction egress'
+                ' --ethertype {ip_version} --protocol {protocol} '
+                ' --port-range-min {port} --port-range-max {port} '
+                ' --remote-ip-prefix {cidr} {group}'),
+    'nova': ('nova secgroup-add-rule {group} {protocol} {port} {port} {cidr}'),
+    'iptables': ('iptables -A OUTPUT -p {protocol} --dport {port}'
+                 ' -d {to_host} -j ACCEPT'),
+}
+
+COMMAND_ALIASES = {
+    'amazon': 'aws',
+    'ec2': 'aws',
+    'openstack': 'neutron',
+    'os': 'neutron',
+}
+
+
 def merge_yaml(paths):
     """Merge multiple firewall YAML rule files with hosts/ports de-duped."""
     merged_rules = {}
@@ -27,30 +47,8 @@ def merge_yaml(paths):
     return merged_rules.values()
 
 
-COMMANDS = {
-    'aws': ('aws ec2 authorize-security-group-egress --group-id {group}'
-            '--protocol {protocol} --port {port} --cidr {cidr}'),
-    'neutron': ('neutron security-group-rule-create --direction egress'
-                ' --ethertype {ip_version} --protocol {protocol} '
-                ' --port-range-min {port} --port-range-max {port} '
-                ' --remote-ip-prefix {cidr} {group}'),
-    'nova': ('nova secgroup-add-rule {group} {protocol} {port} {port} {cidr}'),
-    'iptables': '',
-}
-
-COMMAND_TYPES = {
-    'aws': 'aws',
-    'amazon': 'aws',
-    'ec2': 'aws',
-    'neutron': 'neutron',
-    'openstack': 'neutron',
-    'os': 'neutron',
-    'nova': 'nova',
-    'iptables': 'iptables',
-}
-
-
 def output_secgroup_commands(cmd_type, rules, group='$SECGROUP'):
+    """Generate firewall client commands from conn-check firewall rules."""
     output = []
     for rule in rules:
         for port in rule['ports']:
@@ -84,14 +82,15 @@ def run(*args):
 
     rules = merge_yaml(options.paths)
 
+    available_commands = COMMANDS.keys() + COMMAND_ALIASES.keys()
     output_type = options.output_type.lower()
-    if output_type not in COMMAND_TYPES:
+    if output_type not in available_commands:
         sys.stderr.write('Error: invalid output type ({})\n'.format(
                          options.output_type))
         return 1
 
-    cmd_type = COMMAND_TYPES.get(output_type)
-    output_rules = output_secgroup_commands(cmd_type, rules, options.group)
+    command_type = COMMAND_ALIASES.get(output_type, output_type)
+    output_rules = output_secgroup_commands(command_type, rules, options.group)
 
     sys.stdout.write('{}\n'.format(output_rules))
     return 0
