@@ -363,6 +363,21 @@ rules in an easy to parse YAML format, for example:
 You can then use this output to generate your environments firewall rules (e.g. with
 `EC2 security groups`, `OpenStack Neutron`, `iptables` etc.).
 
+``conn-check-convert-fw`` is a utility that does just this, it accepts multiple firewall
+rule YAML files, merges/de-dupes them, and outputs commands for AWS, Openstack Neutron,
+OpenStack Nova (client), and iptables.
+
+It is designed for this workflow:
+
+ * On each host you run conn-check from, you run ``conn-check-export-fw`` to generate
+   a YAML file containing egress firewall rules.
+ * Each of these files is transfered to a host with the correct DNS entries for the
+   egress hosts.
+ * On this host ``conn-check-convert-fw`` is run to generate a set of commands
+   for your firewall.
+ * These commands are audited by a human / possibly merged with other rules, such as
+   adding ingress rules, and then run to update your environment's firewall.
+
 Building wheels
 ---------------
 
