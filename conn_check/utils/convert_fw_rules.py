@@ -15,6 +15,7 @@ COMMANDS = {
     'nova': ('nova secgroup-add-rule {group} {protocol} {port} {port} {cidr}'),
     'iptables': ('iptables -A OUTPUT -p {protocol} --dport {port}'
                  ' -d {to_host} -j ACCEPT'),
+    'ufw': ('ufw allow proto {protocol} from any to {cidr} port {port}'),
 }
 
 COMMAND_ALIASES = {
@@ -69,15 +70,12 @@ def run(*args):
     parser = ArgumentParser()
     parser.add_argument('-t', '--type', dest='output_type', required=True,
                         help="Rules output type, e.g. neutron, nova, aws,"
-                        " iptables.")
+                        " iptables, ufw.")
     parser.add_argument("paths", nargs='+',
                         help="Paths to YAML files to combine/parse.")
     parser.add_argument('--group', dest='group', required=False,
                         help="AWS security group ID or OpenStack Neutron group"
                         " name.")
-    parser.add_argument('--use-nova', dest='use_nova', default=False,
-                        action="store_true",
-                        help="Output novaclient commands for OpenStack rules.")
     options = parser.parse_args(list(args))
 
     rules = merge_yaml(options.paths)

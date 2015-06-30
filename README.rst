@@ -365,7 +365,7 @@ You can then use this output to generate your environments firewall rules (e.g. 
 
 ``conn-check-convert-fw`` is a utility that does just this, it accepts multiple firewall
 rule YAML files, merges/de-dupes them, and outputs commands for AWS, Openstack Neutron,
-OpenStack Nova (client), and iptables.
+OpenStack Nova (client), iptables, and ufw (mostly for testing purposes).
 
 It is designed for this workflow:
 
