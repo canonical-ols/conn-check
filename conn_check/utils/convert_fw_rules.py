@@ -31,7 +31,7 @@ COMMANDS = {
     'aws': ('aws ec2 authorize-security-group-egress --group-id {group}'
             '--protocol {protocol} --port {port} --cidr {cidr}'),
     'neutron': ('neutron security-group-rule-create --direction egress'
-                ' --ethertype IPv4 --protocol {protocol} '
+                ' --ethertype {ip_version} --protocol {protocol} '
                 ' --port-range-min {port} --port-range-max {port} '
                 ' --remote-ip-prefix {cidr} {group}'),
     'nova': ('nova secgroup-add-rule {group} {protocol} {port} {port} {cidr}'),
@@ -54,10 +54,12 @@ def output_secgroup_commands(cmd_type, rules, group='$SECGROUP'):
     output = []
     for rule in rules:
         for port in rule['ports']:
+            ip = IPNetwork(gethostbyname(rule['to_host']))
             params = {
                 'group': group,
-                'cidr': str(IPNetwork(gethostbyname(rule['to_host'])).cidr),
+                'cidr': str(ip.cidr),
                 'port': port,
+                'ip_version': 'IPv{}'.format(ip.version),
             }
             params.update(rule)
             output.append(COMMANDS[cmd_type].format(**params))
