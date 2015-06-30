@@ -63,7 +63,7 @@ def output_secgroup_commands(cmd_type, rules, group='$SECGROUP'):
             params.update(rule)
             output.append(COMMANDS[cmd_type].format(**params))
 
-    return '\n'.join(output)
+    return output
 
 
 def run(*args):
@@ -90,7 +90,7 @@ def run(*args):
     command_type = COMMAND_ALIASES.get(output_type, output_type)
     output_rules = output_secgroup_commands(command_type, rules, options.group)
 
-    sys.stdout.write('{}\n'.format(output_rules))
+    sys.stdout.write('{}\n'.format('\n'.join(output_rules)))
     return 0
 
 
