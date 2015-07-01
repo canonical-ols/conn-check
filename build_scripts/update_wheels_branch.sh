@@ -33,7 +33,8 @@ if [[ "$TAGS" == *"conn-check-r$REVNO"* ]]; then
 	>&2 echo "revno already built and tagged, skipping"
 else
 	cd $DIR
-	make test-wheels WHEELSDIR=$WHEELS_BRANCH_DIR
+	ln -s $WHEELS_BRANCH_DIR $WHEELS_DIR
+	make test-wheels
 
 	cd $WHEELS_BRANCH_DIR
 	bzr add *.whl
@@ -41,6 +42,9 @@ else
 	bzr tag -d $WHEELS_BRANCH_DIR --force conn-check-r$CONN_CHECK_REVNO
 	bzr tag -d $WHEELS_BRANCH_DIR --force $CONN_CHECK_REVNO
 	bzr push -d $WHEELS_BRANCH_DIR $WHEELS_BRANCH
+
+	cd $DIR
+	rm -f ./wheels
 fi
 
 exit 0

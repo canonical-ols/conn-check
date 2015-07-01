@@ -1,5 +1,5 @@
 ENV = virtualenv
-WHEELSDIR = ./wheels
+WHEELS_DIR = ./wheels
 WHEELS_BRANCH = lp:~ubuntuone-hackers/conn-check/wheels
 WHEELS_BRANCH_DIR = /tmp/conn-check-wheels
 CONN_CHECK_REVNO = $(shell bzr revno)
@@ -21,7 +21,7 @@ test: $(ENV)
 	$(ENV)/bin/nosetests
 
 clean-wheels:
-	-rm -r $(WHEELSDIR)
+	-rm -r $(WHEELS_DIR)
 
 clean-docs:
 	-rm -r $(DOCS_DIR)/_build
@@ -87,24 +87,24 @@ fw-convert-cmd:
 pip-wheel: $(ENV)
 	@$(ENV)/bin/pip install wheel
 
-$(WHEELSDIR):
-	mkdir $(WHEELSDIR)
+$(WHEELS_DIR):
+	mkdir $(WHEELS_DIR)
 
-build-wheels: pip-wheel $(WHEELSDIR) $(ENV)
-	$(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) .
+build-wheels: pip-wheel $(WHEELS_DIR) $(ENV)
+	$(ENV)/bin/pip wheel --wheel-dir=$(WHEELS_DIR) .
 
-build-wheels-extra: pip-wheel $(WHEELSDIR) $(ENV)
-	$(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) -r ${EXTRA}-requirements.txt
+build-wheels-extra: pip-wheel $(WHEELS_DIR) $(ENV)
+	$(ENV)/bin/pip wheel --wheel-dir=$(WHEELS_DIR) -r ${EXTRA}-requirements.txt
 
-build-wheels-all-extras: pip-wheel $(WHEELSDIR) $(ENV)
+build-wheels-all-extras: pip-wheel $(WHEELS_DIR) $(ENV)
 	ls *-requirements.txt | grep -vw 'devel\|test' | xargs -L 1 \
-		$(ENV)/bin/pip wheel --wheel-dir=$(WHEELSDIR) -r
+		$(ENV)/bin/pip wheel --wheel-dir=$(WHEELS_DIR) -r
 
 test-wheels: build-wheels build-wheels-all-extras
 	$(ENV)/bin/pip install -r test-requirements.txt
-	$(ENV)/bin/pip install --ignore-installed --no-index --find-links $(WHEELSDIR) -r requirements.txt
+	$(ENV)/bin/pip install --ignore-installed --no-index --find-links $(WHEELS_DIR) -r requirements.txt
 	ls *-requirements.txt | grep -vw 'devel\|test' | xargs -L 1 \
-		$(ENV)/bin/pip install --ignore-installed --no-index --find-links $(WHEELSDIR) -r
+		$(ENV)/bin/pip install --ignore-installed --no-index --find-links $(WHEELS_DIR) -r
 	$(MAKE) test
 
 $(WHEELS_BRANCH_DIR):
@@ -117,6 +117,7 @@ update-wheel-branch: $(WHEELS_BRANCH_DIR)
 	WHEELS_BRANCH=$(WHEELS_BRANCH) \
 	WHEELS_BRANCH_DIR=$(WHEELS_BRANCH_DIR) \
 	CONN_CHECK_REVNO=$(CONN_CHECK_REVNO) \
+	WHEELS_DIR=$(WHEELS_DIR)
 	$(PWD)/build_scripts/update_wheels_branch.sh
 
 upload: build test pip-wheel
