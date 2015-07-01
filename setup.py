@@ -4,7 +4,7 @@
 import os
 cwd = os.path.dirname(__file__)
 __version__ = open(os.path.join(cwd, 'conn_check/version.txt'),
-                    'r').read().strip()
+                   'r').read().strip()
 
 from setuptools import setup, find_packages
 
@@ -33,11 +33,13 @@ setup(
     packages=find_packages(exclude=['ez_setup']),
     install_requires=get_requirements(),
     extras_require={
-        'all': get_requirements('amqp', 'postgres', 'redis', 'mongodb'),
+        'all': get_requirements('amqp', 'postgres', 'redis', 'mongodb',
+                                'fwutils'),
         'amqp': get_requirements('amqp'),
         'postgres': get_requirements('postgres'),
         'redis': get_requirements('redis'),
         'mongodb': get_requirements('mongodb'),
+        'fwutil': get_requirements('fwutils'),
     },
     package_data={'conn_check': ['version.txt', 'amqp0-8.xml']},
     include_package_data=True,
@@ -45,6 +47,7 @@ setup(
         'console_scripts': [
             'conn-check = conn_check.main:main',
             'conn-check-export-fw = conn_check.utils.firewall_rules:main',
+            'conn-check-convert-fw = conn_check.utils.convert_fw_rules:main',
         ],
     },
     license='GPL3',

@@ -81,6 +81,9 @@ cmd:
 fw-cmd:
 	@echo $(ENV)/bin/conn-check-export-fw
 
+fw-convert-cmd:
+	@echo $(ENV)/bin/conn-check-convert-fw
+
 pip-wheel: $(ENV)
 	@$(ENV)/bin/pip install wheel
 
