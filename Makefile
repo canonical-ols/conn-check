@@ -117,7 +117,7 @@ update-wheel-branch: $(WHEELS_BRANCH_DIR)
 	WHEELS_BRANCH=$(WHEELS_BRANCH) \
 	WHEELS_BRANCH_DIR=$(WHEELS_BRANCH_DIR) \
 	CONN_CHECK_REVNO=$(CONN_CHECK_REVNO) \
-	WHEELS_DIR=$(WHEELS_DIR)
+	WHEELS_DIR=$(WHEELS_DIR) \
 	$(PWD)/build_scripts/update_wheels_branch.sh
 
 upload: build test pip-wheel
