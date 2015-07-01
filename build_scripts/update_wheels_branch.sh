@@ -34,8 +34,6 @@ if [[ "$TAGS" == *"conn-check-r$REVNO"* ]]; then
 else
 	cd $DIR
 	ln -s $WHEELS_BRANCH_DIR $WHEELS_DIR
-	# Ignore the error if it doesn't exist, but don't try to --force it
-	rm -r $WHEELS_BRANCH_DIR 2>/dev/null
 	make test-wheels
 
 	cd $WHEELS_BRANCH_DIR

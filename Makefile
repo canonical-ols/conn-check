@@ -22,6 +22,7 @@ test: $(ENV)
 
 clean-wheels:
 	-rm -r $(WHEELS_DIR)
+	-rm -r $(WHEELS_BRANCH_DIR)
 
 clean-docs:
 	-rm -r $(DOCS_DIR)/_build
@@ -110,7 +111,7 @@ test-wheels: build-wheels build-wheels-all-extras
 $(WHEELS_BRANCH_DIR):
 	bzr checkout --lightweight $(WHEELS_BRANCH) $(WHEELS_BRANCH_DIR)
 
-update-wheel-branch: $(WHEELS_BRANCH_DIR)
+update-wheel-branch: clean-wheels $(WHEELS_BRANCH_DIR)
 	@$(ENV)/bin/pip install --upgrade setuptools
 	@$(ENV)/bin/pip install --upgrade pip
 	bzr pull -d $(WHEELS_BRANCH_DIR)
