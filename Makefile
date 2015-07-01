@@ -102,13 +102,13 @@ build-wheels-all-extras: pip-wheel $(WHEELS_DIR) $(ENV)
 
 test-wheels: build-wheels build-wheels-all-extras
 	$(ENV)/bin/pip install -r test-requirements.txt
-	$(ENV)/bin/pip install --ignore-installed --no-index --find-links $(WHEELS_DIR) -r requirements.txt
+	$(ENV)/bin/pip install --upgrade --no-index --find-links $(WHEELS_DIR) -r requirements.txt
 	ls *-requirements.txt | grep -vw 'devel\|test' | xargs -L 1 \
 		$(ENV)/bin/pip install --ignore-installed --no-index --find-links $(WHEELS_DIR) -r
 	$(MAKE) test
 
 $(WHEELS_BRANCH_DIR):
-	bzr branch $(WHEELS_BRANCH) $(WHEELS_BRANCH_DIR)
+	bzr checkout --lightweight $(WHEELS_BRANCH) $(WHEELS_BRANCH_DIR)
 
 update-wheel-branch: $(WHEELS_BRANCH_DIR)
 	@$(ENV)/bin/pip install --upgrade setuptools
