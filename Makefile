@@ -114,7 +114,6 @@ $(WHEELS_BRANCH_DIR):
 update-wheel-branch: clean-wheels $(WHEELS_BRANCH_DIR)
 	@$(ENV)/bin/pip install --upgrade setuptools
 	@$(ENV)/bin/pip install --upgrade pip
-	bzr pull -d $(WHEELS_BRANCH_DIR)
 	WHEELS_BRANCH=$(WHEELS_BRANCH) \
 	WHEELS_BRANCH_DIR=$(WHEELS_BRANCH_DIR) \
 	CONN_CHECK_REVNO=$(CONN_CHECK_REVNO) \
