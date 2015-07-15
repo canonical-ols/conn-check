@@ -1,3 +1,10 @@
+conn-check (1.3.0-1) trusty; urgency=low
+
+  * conn-check-convert-fw utility added, which generates firewall rule
+    commands from conn-check FW egress YAML.
+
+ -- Wes Mason (1stvamp) <wes@1stvamp.org>  Wed, 15 Jul 2015 15:05:32 +0000
+
 conn-check (1.2.0-1) trusty; urgency=low
 
   * New smtp check type added.

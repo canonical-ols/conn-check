@@ -66,7 +66,11 @@ build-deb-pip-cache: $(ENV)/bin/pip2tgz
 	$(ENV)/bin/python setup.py sdist
 	cp dist/conn-check-$(CONN_CHECK_VERSION).tar.gz ../conn-check_$(CONN_CHECK_VERSION).orig.tar.gz
 
-build-deb: build-deb-pip-cache ../conn-check_$(CONN_CHECK_VERSION).orig.tar.gz
+check-deb-version:
+	@(grep -F '($(CONN_CHECK_VERSION)-' debian/changelog) || \
+		(echo 'ERROR: $(CONN_CHECK_VERSION) not found in debian/changelog, have you added it?' && exit 1)
+
+build-deb: check-deb-version build-deb-pip-cache ../conn-check_$(CONN_CHECK_VERSION).orig.tar.gz
 	-rm ../conn-check_$(CONN_CHECK_VERSION)-*
 	debuild -S -sa
 
@@ -133,5 +137,5 @@ update-rtd:
 	-curl -X POST http://readthedocs.org/build/conn-check
 
 
-.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload install-build-debs build-deb-pip-cache test-build-deb docs clean-docs
+.PHONY: test build pip-wheel build-wheels build-wheels-extra build-wheels-all test-wheels install-debs clean cmd upload install-build-debs build-deb-pip-cache test-build-deb docs clean-docs update-rtd check-deb-version
 .DEFAULT_GOAL := test
