@@ -94,6 +94,8 @@ def do_tcp_check(host, port, tls=False, tls_verify=True,
             raise ValueError("dns resolution failed")
     else:
         ip = host
+
+    port = int(port)
     creator = ClientCreator(reactor, TCPCheckProtocol)
     try:
         if tls:
@@ -174,6 +176,8 @@ def do_udp_check(host, port, send, expect, timeout=None):
             raise ValueError("dns resolution failed")
     else:
         ip = host
+
+    port = int(port)
     deferred = Deferred()
     protocol = UDPCheckProtocol(ip, port, send, expect, deferred, timeout)
     reactor.listenUDP(0, protocol)
@@ -214,8 +218,9 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
     host, port, scheme = extract_host_port(url)
     proxy_url = kwargs.get('proxy_url')
     proxy_host = kwargs.get('proxy_host')
-    proxy_port = kwargs.get('proxy_port', 8000)
+    proxy_port = int(kwargs.get('proxy_port', 8000))
     timeout = kwargs.get('timeout', None)
+    expected_code = int(expected_code)
 
     if proxy_host:
         subchecks.append(make_tcp_check(proxy_host, proxy_port,
@@ -290,6 +295,7 @@ def make_amqp_check(host, port, username, password, use_tls=True, vhost="/",
     from txamqp.client import TwistedDelegate
     from txamqp.spec import load as load_spec
 
+    port = int(port)
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
@@ -317,6 +323,7 @@ def make_smtp_check(host, port, username, password, from_address, to_address,
                     timeout=None, **kwargs):
     """Return a check for SMTP connectivity."""
 
+    port = int(port)
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
@@ -366,6 +373,8 @@ def make_postgres_check(host, port, username, password, database,
     """Return a check for Postgres connectivity."""
 
     import psycopg2
+
+    port = int(port)
     subchecks = []
     connect_kw = {
         'host': host,
@@ -396,7 +405,10 @@ def make_postgres_check(host, port, username, password, database,
 def make_redis_check(host, port, password=None, timeout=None,
                      **kwargs):
     """Make a check for the configured redis server."""
+
     import txredis
+
+    port = int(port)
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
@@ -430,6 +442,8 @@ def make_redis_check(host, port, password=None, timeout=None,
 def make_memcache_check(host, port, password=None, timeout=None,
                         **kwargs):
     """Make a check for the configured redis server."""
+
+    port = int(port)
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
@@ -455,6 +469,8 @@ def make_mongodb_check(host, port=27017, username=None, password=None,
     """Return a check for MongoDB connectivity."""
 
     import txmongo
+
+    port = int(port)
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
