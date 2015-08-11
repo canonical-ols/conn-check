@@ -214,8 +214,9 @@ def make_http_check(url, method='GET', expected_code=200, **kwargs):
     host, port, scheme = extract_host_port(url)
     proxy_url = kwargs.get('proxy_url')
     proxy_host = kwargs.get('proxy_host')
-    proxy_port = kwargs.get('proxy_port', 8000)
+    proxy_port = int(kwargs.get('proxy_port', 8000))
     timeout = kwargs.get('timeout', None)
+    expected_code = int(expected_code)
 
     if proxy_host:
         subchecks.append(make_tcp_check(proxy_host, proxy_port,

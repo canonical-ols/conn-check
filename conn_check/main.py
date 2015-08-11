@@ -41,6 +41,9 @@ def check_from_description(check_description):
             raise AssertionError('{} missing from check: {}'.format(arg,
                                  check_description))
 
+    if 'port' in check_description:
+        check_description['port'] = int(check_description['port'])
+
     res = check['fn'](**check_description)
     return res
 
