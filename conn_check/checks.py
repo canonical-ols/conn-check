@@ -95,7 +95,6 @@ def do_tcp_check(host, port, tls=False, tls_verify=True,
     else:
         ip = host
 
-    port = int(port)
     creator = ClientCreator(reactor, TCPCheckProtocol)
     try:
         if tls:
@@ -177,7 +176,6 @@ def do_udp_check(host, port, send, expect, timeout=None):
     else:
         ip = host
 
-    port = int(port)
     deferred = Deferred()
     protocol = UDPCheckProtocol(ip, port, send, expect, deferred, timeout)
     reactor.listenUDP(0, protocol)
@@ -295,7 +293,6 @@ def make_amqp_check(host, port, username, password, use_tls=True, vhost="/",
     from txamqp.client import TwistedDelegate
     from txamqp.spec import load as load_spec
 
-    port = int(port)
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
@@ -323,7 +320,6 @@ def make_smtp_check(host, port, username, password, from_address, to_address,
                     timeout=None, **kwargs):
     """Return a check for SMTP connectivity."""
 
-    port = int(port)
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
@@ -374,7 +370,6 @@ def make_postgres_check(host, port, username, password, database,
 
     import psycopg2
 
-    port = int(port)
     subchecks = []
     connect_kw = {
         'host': host,
@@ -408,7 +403,6 @@ def make_redis_check(host, port, password=None, timeout=None,
 
     import txredis
 
-    port = int(port)
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
@@ -443,7 +437,6 @@ def make_memcache_check(host, port, password=None, timeout=None,
                         **kwargs):
     """Make a check for the configured redis server."""
 
-    port = int(port)
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
@@ -470,11 +463,9 @@ def make_mongodb_check(host, port=27017, username=None, password=None,
 
     import txmongo
 
-    port = int(port)
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
-    port = int(port)
 
     @inlineCallbacks
     def do_connect():
