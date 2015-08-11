@@ -94,7 +94,6 @@ def do_tcp_check(host, port, tls=False, tls_verify=True,
             raise ValueError("dns resolution failed")
     else:
         ip = host
-
     creator = ClientCreator(reactor, TCPCheckProtocol)
     try:
         if tls:
@@ -175,7 +174,6 @@ def do_udp_check(host, port, send, expect, timeout=None):
             raise ValueError("dns resolution failed")
     else:
         ip = host
-
     deferred = Deferred()
     protocol = UDPCheckProtocol(ip, port, send, expect, deferred, timeout)
     reactor.listenUDP(0, protocol)
@@ -367,9 +365,7 @@ def make_smtp_check(host, port, username, password, from_address, to_address,
 def make_postgres_check(host, port, username, password, database,
                         timeout=None, **kwargs):
     """Return a check for Postgres connectivity."""
-
     import psycopg2
-
     subchecks = []
     connect_kw = {
         'host': host,
@@ -400,9 +396,7 @@ def make_postgres_check(host, port, username, password, database,
 def make_redis_check(host, port, password=None, timeout=None,
                      **kwargs):
     """Make a check for the configured redis server."""
-
     import txredis
-
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
@@ -436,7 +430,6 @@ def make_redis_check(host, port, password=None, timeout=None,
 def make_memcache_check(host, port, password=None, timeout=None,
                         **kwargs):
     """Make a check for the configured redis server."""
-
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
@@ -462,10 +455,10 @@ def make_mongodb_check(host, port=27017, username=None, password=None,
     """Return a check for MongoDB connectivity."""
 
     import txmongo
-
     subchecks = []
     subchecks.append(make_tcp_check(host, port, timeout=timeout))
 
+    port = int(port)
 
     @inlineCallbacks
     def do_connect():
