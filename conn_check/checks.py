@@ -365,6 +365,7 @@ def make_smtp_check(host, port, username, password, from_address, to_address,
 def make_postgres_check(host, port, username, password, database,
                         timeout=None, **kwargs):
     """Return a check for Postgres connectivity."""
+
     import psycopg2
     subchecks = []
     connect_kw = {
