@@ -24,12 +24,12 @@ def get_requirements(*pre):
 
 setup(
     name='conn-check',
-    description='Utility/library for checking connectivity between services',
+    description='Utility for verifying connectivity between services',
     long_description=open('README.rst').read(),
     version=__version__,
     author='James Westby, Wes Mason',
     author_email='james.westby@canonical.com, wesley.mason@canonical.com',
-    url='https://launchpad.net/conn-check',
+    url='http://conn-check.org/',
     packages=find_packages(exclude=['ez_setup']),
     install_requires=get_requirements(),
     extras_require={
